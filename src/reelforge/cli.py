@@ -3,18 +3,22 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Optional
 import typer
 from typing_extensions import Annotated
 
 from reelforge.config import check_environment, load_config
 from reelforge.quotes.generator import generate_quotes
-from reelforge.render.pipeline import render_preview
+from reelforge.render.pipeline import batch_generate_reels, render_preview
+from rich.console import Console
+from rich.table import Table
 
 app = typer.Typer(
     name="reelforge",
     help="Reel Forge: Automated Instagram Quote & Poetry Reel Generator.",
     add_completion=False,
 )
+console = Console()
 
 
 @app.callback()
@@ -143,14 +147,76 @@ def preview(
 @app.command()
 def generate(
     count: Annotated[int, typer.Option("--count", "-c", help="Number of reels to generate")] = 10,
-    theme: Annotated[str, typer.Option("--theme", "-t", help="Quote theme (e.g. reflective, sad)")] = "reflective",
-    lang: Annotated[str, typer.Option("--lang", "-l", help="Language code (en, ur, roman_ur)")] = "en",
-    style: Annotated[str, typer.Option("--style", "-s", help="Style preset name")] = "default",
+    theme: Annotated[str, typer.Option("--theme", "-t", help="Quote theme (e.g. hope, solitude, gratitude)")] = "hope",
+    lang: Annotated[str, typer.Option("--lang", "-l", help="Language code (en, roman-urdu, urdu)")] = "en",
+    style: Annotated[
+        Path,
+        typer.Option(
+            "--style",
+            "-s",
+            help="Path to style YAML file",
+            exists=True,
+            file_okay=True,
+            dir_okay=False,
+            readable=True,
+        ),
+    ] = Path("styles/degraaf.yaml"),
+    provider: Annotated[
+        Optional[str],
+        typer.Option(
+            "--provider",
+            "-p",
+            help="Override background provider (local_folder, gdrive, pexels)",
+        ),
+    ] = None,
 ) -> None:
-    """Generate finished quote reels in bulk (Phase 4)."""
+    """Generate finished quote reels in bulk with video, caption, and metadata packaging."""
     check_environment(require_gemini=True)
-    config = load_config()
-    typer.echo(f"Starting batch generation: count={count}, theme={theme}, lang={lang}, style={style} (Not yet implemented)")
+    clean_lang = lang.lower().strip()
+    if clean_lang not in ("en", "roman-urdu", "roman_urdu", "urdu"):
+        typer.echo(f"❌ Unsupported language '{lang}'. Choose from: en, roman-urdu, urdu", err=True)
+        raise typer.Exit(1)
+
+    typer.echo(f"🚀 Starting bulk reel generation...")
+    typer.echo(f"   Count: {count} | Theme: {theme} | Language: {clean_lang} | Style: {style}")
+
+    results = batch_generate_reels(
+        count=count,
+        theme=theme,
+        lang=clean_lang,
+        style_path=style,
+        provider_name=provider,
+    )
+
+    # Print summary table
+    table = Table(title="Batch Reel Generation Summary", show_lines=True)
+    table.add_column("#", style="dim", width=4)
+    table.add_column("Status", width=10)
+    table.add_column("Mood", width=10)
+    table.add_column("Quote", width=35)
+    table.add_column("Output / Reason", width=42)
+
+    ok_count = 0
+    fail_count = 0
+
+    for r in results:
+        is_ok = r["status"] == "ok"
+        if is_ok:
+            ok_count += 1
+            status_str = "[bold green]OK[/bold green]"
+            detail = r["output"]
+        else:
+            fail_count += 1
+            status_str = "[bold red]FAILED[/bold red]"
+            detail = r["reason"]
+
+        quote_text = r["quote"]
+        snippet = quote_text[:32] + "..." if len(quote_text) > 32 else quote_text
+        table.add_row(str(r["index"]), status_str, r["mood"], snippet, detail)
+
+    console.print()
+    console.print(table)
+    console.print(f"[bold]Total:[/] {len(results)} | [bold green]Successful:[/] {ok_count} | [bold red]Failed:[/] {fail_count}\n")
 
 
 @app.command()
