@@ -26,7 +26,7 @@ class AppMetaConfig(BaseModel):
 class GeminiConfig(BaseModel):
     """Configuration for Gemini API integration."""
 
-    model: str = "gemini-2.5-flash"
+    model: str = "gemini-3.5-flash-lite"
     temperature: float = 0.7
     api_key: Optional[str] = Field(
         default_factory=lambda: os.getenv("GEMINI_API_KEY")
