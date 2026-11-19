@@ -1,0 +1,37 @@
+app:
+  name: "Reel Forge"
+  version: "0.1.0"
+
+gemini:
+  model: "gemini-2.5-flash"
+  temperature: 0.7
+
+paths:
+  assets_dir: "assets"
+  backgrounds_dir: "assets/backgrounds"
+  music_dir: "assets/music"
+  fonts_dir: "assets/fonts"
+  cache_dir: "cache"
+  output_dir: "output"
+  styles_dir: "styles"
+  db_path: "db/reelforge.db"
+
+defaults:
+  theme: "reflective"
+  lang: "en"
+  count: 10
+  style: "default"
+  background_provider: "local_folder"
+
+canvas:
+  width: 1080
+  height: 1920
+  fps: 30
+
+render:
+  crf: 20
+  preset: "medium"
+  min_duration: 7.0
+  max_duration: 12.0
+  words_per_second: 2.2
+

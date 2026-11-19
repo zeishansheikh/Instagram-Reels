@@ -1,0 +1,11 @@
+google-genai
+typer
+pydantic
+pyyaml
+python-dotenv
+httpx
+loguru
+pillow
+google-api-python-client
+google-auth-oauthlib
+

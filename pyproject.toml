@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "reelforge"
+version = "0.1.0"
+description = "Automated quote & poetry reel generator for Instagram"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+    { name = "zeishansheikh" }
+]
+dependencies = [
+    "google-genai",
+    "typer>=0.9.0",
+    "pydantic>=2.0.0",
+    "pyyaml>=6.0",
+    "python-dotenv>=1.0.0",
+    "httpx>=0.25.0",
+    "loguru>=0.7.0",
+    "pillow>=10.0.0",
+    "google-api-python-client",
+    "google-auth-oauthlib",
+]
+
+[project.scripts]
+reelforge = "reelforge.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
