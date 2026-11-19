@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import copy
 import datetime
+import random
 import subprocess
 import time
 from pathlib import Path
@@ -36,22 +37,45 @@ from reelforge.render.quality import (
 from reelforge.render.text_layout import layout_text, resolve_font_path
 
 
+def get_available_styles(styles_dir: Path | str = "styles") -> list[Path]:
+    """Discover available style YAML configuration presets.
+
+    Excludes fallback default.yaml if other distinct styles exist.
+    """
+    p = Path(styles_dir)
+    if not p.exists() or not p.is_dir():
+        return []
+
+    presets = [f for f in sorted(p.glob("*.yaml")) if f.stem != "default"]
+    if not presets:
+        presets = sorted(p.glob("*.yaml"))
+    return presets
+
+
 def load_style(style_path: Path | str = "styles/degraaf.yaml") -> dict[str, Any]:
-    """Load styling parameters from a YAML file with fallback to default.
+    """Load styling parameters from a YAML file with fallback to default or random selection.
 
     Args:
-        style_path: Path to style YAML file.
+        style_path: Path to style YAML file or 'random'.
 
     Returns:
         Dict representing parsed style configuration.
     """
-    path = Path(style_path)
-    if not path.exists():
-        fallback = Path("styles/default.yaml")
-        if fallback.exists():
-            path = fallback
-        else:
-            raise FileNotFoundError(f"Style file not found at {style_path} and no default available.")
+    str_path = str(style_path).lower().strip()
+    if str_path in ("random", "styles/random", "styles/random.yaml"):
+        available = get_available_styles()
+        if not available:
+            raise FileNotFoundError("No style presets found in 'styles/' directory.")
+        path = random.choice(available)
+        logger.info(f"Resolved '--style random' to preset: {path}")
+    else:
+        path = Path(style_path)
+        if not path.exists():
+            fallback = Path("styles/default.yaml")
+            if fallback.exists():
+                path = fallback
+            else:
+                raise FileNotFoundError(f"Style file not found at {style_path} and no default available.")
 
     with open(path, "r", encoding="utf-8") as f:
         data = yaml.safe_load(f)
@@ -151,7 +175,11 @@ def batch_generate_reels(
     Returns:
         List of result summaries per reel: [{'status': 'ok'|'failed', 'quote': ..., 'output': ..., 'reason': ...}].
     """
-    style = load_style(style_path)
+    is_random_style = str(style_path).lower().strip() in ("random", "styles/random", "styles/random.yaml")
+    available_styles = get_available_styles() if is_random_style else [Path(style_path)]
+    if is_random_style and not available_styles:
+        available_styles = [Path("styles/degraaf.yaml")]
+
     conn = init_db(db_path)
 
     bg_provider = background_provider or get_background_provider(provider_name)
@@ -171,15 +199,23 @@ def batch_generate_reels(
         quotes_list = quotes
 
     results: list[dict[str, Any]] = []
-    duration_cfg = style.get("duration", {})
-    min_dur = float(duration_cfg.get("min", 8.0))
-    max_dur = float(duration_cfg.get("max", 12.0))
-    hashtags_base = style.get("hashtags_base", ["#nature", "#positivity", "#naturetherapy"])
-
     cache_dir = Path("cache")
     cache_dir.mkdir(parents=True, exist_ok=True)
 
     for idx, quote in enumerate(quotes_list, 1):
+        # Resolve active style preset (rotates among available styles if random requested)
+        if is_random_style:
+            chosen_style_path = available_styles[(idx - 1) % len(available_styles)]
+            style = load_style(chosen_style_path)
+            logger.info(f"Reel {idx}: Rotating style to preset '{chosen_style_path.stem}'")
+        else:
+            style = load_style(style_path)
+
+        duration_cfg = style.get("duration", {})
+        min_dur = float(duration_cfg.get("min", 8.0))
+        max_dur = float(duration_cfg.get("max", 12.0))
+        hashtags_base = style.get("hashtags_base", ["#nature", "#positivity", "#naturetherapy"])
+
         # Idempotency check: verify if quote already has a finished reel
         if quote.id and is_quote_rendered(conn, quote.id):
             logger.info(f"Quote #{quote.id} ('{quote.text[:30]}...') already rendered. Skipping.")

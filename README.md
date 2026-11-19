@@ -157,6 +157,29 @@ Reel Forge can automatically scan, stream, and cache footage directly from a Goo
 
 ---
 
+## 🎨 Style Presets & Rotation
+
+Reel Forge ships with 3 carefully tuned visual presets keeping a consistent calm, light-first nature aesthetic:
+
+| Preset | Font | Size | Overlay Darkness | Grain / Vignette | Aesthetic Vibe |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `styles/degraaf.yaml` | Sans (`default.ttf`) | 60 | 0.20 | 0.05 / 0.15 | Calm Nature & Grounding |
+| `styles/serif_quiet.yaml` | Serif (`serif.ttf`) | 58 | 0.22 | 0.04 / 0.18 | Literary, Quiet & Mindful |
+| `styles/sans_minimal.yaml` | Sans (`default.ttf`) | 54 | 0.18 | 0.03 / 0.10 | Airy, Minimalist & Serene |
+
+### Rotating Styles with `--style random`
+Pass `--style random` during batch generation to automatically rotate across all presets in round-robin fashion, ensuring aesthetic variety across your reels feed:
+
+```bash
+# Rotate styles automatically across 10 reels
+reelforge generate --count 10 --theme hope --lang en --style random
+
+# Or specify a fixed preset
+reelforge generate --count 5 --theme nature --style styles/serif_quiet.yaml
+```
+
+---
+
 ## 📋 Planned CLI Usage
 
 ```bash
@@ -178,12 +201,12 @@ reelforge clean
 ## 📅 Roadmap & Milestones
 
 - [x] **Project Analysis & Foundation**: Complete PRD, architecture, style guide, and repository structure.
-- [ ] **Phase 0 — Setup**: Virtual environment, FFmpeg verification, initial assets and fonts.
-- [ ] **Phase 1 — Single Reel Benchmark**: Render one reel end-to-end matching target visual aesthetic.
-- [ ] **Phase 2 — Gemini Integration**: Prompt engineering, structured JSON validation, SQLite deduplication.
-- [ ] **Phase 3 — Background Video Management**: Local folder rotation and Pexels automated retrieval.
-- [ ] **Phase 4 — End-to-End Batch Pipeline**: Unified CLI for automated batch generation and packaging.
-- [ ] **Phase 5 — Quality & Presets**: Style presets rotation, text animation variations, and quality gates.
+- [x] **Phase 0 — Setup**: Virtual environment, FFmpeg verification, initial assets and fonts.
+- [x] **Phase 1 — Single Reel Benchmark**: Render one reel end-to-end matching target visual aesthetic.
+- [x] **Phase 2 — Gemini Integration**: Prompt engineering, structured JSON validation, SQLite deduplication.
+- [x] **Phase 3 — Background Video Management**: Local folder rotation, Google Drive OAuth integration, and Pexels automated retrieval.
+- [x] **Phase 4 — End-to-End Batch Pipeline**: Unified CLI for automated batch generation and packaging.
+- [x] **Phase 5 — Quality & Presets**: 3 style presets (`degraaf`, `serif_quiet`, `sans_minimal`), `--style random` rotation, luminance contrast sampling, safe margin checks, and interactive review CLI.
 - [ ] **Phase 6 — Publishing (Optional)**: Meta Graph API integration or manual Meta Business Suite scheduling.
 
 ---

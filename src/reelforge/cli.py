@@ -108,17 +108,13 @@ def preview(
         ),
     ],
     style: Annotated[
-        Path,
+        str,
         typer.Option(
             "--style",
             "-s",
-            help="Path to style YAML file",
-            exists=True,
-            file_okay=True,
-            dir_okay=False,
-            readable=True,
+            help="Path to style YAML file or 'random'",
         ),
-    ] = Path("styles/degraaf.yaml"),
+    ] = "styles/degraaf.yaml",
     output: Annotated[
         Path,
         typer.Option(
@@ -130,6 +126,10 @@ def preview(
 ) -> None:
     """Render a single preview reel from an input clip, quote text, and style."""
     check_environment(require_gemini=False)
+    if style.lower() != "random" and not Path(style).exists():
+        typer.echo(f"❌ Style file not found at '{style}'.", err=True)
+        raise typer.Exit(1)
+
     typer.echo("🎬 Rendering preview reel...")
     typer.echo(f"   Video: {video}")
     typer.echo(f"   Quote: \"{quote}\"")
@@ -150,17 +150,13 @@ def generate(
     theme: Annotated[str, typer.Option("--theme", "-t", help="Quote theme (e.g. hope, solitude, gratitude)")] = "hope",
     lang: Annotated[str, typer.Option("--lang", "-l", help="Language code (en, roman-urdu, urdu)")] = "en",
     style: Annotated[
-        Path,
+        str,
         typer.Option(
             "--style",
             "-s",
-            help="Path to style YAML file",
-            exists=True,
-            file_okay=True,
-            dir_okay=False,
-            readable=True,
+            help="Path to style YAML file or 'random' to rotate styles",
         ),
-    ] = Path("styles/degraaf.yaml"),
+    ] = "styles/degraaf.yaml",
     provider: Annotated[
         Optional[str],
         typer.Option(
@@ -172,6 +168,10 @@ def generate(
 ) -> None:
     """Generate finished quote reels in bulk with video, caption, and metadata packaging."""
     check_environment(require_gemini=True)
+    if style.lower() != "random" and not Path(style).exists():
+        typer.echo(f"❌ Style file not found at '{style}'.", err=True)
+        raise typer.Exit(1)
+
     clean_lang = lang.lower().strip()
     if clean_lang not in ("en", "roman-urdu", "roman_urdu", "urdu"):
         typer.echo(f"❌ Unsupported language '{lang}'. Choose from: en, roman-urdu, urdu", err=True)
@@ -226,12 +226,16 @@ def review(
         typer.Option("--output-dir", "-o", help="Root output directory to inspect"),
     ] = Path("output"),
     style: Annotated[
-        Path,
-        typer.Option("--style", "-s", help="Style YAML preset for regenerations"),
-    ] = Path("styles/degraaf.yaml"),
+        str,
+        typer.Option("--style", "-s", help="Style YAML preset for regenerations or 'random'"),
+    ] = "styles/degraaf.yaml",
 ) -> None:
     """Interactively review generated reels: keep, discard, or regenerate."""
     from reelforge.render.review import review_all_reels
+
+    if style.lower() != "random" and not Path(style).exists():
+        typer.echo(f"❌ Style file not found at '{style}'.", err=True)
+        raise typer.Exit(1)
 
     review_all_reels(output_base=output_dir, style_path=style)
 

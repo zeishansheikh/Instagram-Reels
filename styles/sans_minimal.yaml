@@ -1,0 +1,35 @@
+name: sans_minimal
+canvas:
+  width: 1080
+  height: 1920
+  fps: 30
+duration:
+  min: 8
+  max: 12
+background:
+  overlay_darkness: 0.18
+  blur: 0
+  grade: "natural_warm"
+  grain: 0.03
+  vignette: 0.10
+  motion: "static_or_slow"
+text:
+  font: "assets/fonts/default.ttf"
+  size: 54
+  color: "#FFFFFF"
+  shadow:
+    x: 2
+    y: 2
+    color: "#00000099"
+  position: "calm_area_center"
+  align: "center"
+  max_lines: 4
+  animation: "line_fade"
+  fade_in: 0.7
+  stagger: 0.5
+audio:
+  mode: "none"
+hashtags_base:
+  - "#minimalism"
+  - "#naturelovers"
+  - "#serenity"
