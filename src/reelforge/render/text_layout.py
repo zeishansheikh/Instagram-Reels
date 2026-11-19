@@ -106,4 +106,4 @@ def layout_text(
 
     # Final fallback if text is exceptionally long
     line_height = int(font_size * 1.35)
-    return lines[:max_lines], font_size, line_height
+    return lines, font_size, line_height

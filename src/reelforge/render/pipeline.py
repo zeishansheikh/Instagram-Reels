@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import datetime
 import subprocess
 import time
@@ -26,6 +27,13 @@ from reelforge.packaging.caption import format_caption
 from reelforge.packaging.writer import package_reel
 from reelforge.quotes.generator import Quote, generate_quotes
 from reelforge.render.ffmpeg_cmd import build_ffmpeg_command, calculate_duration
+from reelforge.render.quality import (
+    calculate_text_bounding_box,
+    check_safe_margins,
+    is_contrast_sufficient,
+    sample_background_luminance,
+)
+from reelforge.render.text_layout import layout_text, resolve_font_path
 
 
 def load_style(style_path: Path | str = "styles/degraaf.yaml") -> dict[str, Any]:
@@ -189,15 +197,50 @@ def batch_generate_reels(
         logger.info(f"Processing reel {idx}/{len(quotes_list)} [mood: {quote.mood}, target: {target_dur:.1f}s]...")
 
         try:
+            # Automatic check 1: Text fits inside safe margins
+            text_cfg = style.get("text", {})
+            font_path = str(text_cfg.get("font", "assets/fonts/default.ttf"))
+            base_font_size = int(text_cfg.get("size", 60))
+            max_lines = int(text_cfg.get("max_lines", 4))
+
+            fits, reason, lines = check_safe_margins(
+                text=quote.text,
+                font_path=font_path,
+                font_size=base_font_size,
+                max_lines=max_lines,
+                canvas_w=1080,
+                canvas_h=1920,
+            )
+            if not fits:
+                raise ValueError(f"Safe margins check failed: {reason}")
+
             # 2. Pick background clip
             clip_path = bg_provider.get_clip(mood=quote.mood, min_seconds=target_dur)
+
+            # Automatic check 2: Contrast & Luminance sampling behind text box
+            effective_style = copy.deepcopy(style)
+            text_h = len(lines) * int(base_font_size * 1.35)
+            text_bbox = calculate_text_bounding_box(lines, int(base_font_size * 1.35), 1080, 1920)
+
+            sample_t = min(3.0, max(0.5, target_dur / 2))
+            bg_luminance = sample_background_luminance(clip_path, sample_time=sample_t, crop_box=text_bbox)
+
+            if not is_contrast_sufficient(bg_luminance):
+                base_darkness = float(style.get("background", {}).get("overlay_darkness", 0.20))
+                max_darkness = 0.45
+                escalated_darkness = min(max_darkness, base_darkness + 0.20)
+                effective_style.setdefault("background", {})["overlay_darkness"] = escalated_darkness
+                logger.warning(
+                    f"Low contrast detected (bg luminance: {bg_luminance:.2f}). "
+                    f"Auto-escalating darken overlay from {base_darkness:.2f} to {escalated_darkness:.2f}."
+                )
 
             # 3. Render video
             temp_output = cache_dir / f"temp_render_{quote.id or idx}_{int(time.time())}.mp4"
             render_reel(
                 quote=quote,
                 clip_path=clip_path,
-                style_config=style,
+                style_config=effective_style,
                 output_path=temp_output,
             )
 

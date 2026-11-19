@@ -220,6 +220,23 @@ def generate(
 
 
 @app.command()
+def review(
+    output_dir: Annotated[
+        Path,
+        typer.Option("--output-dir", "-o", help="Root output directory to inspect"),
+    ] = Path("output"),
+    style: Annotated[
+        Path,
+        typer.Option("--style", "-s", help="Style YAML preset for regenerations"),
+    ] = Path("styles/degraaf.yaml"),
+) -> None:
+    """Interactively review generated reels: keep, discard, or regenerate."""
+    from reelforge.render.review import review_all_reels
+
+    review_all_reels(output_base=output_dir, style_path=style)
+
+
+@app.command()
 def clean() -> None:
     """Clear temporary render cache and cached footage."""
     typer.echo("Cleaning temporary cache directory... (Not yet implemented)")

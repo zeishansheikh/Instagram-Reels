@@ -195,6 +195,15 @@ def record_reel(
         return int(cursor.lastrowid)
 
 
+def update_reel_status(conn: sqlite3.Connection, path: str, status: str) -> None:
+    """Update status of a reel (e.g. 'approved', 'discarded')."""
+    with conn:
+        conn.execute(
+            "UPDATE reels SET status = ? WHERE path = ?",
+            (status, str(path)),
+        )
+
+
 def is_quote_rendered(conn: sqlite3.Connection, quote_id: int) -> bool:
     """Check if a quote has already been successfully rendered into an existing reel."""
     cursor = conn.execute(
