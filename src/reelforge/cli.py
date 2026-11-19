@@ -30,6 +30,29 @@ def check() -> None:
     typer.echo("✅ All prerequisites met: FFmpeg and GEMINI_API_KEY are configured.")
 
 
+@app.command("gdrive-login")
+def gdrive_login(
+    credentials: Annotated[
+        Path,
+        typer.Option("--credentials", "-c", help="Path to OAuth client credentials.json"),
+    ] = Path("credentials.json"),
+    token: Annotated[
+        Path,
+        typer.Option("--token", "-t", help="Path to output token.json"),
+    ] = Path("token.json"),
+) -> None:
+    """Run Google Drive OAuth desktop login flow to authorize read-only access."""
+    from reelforge.backgrounds.gdrive import authenticate_gdrive
+
+    typer.echo("🔑 Initiating Google Drive OAuth authentication flow...")
+    try:
+        authenticate_gdrive(credentials_file=credentials, token_file=token)
+        typer.echo(f"✅ Successfully authenticated! Token saved to '{token}'.")
+    except Exception as e:
+        typer.echo(f"❌ Authentication failed: {e}", err=True)
+        raise typer.Exit(1)
+
+
 @app.command()
 def quotes(
     count: Annotated[int, typer.Option("--count", "-c", help="Number of quotes to generate")] = 10,

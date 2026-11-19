@@ -46,6 +46,15 @@ class PathsConfig(BaseModel):
     db_path: Path = Path("db/reelforge.db")
 
 
+class BackgroundConfig(BaseModel):
+    """Configuration for background video providers."""
+
+    provider: str = "local_folder"  # local_folder | gdrive | pexels
+    gdrive_folder_id: Optional[str] = Field(
+        default_factory=lambda: os.getenv("GDRIVE_FOLDER_ID")
+    )
+
+
 class DefaultsConfig(BaseModel):
     """Default runtime parameters for generation."""
 
@@ -80,6 +89,7 @@ class AppConfig(BaseModel):
 
     app: AppMetaConfig = Field(default_factory=AppMetaConfig)
     gemini: GeminiConfig = Field(default_factory=GeminiConfig)
+    background: BackgroundConfig = Field(default_factory=BackgroundConfig)
     paths: PathsConfig = Field(default_factory=PathsConfig)
     defaults: DefaultsConfig = Field(default_factory=DefaultsConfig)
     canvas: CanvasConfig = Field(default_factory=CanvasConfig)

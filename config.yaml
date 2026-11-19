@@ -6,6 +6,9 @@ gemini:
   model: "gemini-2.5-flash"
   temperature: 0.7
 
+background:
+  provider: "local_folder" # local_folder | gdrive | pexels
+
 paths:
   assets_dir: "assets"
   backgrounds_dir: "assets/backgrounds"

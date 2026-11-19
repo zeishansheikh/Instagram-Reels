@@ -120,7 +120,40 @@ Edit `.env`:
 ```ini
 GEMINI_API_KEY=your_gemini_api_key_here
 PEXELS_API_KEY=your_pexels_api_key_here
+GDRIVE_FOLDER_ID=your_gdrive_folder_id_here
 ```
+
+---
+
+## ☁️ Google Drive Background Provider Setup
+
+Reel Forge can automatically scan, stream, and cache footage directly from a Google Drive folder.
+
+### Option A: Direct OAuth Integration
+1. Go to [Google Cloud Console](https://console.cloud.google.com/).
+2. Create or select a GCP project.
+3. Enable the **Google Drive API** under **APIs & Services > Library**.
+4. Navigate to **APIs & Services > Credentials** and click **Create Credentials > OAuth client ID**.
+5. Select Application type: **Desktop app**.
+6. Download the generated client secret JSON, rename it to `credentials.json`, and place it in the project root (it is git-ignored).
+7. Copy the folder ID from your Google Drive folder's URL:
+   `https://drive.google.com/drive/folders/<GDRIVE_FOLDER_ID>` and add to `.env`:
+   ```ini
+   GDRIVE_FOLDER_ID=1a2b3c4d5e...
+   ```
+8. Run the authentication flow once:
+   ```bash
+   reelforge gdrive-login
+   ```
+   This saves an authorized token locally to `token.json` (git-ignored).
+9. In `config.yaml`, switch provider:
+   ```yaml
+   background:
+     provider: "gdrive"
+   ```
+
+> [!NOTE]
+> **Option B (Google Drive for Desktop Sync)**: If you already use Google Drive for Desktop to sync cloud files to your local hard drive, you do **not** need OAuth. Simply keep `background.provider: "local_folder"` and point `paths.backgrounds_dir` in `config.yaml` to your synced local Google Drive folder.
 
 ---
 
