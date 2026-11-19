@@ -54,6 +54,7 @@ class DefaultsConfig(BaseModel):
     count: int = 10
     style: str = "default"
     background_provider: str = "local_folder"
+    clip_reuse_cooldown: int = 10
 
 
 class CanvasConfig(BaseModel):

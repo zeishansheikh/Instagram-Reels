@@ -1,4 +1,4 @@
-"""SQLite state management and deduplication database for Reel Forge."""
+"""SQLite state management, deduplication, and clip tracking database for Reel Forge."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from typing import Optional
 
 
 def init_db(db_path: Path | str = "db/reelforge.db") -> sqlite3.Connection:
-    """Initialize SQLite database with quotes, clips, and reels schemas.
+    """Initialize SQLite database with quotes, clips, reels, and clip segments schemas.
 
     Args:
         db_path: Path to the SQLite database file.
@@ -38,8 +38,16 @@ def init_db(db_path: Path | str = "db/reelforge.db") -> sqlite3.Connection:
             source TEXT NOT NULL,
             source_id TEXT,
             path TEXT NOT NULL UNIQUE,
-            last_used_at TIMESTAMP,
-            use_count INTEGER DEFAULT 0
+            last_used_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            use_count INTEGER DEFAULT 1
+        );
+
+        CREATE TABLE IF NOT EXISTS clip_segments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            path TEXT NOT NULL,
+            start_time REAL NOT NULL,
+            end_time REAL NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
 
         CREATE TABLE IF NOT EXISTS reels (
@@ -63,18 +71,7 @@ def insert_quote(
     theme: str,
     lang: str,
 ) -> int:
-    """Insert a new quote into the quotes table.
-
-    Args:
-        conn: Active sqlite3 connection.
-        text: Quote text.
-        text_hash: SHA-256 hash of normalized quote text.
-        theme: Quote theme.
-        lang: Language code.
-
-    Returns:
-        Inserted quote ID.
-    """
+    """Insert a new quote into the quotes table."""
     with conn:
         cursor = conn.execute(
             """
@@ -117,3 +114,62 @@ def mark_quote_used(conn: sqlite3.Connection, quote_id: int) -> None:
             "UPDATE quotes SET used = used + 1 WHERE id = ?",
             (quote_id,),
         )
+
+
+def record_clip_usage(
+    conn: sqlite3.Connection,
+    path: str,
+    source: str = "local_folder",
+    source_id: Optional[str] = None,
+) -> int:
+    """Track clip selection in the clips table, updating use_count and timestamp."""
+    with conn:
+        cursor = conn.execute(
+            """
+            INSERT INTO clips (source, source_id, path, last_used_at, use_count)
+            VALUES (?, ?, ?, CURRENT_TIMESTAMP, 1)
+            ON CONFLICT(path) DO UPDATE SET
+                last_used_at = CURRENT_TIMESTAMP,
+                use_count = use_count + 1,
+                source_id = COALESCE(excluded.source_id, clips.source_id)
+            """,
+            (source, source_id, str(path)),
+        )
+        # Fetch the clip id
+        row = conn.execute("SELECT id FROM clips WHERE path = ?", (str(path),)).fetchone()
+        return int(row[0]) if row else int(cursor.lastrowid or 0)
+
+
+def get_recently_used_clip_paths(conn: sqlite3.Connection, limit: int = 10) -> list[str]:
+    """Get list of clip paths ordered by most recently used."""
+    cursor = conn.execute(
+        "SELECT path FROM clips ORDER BY last_used_at DESC, id DESC LIMIT ?",
+        (limit,),
+    )
+    return [row[0] for row in cursor.fetchall()]
+
+
+def record_used_segment(
+    conn: sqlite3.Connection,
+    path: str,
+    start_time: float,
+    end_time: float,
+) -> None:
+    """Record a slice segment used from a single long video file."""
+    with conn:
+        conn.execute(
+            """
+            INSERT INTO clip_segments (path, start_time, end_time)
+            VALUES (?, ?, ?)
+            """,
+            (str(path), start_time, end_time),
+        )
+
+
+def get_used_segments(conn: sqlite3.Connection, path: str) -> list[tuple[float, float]]:
+    """Retrieve all previously extracted/used segments for a given video path."""
+    cursor = conn.execute(
+        "SELECT start_time, end_time FROM clip_segments WHERE path = ? ORDER BY start_time ASC",
+        (str(path),),
+    )
+    return [(float(row[0]), float(row[1])) for row in cursor.fetchall()]

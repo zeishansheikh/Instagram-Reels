@@ -22,6 +22,7 @@ defaults:
   count: 10
   style: "default"
   background_provider: "local_folder"
+  clip_reuse_cooldown: 10
 
 canvas:
   width: 1080
