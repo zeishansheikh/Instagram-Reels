@@ -38,5 +38,6 @@ __all__ = [
     "BackgroundProvider",
     "LocalFolderBackgroundProvider",
     "GDriveBackgroundProvider",
+    "PexelsBackgroundProvider",
     "get_background_provider",
 ]
