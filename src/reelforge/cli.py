@@ -7,6 +7,7 @@ import typer
 from typing_extensions import Annotated
 
 from reelforge.config import check_environment, load_config
+from reelforge.quotes.generator import generate_quotes
 from reelforge.render.pipeline import render_preview
 
 app = typer.Typer(
@@ -27,6 +28,34 @@ def check() -> None:
     """Validate system prerequisites (FFmpeg and API credentials)."""
     check_environment(require_gemini=True)
     typer.echo("✅ All prerequisites met: FFmpeg and GEMINI_API_KEY are configured.")
+
+
+@app.command()
+def quotes(
+    count: Annotated[int, typer.Option("--count", "-c", help="Number of quotes to generate")] = 10,
+    theme: Annotated[str, typer.Option("--theme", "-t", help="Quote theme (e.g. hope, solitude, gratitude)")] = "hope",
+    lang: Annotated[str, typer.Option("--lang", "-l", help="Language code: en, roman-urdu, urdu")] = "en",
+) -> None:
+    """Generate, validate, deduplicate, and display quotes using Gemini (Phase 2)."""
+    check_environment(require_gemini=True)
+    clean_lang = lang.lower().strip()
+    if clean_lang not in ("en", "roman-urdu", "roman_urdu", "urdu"):
+        typer.echo(f"❌ Unsupported language '{lang}'. Choose from: en, roman-urdu, urdu", err=True)
+        raise typer.Exit(1)
+
+    typer.echo(f"✨ Generating {count} quotes for theme '{theme}' (lang: {clean_lang})...")
+    generated = generate_quotes(theme=theme, lang=clean_lang, count=count)
+
+    if not generated:
+        typer.echo("⚠️ No quotes could be generated or accepted.")
+        return
+
+    typer.echo(f"\n✅ Accepted {len(generated)} quotes:\n")
+    for idx, q in enumerate(generated, 1):
+        typer.echo(f"[{idx}] \"{q.text}\"")
+        typer.echo(f"    Mood: {q.mood} | Theme: {q.theme}")
+        typer.echo(f"    Caption: {q.caption}")
+        typer.echo(f"    Hashtags: {' '.join(q.hashtags)}\n")
 
 
 @app.command()
@@ -74,7 +103,7 @@ def preview(
 ) -> None:
     """Render a single preview reel from an input clip, quote text, and style."""
     check_environment(require_gemini=False)
-    typer.echo(f"🎬 Rendering preview reel...")
+    typer.echo("🎬 Rendering preview reel...")
     typer.echo(f"   Video: {video}")
     typer.echo(f"   Quote: \"{quote}\"")
     typer.echo(f"   Style: {style}")
