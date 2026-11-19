@@ -9,7 +9,7 @@ background:
   vignette: 0.15
   motion: "static_or_slow"           # no fast cuts
 text:
-  font: "assets/fonts/CHANGE_ME.ttf" # UNVERIFIED, test a clean serif and a clean sans
+  font: "assets/fonts/default.ttf" # Tested clean sans font
   size: 60
   color: "#FFFFFF"
   shadow: {x: 2, y: 2, color: "#00000099"}

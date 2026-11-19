@@ -51,6 +51,7 @@ assets/music/*
 !assets/music/.gitkeep
 assets/fonts/*
 !assets/fonts/.gitkeep
+!assets/fonts/default.ttf
 *.mp4
 *.mov
 *.mkv

@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 import typer
 from typing_extensions import Annotated
 
 from reelforge.config import check_environment, load_config
+from reelforge.render.pipeline import render_preview
 
 app = typer.Typer(
     name="reelforge",
@@ -28,6 +30,65 @@ def check() -> None:
 
 
 @app.command()
+def preview(
+    video: Annotated[
+        Path,
+        typer.Option(
+            "--video",
+            "-v",
+            help="Path to input background video (any resolution/aspect)",
+            exists=True,
+            file_okay=True,
+            dir_okay=False,
+            readable=True,
+        ),
+    ],
+    quote: Annotated[
+        str,
+        typer.Option(
+            "--quote",
+            "-q",
+            help="Quote text to overlay",
+        ),
+    ],
+    style: Annotated[
+        Path,
+        typer.Option(
+            "--style",
+            "-s",
+            help="Path to style YAML file",
+            exists=True,
+            file_okay=True,
+            dir_okay=False,
+            readable=True,
+        ),
+    ] = Path("styles/degraaf.yaml"),
+    output: Annotated[
+        Path,
+        typer.Option(
+            "--output",
+            "-o",
+            help="Destination path for preview video",
+        ),
+    ] = Path("output/preview/preview.mp4"),
+) -> None:
+    """Render a single preview reel from an input clip, quote text, and style."""
+    check_environment(require_gemini=False)
+    typer.echo(f"🎬 Rendering preview reel...")
+    typer.echo(f"   Video: {video}")
+    typer.echo(f"   Quote: \"{quote}\"")
+    typer.echo(f"   Style: {style}")
+
+    rendered_path = render_preview(
+        video_path=video,
+        quote=quote,
+        style_path=style,
+        output_path=output,
+    )
+    typer.echo(f"✨ Successfully rendered preview to: {rendered_path}")
+
+
+@app.command()
 def generate(
     count: Annotated[int, typer.Option("--count", "-c", help="Number of reels to generate")] = 10,
     theme: Annotated[str, typer.Option("--theme", "-t", help="Quote theme (e.g. reflective, sad)")] = "reflective",
@@ -38,16 +99,6 @@ def generate(
     check_environment(require_gemini=True)
     config = load_config()
     typer.echo(f"Starting batch generation: count={count}, theme={theme}, lang={lang}, style={style} (Not yet implemented)")
-
-
-@app.command()
-def preview(
-    quote: Annotated[str, typer.Option("--quote", "-q", help="Quote text for preview reel")] = "Still waters reflect the heavens.",
-    style: Annotated[str, typer.Option("--style", "-s", help="Style preset name")] = "default",
-) -> None:
-    """Render a single test reel for visual review."""
-    check_environment(require_gemini=False)
-    typer.echo(f"Rendering preview reel: quote='{quote}', style={style} (Not yet implemented)")
 
 
 @app.command()
@@ -63,4 +114,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
