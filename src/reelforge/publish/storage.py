@@ -228,3 +228,4 @@ def get_storage_provider(provider_name: Optional[str] = None) -> StorageProvider
         return MockStorage()
     else:
         raise ValueError(f"Unknown storage provider '{chosen}'. Supported: supabase, r2, mock")
+

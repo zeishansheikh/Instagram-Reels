@@ -284,3 +284,4 @@ def test_publish_date_reels_dry_run_and_idempotency(tmp_path: Path) -> None:
     assert "Already published" in rerun_results[0]["reason"]
     # publish_reel should not have been called a second time
     assert mock_pub.publish_reel.call_count == 1
+
