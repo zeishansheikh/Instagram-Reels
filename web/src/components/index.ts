@@ -12,6 +12,9 @@ export * from "./ui/tooltip";
 export * from "./ui/skeleton";
 export * from "./ui/empty-state";
 export * from "./ui/video-tile";
+export * from "./ui/hero-player";
+export * from "./ui/pipeline-timeline";
+export * from "./ui/side-stats";
 export * from "./ui/quote-text";
 export * from "./ui/command-bar";
 
