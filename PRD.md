@@ -13,7 +13,7 @@ A Python tool that automatically produces Instagram-style quote/poetry reels (sa
 ## 3. Non-Goals (v1)
 - No scraping of Pinterest or Instagram.
 - No downloading or embedding of copyrighted songs.
-- No auto-attaching Instagram library audio (not possible via API).
+- No auto-attaching Instagram library audio (not possible via API); royalty-free music is baked in for full-auto mode.
 - No web UI (CLI first).
 - No multi-account management.
 
@@ -54,9 +54,11 @@ For each reel create folder `output/YYYY-MM-DD/reel_001/` containing:
 - `caption.txt` (caption + hashtags)
 - `meta.json` (quote, clip id, style, timestamps)
 
-### FR6 Scheduling / posting (phase 2)
-- Phase 1: manual upload from output folder.
-- Phase 2: Instagram Graph API publish (needs Business/Creator account + Facebook Page + public video URL) or Meta Business Suite manual scheduling.
+### FR6 Auto-publish (in scope, see AUTOPUBLISH.md)
+- `reelforge run-daily` picks a Drive clip, writes a quote, renders, uploads to public storage, publishes via Instagram Graph API, logs, notifies on failure.
+- Requires Professional IG account, Meta developer app, long-lived token with auto-refresh.
+- Full-auto mode bakes royalty-free ambient music into the video (library songs cannot be attached via API). Manual mode (no music + add song in-app) remains available.
+- Safety: dry-run, daily cap, STOP kill switch, idempotent publish log, failure notifications.
 
 ### FR7 CLI
 ```

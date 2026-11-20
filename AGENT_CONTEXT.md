@@ -11,3 +11,5 @@ Read PRD.md, ARCHITECTURE.md, STYLE_GUIDE.md, TASKS.md before writing code.
 - After each phase, explain in simple language what was built and how to run it.
 - When something is ambiguous, ask instead of guessing.
 - Prefer simple solutions (FFmpeg filters) over heavy libraries.
+
+- Also read AUTOPUBLISH.md. Publishing is in scope but must follow its safety rules (dry-run, daily cap, STOP file, idempotent log, notifications). Check current Meta docs before coding the publisher.
