@@ -10,7 +10,7 @@ background:
   motion: "static_or_slow"           # no fast cuts
 text:
   font: "assets/fonts/default.ttf" # Tested clean sans font
-  size: 60
+  size: 50
   color: "#FFFFFF"
   shadow: {x: 2, y: 2, color: "#00000099"}
   position: "calm_area_center"

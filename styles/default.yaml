@@ -15,7 +15,7 @@ background:
   motion: "static_or_slow"
 text:
   font: "assets/fonts/default.ttf"
-  size: 60
+  size: 50
   color: "#FFFFFF"
   shadow:
     x: 2

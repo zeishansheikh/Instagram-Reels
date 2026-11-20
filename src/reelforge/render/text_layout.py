@@ -67,7 +67,8 @@ def layout_text(
     words = clean_text.split()
 
     # Try decreasing font sizes if lines exceed max_lines
-    while font_size >= 32:
+    min_size = min(32, max(4, base_font_size // 2)) if base_font_size < 32 else 32
+    while font_size >= min_size:
         try:
             font = ImageFont.truetype(resolved_font, font_size)
             get_width = lambda s: font.getbbox(s)[2] - font.getbbox(s)[0]

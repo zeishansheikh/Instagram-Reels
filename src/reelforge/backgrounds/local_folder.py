@@ -213,6 +213,20 @@ class LocalFolderBackgroundProvider(BackgroundProvider):
             if meta:
                 valid_clips.append(file_path)
 
+        # Fallback: if no strictly >=1080p clips exist, accept user clips with duration >= 3.0s (e.g. 1024x576, 720p)
+        if not valid_clips:
+            for file_path in all_files:
+                try:
+                    metadata = probe_video(file_path)
+                    if metadata.get("duration", 0.0) >= 3.0:
+                        valid_clips.append(file_path)
+                except Exception:
+                    pass
+            if valid_clips:
+                logger.info(
+                    f"No 1080p clips found in {self.folder}; accepted {len(valid_clips)} user video clips (>=3.0s)."
+                )
+
         if not valid_clips:
             raise FileNotFoundError(
                 f"No clips in {self.folder} passed the quality gate (>=1080p, >=3.0s)."
