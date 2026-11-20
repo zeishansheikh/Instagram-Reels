@@ -84,6 +84,30 @@ class RenderConfig(BaseModel):
     words_per_second: float = 2.2
 
 
+class StorageConfig(BaseModel):
+    """Configuration for public video hosting (Supabase Storage / Cloudflare R2)."""
+
+    provider: str = Field(default_factory=lambda: os.getenv("STORAGE_PROVIDER", "supabase"))
+    supabase_url: Optional[str] = Field(default_factory=lambda: os.getenv("SUPABASE_URL"))
+    supabase_key: Optional[str] = Field(
+        default_factory=lambda: os.getenv("SUPABASE_KEY") or os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+    )
+    supabase_bucket: str = Field(default_factory=lambda: os.getenv("SUPABASE_BUCKET", "reels"))
+    r2_account_id: Optional[str] = Field(default_factory=lambda: os.getenv("R2_ACCOUNT_ID"))
+    r2_access_key_id: Optional[str] = Field(default_factory=lambda: os.getenv("R2_ACCESS_KEY_ID"))
+    r2_secret_access_key: Optional[str] = Field(default_factory=lambda: os.getenv("R2_SECRET_ACCESS_KEY"))
+    r2_bucket_name: str = Field(default_factory=lambda: os.getenv("R2_BUCKET_NAME", "reels"))
+    r2_public_url_prefix: Optional[str] = Field(default_factory=lambda: os.getenv("R2_PUBLIC_URL_PREFIX"))
+
+
+class InstagramConfig(BaseModel):
+    """Configuration for Instagram Graph API publishing."""
+
+    user_id: Optional[str] = Field(default_factory=lambda: os.getenv("IG_USER_ID"))
+    access_token: Optional[str] = Field(default_factory=lambda: os.getenv("IG_ACCESS_TOKEN"))
+    api_version: str = "v21.0"
+
+
 class AppConfig(BaseModel):
     """Root configuration model combining all settings."""
 
@@ -94,6 +118,8 @@ class AppConfig(BaseModel):
     defaults: DefaultsConfig = Field(default_factory=DefaultsConfig)
     canvas: CanvasConfig = Field(default_factory=CanvasConfig)
     render: RenderConfig = Field(default_factory=RenderConfig)
+    storage: StorageConfig = Field(default_factory=StorageConfig)
+    instagram: InstagramConfig = Field(default_factory=InstagramConfig)
 
 
 def load_config(config_path: Path | str = "config.yaml") -> AppConfig:

@@ -241,6 +241,78 @@ def review(
 
 
 @app.command()
+def publish(
+    date: Annotated[
+        str,
+        typer.Option("--date", "-d", help="Date partition to publish from (format: YYYY-MM-DD)"),
+    ],
+    dry_run: Annotated[
+        bool,
+        typer.Option("--dry-run", help="Validate and simulate publish without calling Instagram API"),
+    ] = False,
+    reel: Annotated[
+        Optional[Path],
+        typer.Option("--reel", "-r", help="Optionally target a specific reel directory"),
+    ] = None,
+    output_dir: Annotated[
+        Path,
+        typer.Option("--output-dir", "-o", help="Root output directory"),
+    ] = Path("output"),
+) -> None:
+    """Publish generated reels to Instagram via Meta Graph API."""
+    from reelforge.publish import publish_date_reels
+
+    typer.echo(f"🚀 Initiating publication for date: {date}{' (DRY-RUN)' if dry_run else ''}...")
+
+    try:
+        results = publish_date_reels(
+            date_str=date,
+            output_base=output_dir,
+            dry_run=dry_run,
+            single_reel_dir=reel,
+        )
+    except Exception as exc:
+        typer.echo(f"❌ Publish process error: {exc}", err=True)
+        raise typer.Exit(1)
+
+    table = Table(title=f"Instagram Publish Summary ({date})", show_lines=True)
+    table.add_column("Reel", style="dim", width=12)
+    table.add_column("Status", width=14)
+    table.add_column("Media ID", width=20)
+    table.add_column("Permalink / Details", width=45)
+
+    published_count = 0
+    skipped_count = 0
+    failed_count = 0
+
+    for r in results:
+        status = r["status"]
+        if status in ("published", "dry_run"):
+            published_count += 1
+            st_text = f"[bold green]{status.upper()}[/bold green]"
+            detail = r["permalink"] or r["reason"]
+        elif status == "skipped":
+            skipped_count += 1
+            st_text = "[bold yellow]SKIPPED[/bold yellow]"
+            detail = r["reason"]
+        else:
+            failed_count += 1
+            st_text = "[bold red]FAILED[/bold red]"
+            detail = r["reason"]
+
+        table.add_row(r["reel"], st_text, r["media_id"] or "-", detail)
+
+    console.print()
+    console.print(table)
+    console.print(
+        f"[bold]Total:[/] {len(results)} | "
+        f"[bold green]Published/Valid:[/] {published_count} | "
+        f"[bold yellow]Skipped:[/] {skipped_count} | "
+        f"[bold red]Failed:[/] {failed_count}\n"
+    )
+
+
+@app.command()
 def clean() -> None:
     """Clear temporary render cache and cached footage."""
     typer.echo("Cleaning temporary cache directory... (Not yet implemented)")

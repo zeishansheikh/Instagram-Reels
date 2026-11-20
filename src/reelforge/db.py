@@ -59,6 +59,17 @@ def init_db(db_path: Path | str = "db/reelforge.db") -> sqlite3.Connection:
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             status TEXT DEFAULT 'created'
         );
+
+        CREATE TABLE IF NOT EXISTS publish_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            reel_path TEXT NOT NULL,
+            container_id TEXT,
+            media_id TEXT,
+            status TEXT NOT NULL,
+            permalink TEXT,
+            error TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
         """)
 
     return conn
@@ -218,3 +229,61 @@ def get_clip_id_by_path(conn: sqlite3.Connection, path: str) -> Optional[int]:
     cursor = conn.execute("SELECT id FROM clips WHERE path = ? LIMIT 1", (str(path),))
     row = cursor.fetchone()
     return int(row[0]) if row else None
+
+
+def record_publish_log(
+    conn: sqlite3.Connection,
+    reel_path: str,
+    container_id: Optional[str],
+    media_id: Optional[str],
+    status: str,
+    permalink: Optional[str] = None,
+    error: Optional[str] = None,
+) -> int:
+    """Record a publication attempt into the publish_log table."""
+    with conn:
+        cursor = conn.execute(
+            """
+            INSERT INTO publish_log (reel_path, container_id, media_id, status, permalink, error)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (str(reel_path), container_id, media_id, status, permalink, error),
+        )
+        return int(cursor.lastrowid)
+
+
+def is_reel_published(conn: sqlite3.Connection, reel_path: str) -> bool:
+    """Check if a specific reel folder or video has already been published."""
+    cursor = conn.execute(
+        "SELECT 1 FROM publish_log WHERE reel_path = ? AND status = 'published' LIMIT 1",
+        (str(reel_path),),
+    )
+    return cursor.fetchone() is not None
+
+
+def get_publish_log(conn: sqlite3.Connection, limit: int = 50) -> list[dict]:
+    """Retrieve recent publish log entries."""
+    cursor = conn.execute(
+        """
+        SELECT id, reel_path, container_id, media_id, status, permalink, error, created_at
+        FROM publish_log
+        ORDER BY id DESC
+        LIMIT ?
+        """,
+        (limit,),
+    )
+    rows = cursor.fetchall()
+    return [
+        {
+            "id": r[0],
+            "reel_path": r[1],
+            "container_id": r[2],
+            "media_id": r[3],
+            "status": r[4],
+            "permalink": r[5],
+            "error": r[6],
+            "created_at": r[7],
+        }
+        for r in rows
+    ]
+
