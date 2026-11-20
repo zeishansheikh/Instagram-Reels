@@ -1,30 +1,30 @@
 "use client";
 
 import * as React from "react";
-import { Play, Eye, Clock, CheckCircle } from "lucide-react";
+import { Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Badge, StatusDot } from "./badge";
+import { StatusDot } from "./status-dot";
 
 export interface VideoTileProps {
-  id?: string | number;
-  title?: string;
   quote: string;
-  mood?: string;
   duration?: number | string;
+  resolution?: string;
   videoSrc?: string;
   posterSrc?: string;
-  status?: "ready" | "published" | "rendering" | "rejected";
+  status?: "success" | "warning" | "error" | "neutral";
+  statusText?: string;
   onClick?: () => void;
   className?: string;
 }
 
 export function VideoTile({
   quote,
-  mood = "nature",
-  duration = "08.40s",
+  duration = "11.5s",
+  resolution = "1080×1920",
   videoSrc,
   posterSrc,
-  status = "ready",
+  status = "neutral",
+  statusText,
   onClick,
   className,
 }: VideoTileProps) {
@@ -46,21 +46,14 @@ export function VideoTile({
     }
   };
 
-  const statusMap = {
-    ready: { label: "Ready", variant: "mist" as const },
-    published: { label: "Published", variant: "mist" as const },
-    rendering: { label: "Rendering", variant: "alpenglow" as const },
-    rejected: { label: "Rejected", variant: "error" as const },
-  };
-
   return (
     <div
       onClick={onClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       className={cn(
-        "group relative aspect-[9/16] w-full max-w-[280px] rounded-[10px] overflow-hidden bg-canvas-card border border-border-subtle shadow-card cursor-pointer select-none transition-all duration-300",
-        "hover:border-border-focus/60 hover:shadow-floating",
+        "group relative aspect-[9/16] w-full max-w-[280px] rounded-lg overflow-hidden bg-surface border border-border cursor-pointer select-none transition-fast flex flex-col justify-end",
+        "hover:border-border-strong",
         className
       )}
     >
@@ -73,56 +66,36 @@ export function VideoTile({
           muted
           playsInline
           loop
-          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
         />
       ) : (
-        /* Cinematic abstract fallback if no source provided */
-        <div className="absolute inset-0 w-full h-full bg-gradient-to-b from-[#1C1A18] via-[#151312] to-[#0E0C0B] transition-transform duration-700 group-hover:scale-105">
-          <div className="absolute inset-0 opacity-40 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-alpenglow/20 via-transparent to-transparent" />
+        /* Subtle architectural background if no video source */
+        <div className="absolute inset-0 w-full h-full bg-subtle flex items-center justify-center p-4">
+          <p className="font-serif italic text-xs text-ink-muted text-center line-clamp-3">
+            "{quote}"
+          </p>
         </div>
       )}
 
-      {/* Optical Darken & Vignette Overlay */}
-      <div
-        className={cn(
-          "absolute inset-0 bg-black/40 transition-opacity duration-300 pointer-events-none",
-          isPlaying ? "opacity-20" : "opacity-50"
-        )}
-      />
+      {/* Subtle Bottom Scrim for Meta Row Legibility */}
+      <div className="absolute inset-0 bg-gradient-to-t from-[#16150F]/70 via-transparent to-transparent pointer-events-none" />
 
-      {/* Top Header Badges */}
-      <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-10">
-        <Badge variant={statusMap[status].variant} dot pulse={status === "rendering"}>
-          {statusMap[status].label}
-        </Badge>
-        <div className="flex items-center gap-1 text-[11px] font-mono text-ink-primary/90 bg-black/50 backdrop-blur-md px-2 py-0.5 rounded-[4px] border border-white/10">
-          <Clock className="w-3 h-3 text-ink-muted" />
-          <span>{duration}</span>
+      {/* Small Meta Row at Bottom */}
+      <div className="relative z-10 p-3 pt-6 flex items-center justify-between text-[11px] font-mono text-white/95">
+        <div className="flex items-center gap-1.5">
+          <StatusDot status={status} />
+          {statusText && <span className="font-sans font-medium text-[10px]">{statusText}</span>}
         </div>
-      </div>
 
-      {/* Center Hover Play Icon Indicator */}
-      <div
-        className={cn(
-          "absolute inset-0 flex items-center justify-center transition-opacity duration-300 pointer-events-none z-10",
-          isPlaying ? "opacity-0" : "opacity-40 group-hover:opacity-90"
-        )}
-      >
-        <div className="w-10 h-10 rounded-full bg-black/60 border border-white/20 backdrop-blur-md flex items-center justify-center text-ink-primary">
-          <Play className="w-4 h-4 ml-0.5 fill-current" />
+        <div className="flex items-center gap-2 text-white/80">
+          <span>{resolution}</span>
+          <span>•</span>
+          <div className="flex items-center gap-1">
+            <Clock className="w-3 h-3 text-white/70" />
+            <span>{duration}</span>
+          </div>
         </div>
-      </div>
-
-      {/* Bottom Quote & Mood Metadata */}
-      <div className="absolute bottom-0 inset-x-0 p-4 bg-gradient-to-t from-black/90 via-black/60 to-transparent z-10 flex flex-col gap-2">
-        <div className="text-[10px] font-mono uppercase tracking-widest text-alpenglow flex items-center gap-1.5">
-          <span>{mood}</span>
-        </div>
-        <p className="font-serif italic text-sm text-ink-primary leading-snug line-clamp-3 text-balance">
-          &ldquo;{quote}&rdquo;
-        </p>
       </div>
     </div>
   );
 }
-

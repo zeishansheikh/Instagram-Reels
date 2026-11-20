@@ -8,39 +8,24 @@ import {
   RefreshCw,
   Send,
   Trash2,
-  Layers,
-  Film,
-  Clock,
   AlertCircle,
-  Eye,
-  Sliders,
-  Maximize2,
   ExternalLink,
-  ChevronRight,
   ShieldCheck,
-  Compass,
 } from "lucide-react";
 
 import {
   Button,
-  IconButton,
   Badge,
   StatusDot,
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  Modal,
-  ModalTrigger,
-  ModalContent,
-  ModalClose,
+  Dialog,
+  DialogContent,
+  DialogFooter,
   TooltipProvider,
-  Tooltip,
   ToastProvider,
   useToast,
   Skeleton,
   EmptyState,
-  QuoteText,
+  QuoteBlock,
   CommandBar,
   HeroPlayer,
   PipelineTimeline,
@@ -55,7 +40,6 @@ function TodayScreenContent() {
   // Screen View States: ready (default live hero), loading (skeletons), empty, failure
   const [screenState, setScreenState] = React.useState<ScreenState>("ready");
   const [isGenerateModalOpen, setIsGenerateModalOpen] = React.useState(false);
-  const [isGenerating, setIsGenerating] = React.useState(false);
   const [activePreset, setActivePreset] = React.useState("degraaf");
   const [reelStatus, setReelStatus] = React.useState<"ready" | "queued" | "rendering" | "published" | "discarded">("queued");
 
@@ -68,7 +52,6 @@ function TodayScreenContent() {
   // Today's Featured Reel Data
   const currentReel = {
     id: 3,
-    datePartition: "2026-11-20",
     theme: "Hope",
     mood: "Snow & Winter Light",
     quote:
@@ -87,12 +70,7 @@ function TodayScreenContent() {
     posterSrc: "/output/2026-11-20/reel_001/thumbnail.jpg",
     duration: 11.55,
     resolution: "1080 × 1920",
-    fps: 30,
     contrastRatio: 0.22,
-    safeMargin: "Inside 90px Margin",
-    colorOverlay: "42% Basalt Vignette",
-    audioMode: "Royalty-Free Baked Audio",
-    fileSize: "4.78 MB",
   };
 
   const handleApprove = () => {
@@ -125,7 +103,7 @@ function TodayScreenContent() {
     addToast({
       type: "info",
       title: "Publishing to Instagram",
-      description: "Uploading MP4 to Supabase storage and creating Meta Graph container...",
+      description: "Uploading MP4 to storage and creating Meta Graph container...",
     });
     setTimeout(() => {
       setReelStatus("published");
@@ -139,7 +117,6 @@ function TodayScreenContent() {
 
   const handleRunGenerate = () => {
     setIsGenerateModalOpen(false);
-    setIsGenerating(true);
     addToast({
       type: "info",
       title: "Batch Generation Initiated",
@@ -147,7 +124,6 @@ function TodayScreenContent() {
     });
 
     setTimeout(() => {
-      setIsGenerating(false);
       setScreenState("ready");
       addToast({
         type: "success",
@@ -158,13 +134,12 @@ function TodayScreenContent() {
   };
 
   return (
-    <div className="min-h-screen bg-canvas text-ink-primary font-sans relative pb-24">
+    <div className="min-h-screen bg-page text-ink-primary font-sans relative pb-24">
       {/* 1. Floating Top Command Bar */}
       <CommandBar
         activePreset={activePreset}
         isPublishReady={true}
         onGenerate={() => setIsGenerateModalOpen(true)}
-        onReview={() => setScreenState("ready")}
         onSearch={() =>
           addToast({
             type: "info",
@@ -172,24 +147,23 @@ function TodayScreenContent() {
             description: "Opening reel archive and command palette...",
           })
         }
-        className="animate-stagger-1"
       />
 
       {/* Main Canvas Container */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-8 space-y-10">
         {/* Top Editorial Kicker & Date */}
-        <section className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border-subtle/50 pb-6 animate-stagger-1">
+        <section className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border pb-6">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="font-mono text-[11px] uppercase tracking-widest text-alpenglow">
+              <span className="font-mono text-[11px] uppercase tracking-widest text-moss font-medium">
                 Issue #042 · Today's Curation
               </span>
-              <span className="text-border-medium">•</span>
+              <span className="text-ink-muted">•</span>
               <span className="font-mono text-[11px] uppercase tracking-widest text-ink-muted">
                 Dusk Edition
               </span>
             </div>
-            <h1 className="font-serif italic text-3xl sm:text-4xl lg:text-5xl font-light text-ink-primary tracking-tight">
+            <h1 className="font-serif italic text-3xl sm:text-4xl lg:text-5xl font-normal text-ink-primary tracking-tight">
               Quiet Solitude in Winter
             </h1>
           </div>
@@ -207,16 +181,16 @@ function TodayScreenContent() {
 
             <Link
               href="/design"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-canvas-card border border-border-subtle hover:border-border-focus text-xs font-mono text-ink-secondary hover:text-ink-primary transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-surface border border-border hover:border-border-strong text-xs font-mono text-ink-secondary hover:text-ink-primary transition-fast"
             >
               <span>Design System</span>
-              <ExternalLink className="w-3 h-3 text-alpenglow" />
+              <ExternalLink className="w-3 h-3 text-moss" />
             </Link>
           </div>
         </section>
 
-        {/* 2. Side / Header Stats Strip (Kept minimal: posts this week, queue size, token health) */}
-        <section className="animate-stagger-2">
+        {/* 2. Side / Header Stats Strip */}
+        <section>
           <SideStats
             postsThisWeek={5}
             totalWeeklyTarget={7}
@@ -234,32 +208,32 @@ function TodayScreenContent() {
         {screenState === "loading" && (
           <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start py-4">
             <div className="lg:col-span-5 flex justify-center">
-              <Skeleton className="aspect-[9/16] w-full max-w-[360px] rounded-[18px]" />
+              <Skeleton className="aspect-[9/16] w-full max-w-[360px] rounded-lg" />
             </div>
             <div className="lg:col-span-7 space-y-6 pt-2">
-              <Skeleton className="w-32 h-4 rounded" />
+              <Skeleton className="w-32 h-4 rounded-sm" />
               <div className="space-y-3">
-                <Skeleton className="w-full h-10 rounded" />
-                <Skeleton className="w-5/6 h-10 rounded" />
-                <Skeleton className="w-4/6 h-10 rounded" />
+                <Skeleton className="w-full h-10 rounded-sm" />
+                <Skeleton className="w-5/6 h-10 rounded-sm" />
+                <Skeleton className="w-4/6 h-10 rounded-sm" />
               </div>
-              <Skeleton className="w-full h-24 rounded-[12px]" />
+              <Skeleton className="w-full h-24 rounded-md" />
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <Skeleton className="h-16 rounded-[8px]" />
-                <Skeleton className="h-16 rounded-[8px]" />
-                <Skeleton className="h-16 rounded-[8px]" />
+                <Skeleton className="h-16 rounded-sm" />
+                <Skeleton className="h-16 rounded-sm" />
+                <Skeleton className="h-16 rounded-sm" />
               </div>
               <div className="flex gap-3 pt-4">
-                <Skeleton className="w-36 h-10 rounded-full" />
-                <Skeleton className="w-32 h-10 rounded-full" />
+                <Skeleton className="w-36 h-9 rounded-sm" />
+                <Skeleton className="w-32 h-9 rounded-sm" />
               </div>
             </div>
           </section>
         )}
 
-        {/* B. EMPTY STATE (No Reel for Today Yet) */}
+        {/* B. EMPTY STATE */}
         {screenState === "empty" && (
-          <section className="p-8 md:p-16 rounded-[20px] bg-canvas-surface/60 border border-border-subtle shadow-card text-center">
+          <section className="p-8 md:p-16 rounded-md bg-surface border border-border text-center">
             <EmptyState
               title="The Canvas is Clear"
               description="No reel is currently queued for today. Trigger the Gemini quote generator to match winter footage and render your next aesthetic reel."
@@ -277,11 +251,11 @@ function TodayScreenContent() {
           </section>
         )}
 
-        {/* C. FAILURE STATE (Render/Contrast Error) */}
+        {/* C. FAILURE STATE */}
         {screenState === "failure" && (
-          <section className="p-6 md:p-8 rounded-[16px] bg-canvas-surface border border-duskerror/40 shadow-card space-y-5">
+          <section className="p-6 md:p-8 rounded-md bg-surface border border-status-error/30 space-y-5">
             <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-full bg-duskerror/15 border border-duskerror/30 flex items-center justify-center shrink-0 text-duskerror">
+              <div className="w-10 h-10 rounded-full bg-status-error/15 border border-status-error/30 flex items-center justify-center shrink-0 text-status-error">
                 <AlertCircle className="w-5 h-5" />
               </div>
               <div className="space-y-1">
@@ -295,8 +269,8 @@ function TodayScreenContent() {
               </div>
             </div>
 
-            <div className="p-4 rounded-[10px] bg-canvas-card border border-border-subtle text-xs font-mono space-y-1 text-ink-secondary">
-              <p><span className="text-ink-muted">Clip:</span> assets/backgrounds/WhatsApp Video 2026-11-20 at 6.36.16 AM.mp4</p>
+            <div className="p-4 rounded-sm bg-subtle border border-border text-xs font-mono space-y-1 text-ink-secondary">
+              <p><span className="text-ink-muted">Clip:</span> assets/backgrounds/winter_snow.mp4</p>
               <p><span className="text-ink-muted">Calculated Contrast:</span> 0.091 (Required: &gt; 0.180)</p>
               <p><span className="text-ink-muted">Recommended Remedy:</span> Increase darken overlay to 55% or rotate background clip.</p>
             </div>
@@ -319,7 +293,7 @@ function TodayScreenContent() {
               </Button>
               <Button
                 size="sm"
-                variant="ghost"
+                variant="secondary"
                 onClick={() => {
                   setScreenState("ready");
                   handleRegenerate();
@@ -333,8 +307,8 @@ function TodayScreenContent() {
 
         {/* D. LIVE / READY STATE: EDITORIAL HERO SPREAD */}
         {screenState === "ready" && (
-          <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start animate-stagger-3">
-            {/* Left Column: Big 9:16 Cinematic Video Player */}
+          <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+            {/* Left Column: Big 9:16 Video Player */}
             <div className="lg:col-span-5 flex flex-col items-center">
               <HeroPlayer
                 videoSrc={currentReel.videoSrc}
@@ -351,36 +325,33 @@ function TodayScreenContent() {
             <div className="lg:col-span-7 space-y-6 pt-1">
               {/* Badges / Mood / Theme */}
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="alpenglow">{currentReel.theme}</Badge>
-                <Badge variant="mist">{currentReel.mood}</Badge>
-                <span className="font-mono text-xs text-ink-muted bg-canvas-card px-2.5 py-0.5 rounded-[4px] border border-border-subtle">
+                <Badge variant="moss">{currentReel.theme}</Badge>
+                <Badge variant="default">{currentReel.mood}</Badge>
+                <span className="font-mono text-xs text-ink-muted bg-subtle px-2 py-0.5 rounded-sm border border-border">
                   Style: {activePreset}
                 </span>
-                <span className="font-mono text-xs text-ink-muted bg-canvas-card px-2.5 py-0.5 rounded-[4px] border border-border-subtle">
+                <span className="font-mono tabular-nums text-xs text-ink-muted bg-subtle px-2 py-0.5 rounded-sm border border-border">
                   {currentReel.duration}s
                 </span>
               </div>
 
               {/* Large Editorial Serif Quote */}
-              <div className="space-y-3">
-                <QuoteText
-                  author="Reel Forge · Autonomous Curation"
-                  theme={currentReel.theme.toLowerCase()}
-                  size="xl"
-                  className="text-2xl sm:text-3xl lg:text-4xl text-ink-primary font-light leading-[1.3] tracking-tight"
-                >
-                  {currentReel.quote}
-                </QuoteText>
-              </div>
+              <QuoteBlock
+                size="xl"
+                author="Reel Forge · Autonomous Curation"
+                theme={currentReel.theme.toLowerCase()}
+              >
+                {currentReel.quote}
+              </QuoteBlock>
 
               {/* Instagram Caption & Hashtags Block */}
-              <div className="p-4 rounded-[12px] bg-canvas-surface/80 border border-border-subtle space-y-3 shadow-card">
+              <div className="p-4 rounded-md bg-surface border border-border space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-[10px] uppercase tracking-wider text-ink-muted">
                     Instagram Caption
                   </span>
-                  <span className="font-mono text-[10px] text-mist">
-                    Character Count: {currentReel.caption.length}
+                  <span className="font-mono tabular-nums text-[10px] text-moss font-medium">
+                    {currentReel.caption.length} chars
                   </span>
                 </div>
 
@@ -392,7 +363,7 @@ function TodayScreenContent() {
                   {currentReel.hashtags.map((tag) => (
                     <span
                       key={tag}
-                      className="font-mono text-[11px] text-alpenglow/90 bg-alpenglow-glow/20 px-2 py-0.5 rounded-[4px]"
+                      className="font-mono text-[11px] text-moss bg-moss-subtle border border-moss/20 px-2 py-0.5 rounded-sm"
                     >
                       {tag}
                     </span>
@@ -402,27 +373,27 @@ function TodayScreenContent() {
 
               {/* Technical Preflight Quality Matrix */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 font-mono text-xs">
-                <div className="p-3 rounded-[8px] bg-canvas-card/60 border border-border-subtle space-y-1">
+                <div className="p-3 rounded-sm bg-subtle border border-border space-y-1">
                   <span className="text-[10px] uppercase text-ink-muted block">
                     Contrast Check
                   </span>
-                  <div className="flex items-center gap-1.5 text-mist">
-                    <StatusDot status="mist" />
-                    <span>0.22 (Optimal)</span>
+                  <div className="flex items-center gap-1.5 text-status-success font-medium">
+                    <StatusDot status="success" />
+                    <span className="tabular-nums">0.22 (Optimal)</span>
                   </div>
                 </div>
 
-                <div className="p-3 rounded-[8px] bg-canvas-card/60 border border-border-subtle space-y-1">
+                <div className="p-3 rounded-sm bg-subtle border border-border space-y-1">
                   <span className="text-[10px] uppercase text-ink-muted block">
                     Safe Margin
                   </span>
-                  <div className="flex items-center gap-1.5 text-mist">
+                  <div className="flex items-center gap-1.5 text-status-success font-medium">
                     <ShieldCheck className="w-3.5 h-3.5" />
                     <span>90px Compliant</span>
                   </div>
                 </div>
 
-                <div className="p-3 rounded-[8px] bg-canvas-card/60 border border-border-subtle space-y-1 col-span-2 sm:col-span-1">
+                <div className="p-3 rounded-sm bg-subtle border border-border space-y-1 col-span-2 sm:col-span-1">
                   <span className="text-[10px] uppercase text-ink-muted block">
                     Resolution
                   </span>
@@ -433,37 +404,37 @@ function TodayScreenContent() {
               </div>
 
               {/* Editorial Decision Buttons */}
-              <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-border-subtle/50">
+              <div className="flex flex-wrap items-center gap-2.5 pt-4 border-t border-border">
                 <Button
                   size="md"
                   variant="primary"
                   onClick={handlePublishNow}
-                  icon={<Send className="w-4 h-4" />}
+                  icon={<Send className="w-3.5 h-3.5" />}
                 >
                   Publish Now
                 </Button>
 
                 <Button
                   size="md"
-                  variant="ghost"
+                  variant="secondary"
                   onClick={handleApprove}
-                  icon={<Check className="w-4 h-4 text-mist" />}
+                  icon={<Check className="w-3.5 h-3.5 text-status-success" />}
                 >
                   Approve for 18:00
                 </Button>
 
                 <Button
                   size="md"
-                  variant="ghost"
+                  variant="secondary"
                   onClick={handleRegenerate}
-                  icon={<RefreshCw className="w-4 h-4 text-alpenglow" />}
+                  icon={<RefreshCw className="w-3.5 h-3.5" />}
                 >
                   Regenerate Clip
                 </Button>
 
                 <Button
                   size="md"
-                  variant="quiet"
+                  variant="ghost"
                   onClick={() => {
                     setReelStatus("discarded");
                     addToast({
@@ -472,7 +443,7 @@ function TodayScreenContent() {
                       description: "Moved to output/_rejected/ partition.",
                     });
                   }}
-                  icon={<Trash2 className="w-4 h-4 text-ink-muted" />}
+                  icon={<Trash2 className="w-3.5 h-3.5 text-status-error" />}
                 >
                   Discard
                 </Button>
@@ -482,28 +453,28 @@ function TodayScreenContent() {
         )}
 
         {/* 4. CALM PIPELINE TIMELINE UNDER THE HERO */}
-        <section className="animate-stagger-4">
+        <section>
           <PipelineTimeline />
         </section>
 
-        {/* 5. FOOTER & STATE SWITCHER (FOR PREVIEWING ALL DESIGNED STATES) */}
-        <footer className="pt-8 border-t border-border-subtle/40 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-ink-muted animate-stagger-5">
+        {/* 5. FOOTER & STATE SWITCHER */}
+        <footer className="pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-ink-muted">
           <div className="flex items-center gap-2">
             <span>Reel Forge v0.1.0</span>
             <span>•</span>
-            <span className="text-alpenglow">Dusk Editorial UI</span>
+            <span className="text-moss font-medium">Light Editorial</span>
           </div>
 
           {/* Interactive State Switcher for reviewer inspection */}
-          <div className="flex items-center gap-1.5 p-1 rounded-full bg-canvas-card border border-border-subtle">
+          <div className="flex items-center gap-1.5 p-1 rounded-sm bg-surface border border-border">
             <span className="text-[10px] text-ink-muted px-2 uppercase tracking-widest">
               State:
             </span>
             <button
               onClick={() => setScreenState("ready")}
-              className={`px-2.5 py-1 rounded-full text-[11px] transition-colors ${
+              className={`px-2.5 py-1 rounded-sm text-[11px] transition-fast ${
                 screenState === "ready"
-                  ? "bg-alpenglow text-white font-medium"
+                  ? "bg-moss text-white font-medium"
                   : "text-ink-secondary hover:text-ink-primary"
               }`}
             >
@@ -511,9 +482,9 @@ function TodayScreenContent() {
             </button>
             <button
               onClick={() => setScreenState("loading")}
-              className={`px-2.5 py-1 rounded-full text-[11px] transition-colors ${
+              className={`px-2.5 py-1 rounded-sm text-[11px] transition-fast ${
                 screenState === "loading"
-                  ? "bg-alpenglow text-white font-medium"
+                  ? "bg-moss text-white font-medium"
                   : "text-ink-secondary hover:text-ink-primary"
               }`}
             >
@@ -521,9 +492,9 @@ function TodayScreenContent() {
             </button>
             <button
               onClick={() => setScreenState("empty")}
-              className={`px-2.5 py-1 rounded-full text-[11px] transition-colors ${
+              className={`px-2.5 py-1 rounded-sm text-[11px] transition-fast ${
                 screenState === "empty"
-                  ? "bg-alpenglow text-white font-medium"
+                  ? "bg-moss text-white font-medium"
                   : "text-ink-secondary hover:text-ink-primary"
               }`}
             >
@@ -531,9 +502,9 @@ function TodayScreenContent() {
             </button>
             <button
               onClick={() => setScreenState("failure")}
-              className={`px-2.5 py-1 rounded-full text-[11px] transition-colors ${
+              className={`px-2.5 py-1 rounded-sm text-[11px] transition-fast ${
                 screenState === "failure"
-                  ? "bg-duskerror text-white font-medium"
+                  ? "bg-status-error text-white font-medium"
                   : "text-ink-secondary hover:text-ink-primary"
               }`}
             >
@@ -543,9 +514,9 @@ function TodayScreenContent() {
         </footer>
       </main>
 
-      {/* GENERATE BATCH MODAL */}
-      <Modal open={isGenerateModalOpen} onOpenChange={setIsGenerateModalOpen}>
-        <ModalContent title="Generate Quote Reels" description="Configure autonomous batch generation parameters.">
+      {/* GENERATE BATCH DIALOG */}
+      <Dialog open={isGenerateModalOpen} onOpenChange={setIsGenerateModalOpen}>
+        <DialogContent title="Generate Quote Reels" description="Configure autonomous batch generation parameters.">
           <div className="space-y-4 py-2 text-xs font-sans text-ink-secondary">
             {/* Count Selector */}
             <div className="space-y-1.5">
@@ -557,10 +528,10 @@ function TodayScreenContent() {
                   <button
                     key={cnt}
                     onClick={() => setGenCount(cnt)}
-                    className={`py-2 rounded-[8px] border font-mono text-xs transition-colors ${
+                    className={`py-2 rounded-sm border font-mono text-xs transition-fast ${
                       genCount === cnt
-                        ? "bg-alpenglow text-white border-alpenglow"
-                        : "bg-canvas-card border-border-subtle text-ink-secondary hover:border-border-medium"
+                        ? "bg-moss text-white border-moss"
+                        : "bg-surface border-border text-ink-secondary hover:border-border-strong"
                     }`}
                   >
                     {cnt} Reels
@@ -586,10 +557,10 @@ function TodayScreenContent() {
                   <button
                     key={th.id}
                     onClick={() => setGenTheme(th.id)}
-                    className={`py-2 px-2.5 rounded-[8px] border text-xs text-left transition-colors ${
+                    className={`py-2 px-2.5 rounded-sm border text-xs text-left transition-fast ${
                       genTheme === th.id
-                        ? "bg-alpenglow/15 border-alpenglow text-ink-primary font-medium"
-                        : "bg-canvas-card border-border-subtle text-ink-secondary hover:border-border-medium"
+                        ? "bg-moss-subtle border-moss/40 text-ink-primary font-medium"
+                        : "bg-surface border-border text-ink-secondary hover:border-border-strong"
                     }`}
                   >
                     {th.label}
@@ -606,9 +577,9 @@ function TodayScreenContent() {
               <div className="grid grid-cols-2 gap-2">
                 {[
                   { id: "degraaf", name: "De Graaf (Editorial Serif)" },
-                  { id: "serif_quiet", name: "Serif Quiet (Fraunces)" },
+                  { id: "serif_quiet", name: "Serif Quiet (Newsreader)" },
                   { id: "sans_minimal", name: "Sans Minimal (Clean)" },
-                  { id: "random", name: "Random Rotation" },
+                  { id: "random", name: "Random Preset Rotation" },
                 ].map((st) => (
                   <button
                     key={st.id}
@@ -616,10 +587,10 @@ function TodayScreenContent() {
                       setGenStyle(st.id);
                       setActivePreset(st.id);
                     }}
-                    className={`py-2 px-2.5 rounded-[8px] border text-xs text-left transition-colors ${
+                    className={`py-2 px-2.5 rounded-sm border text-xs text-left transition-fast ${
                       genStyle === st.id
-                        ? "bg-alpenglow/15 border-alpenglow text-ink-primary font-medium"
-                        : "bg-canvas-card border-border-subtle text-ink-secondary hover:border-border-medium"
+                        ? "bg-moss-subtle border-moss/40 text-ink-primary font-medium"
+                        : "bg-surface border-border text-ink-secondary hover:border-border-strong"
                     }`}
                   >
                     {st.name}
@@ -642,10 +613,10 @@ function TodayScreenContent() {
                   <button
                     key={prov.id}
                     onClick={() => setGenProvider(prov.id)}
-                    className={`py-2 px-2 rounded-[8px] border text-xs text-center transition-colors ${
+                    className={`py-2 px-2 rounded-sm border text-xs text-center transition-fast ${
                       genProvider === prov.id
-                        ? "bg-alpenglow/15 border-alpenglow text-ink-primary font-medium"
-                        : "bg-canvas-card border-border-subtle text-ink-secondary hover:border-border-medium"
+                        ? "bg-moss-subtle border-moss/40 text-ink-primary font-medium"
+                        : "bg-surface border-border text-ink-secondary hover:border-border-strong"
                     }`}
                   >
                     {prov.name}
@@ -654,9 +625,9 @@ function TodayScreenContent() {
               </div>
             </div>
 
-            <div className="pt-3 border-t border-border-subtle/50 flex items-center justify-end gap-2">
+            <DialogFooter>
               <Button
-                variant="quiet"
+                variant="ghost"
                 size="sm"
                 onClick={() => setIsGenerateModalOpen(false)}
               >
@@ -670,10 +641,10 @@ function TodayScreenContent() {
               >
                 Generate {genCount} Reels
               </Button>
-            </div>
+            </DialogFooter>
           </div>
-        </ModalContent>
-      </Modal>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

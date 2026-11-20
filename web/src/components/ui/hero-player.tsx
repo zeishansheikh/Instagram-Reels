@@ -3,15 +3,13 @@
 import * as React from "react";
 import {
   Play,
-  Pause,
   Volume2,
   VolumeX,
   Maximize2,
-  RotateCcw,
   Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Badge, StatusDot } from "./badge";
+import { Badge } from "./badge";
 
 export interface HeroPlayerProps {
   videoSrc?: string;
@@ -25,7 +23,6 @@ export interface HeroPlayerProps {
 export function HeroPlayer({
   videoSrc,
   posterSrc,
-  title = "Today's Featured Reel",
   duration = 11.55,
   status = "ready",
   className,
@@ -36,7 +33,6 @@ export function HeroPlayer({
   const [totalDuration, setTotalDuration] = React.useState(
     typeof duration === "number" ? duration : 11.55
   );
-  const [isHovered, setIsHovered] = React.useState(false);
   const [showControls, setShowControls] = React.useState(true);
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -95,7 +91,6 @@ export function HeroPlayer({
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
-  // Autohide controls after inactivity
   const handleMouseMove = () => {
     setShowControls(true);
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -105,10 +100,10 @@ export function HeroPlayer({
   };
 
   const statusConfig = {
-    ready: { label: "Ready to Publish", variant: "mist" as const },
-    queued: { label: "Queued for 18:00", variant: "mist" as const },
-    rendering: { label: "Rendering", variant: "alpenglow" as const },
-    published: { label: "Published on Instagram", variant: "mist" as const },
+    ready: { label: "Ready to Publish", variant: "moss" as const },
+    queued: { label: "Queued for 18:00", variant: "warning" as const },
+    rendering: { label: "Rendering", variant: "warning" as const },
+    published: { label: "Published on Instagram", variant: "moss" as const },
     discarded: { label: "Discarded", variant: "error" as const },
   };
 
@@ -118,27 +113,19 @@ export function HeroPlayer({
   return (
     <div
       ref={containerRef}
-      onMouseEnter={() => {
-        setIsHovered(true);
-        setShowControls(true);
-      }}
+      onMouseEnter={() => setShowControls(true)}
       onMouseLeave={() => {
-        setIsHovered(false);
         if (isPlaying) setShowControls(false);
       }}
       onMouseMove={handleMouseMove}
       onClick={togglePlay}
       className={cn(
-        "group relative aspect-[9/16] w-full max-w-[340px] sm:max-w-[380px] mx-auto rounded-[18px] overflow-hidden bg-canvas-surface border border-border-medium select-none cursor-pointer transition-all duration-500",
-        "shadow-floating hover:border-border-focus/70",
+        "group relative aspect-[9/16] w-full max-w-[340px] sm:max-w-[380px] mx-auto rounded-lg overflow-hidden bg-surface border border-border select-none cursor-pointer transition-fast",
+        "hover:border-border-strong",
         className
       )}
-      style={{
-        boxShadow: "0 24px 60px -12px rgba(0, 0, 0, 0.85), 0 0 40px -8px rgba(232, 140, 100, 0.08)",
-      }}
     >
-      {/* Film Grain Texture Backdrop */}
-      <div className="absolute inset-0 z-0 bg-canvas-card">
+      <div className="absolute inset-0 z-0 bg-subtle">
         {videoSrc ? (
           <video
             ref={videoRef}
@@ -151,108 +138,89 @@ export function HeroPlayer({
             onEnded={() => setIsPlaying(false)}
             onPlay={() => setIsPlaying(true)}
             onPause={() => setIsPlaying(false)}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.01]"
           />
         ) : (
-          /* High-aesthetic nature cinematic placeholder */
-          <div className="w-full h-full bg-gradient-to-b from-[#1C1A18] via-[#141211] to-[#0D0B0A] flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
-            <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-alpenglow/10 blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-mist/10 blur-3xl pointer-events-none" />
-            <div className="relative z-10 space-y-3">
-              <div className="w-12 h-12 rounded-full bg-canvas-card border border-border-subtle flex items-center justify-center mx-auto text-alpenglow">
-                <Sparkles className="w-5 h-5 animate-pulse-mist" />
+          <div className="w-full h-full bg-subtle flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
+            <div className="relative z-10 space-y-2">
+              <div className="w-10 h-10 rounded-sm bg-surface border border-border flex items-center justify-center mx-auto text-moss">
+                <Sparkles className="w-4 h-4" />
               </div>
-              <p className="font-serif italic text-base text-ink-primary">
-                Preview Mode
+              <p className="font-serif italic text-sm text-ink-primary">
+                Preview Reel
               </p>
               <p className="text-xs font-sans text-ink-muted max-w-[200px]">
-                Click to play or inspect live render stream.
+                Click to stream video or inspect live timeline.
               </p>
             </div>
           </div>
         )}
       </div>
 
-      {/* Optical Vignette Overlay */}
+      {/* Top Header Overlay */}
       <div
         className={cn(
-          "absolute inset-0 pointer-events-none transition-opacity duration-300",
-          isPlaying ? "opacity-20 bg-gradient-to-t from-black/80 via-transparent to-black/40" : "opacity-60 bg-gradient-to-t from-black/90 via-black/20 to-black/60"
-        )}
-      />
-
-      {/* Top Header Floating Overlay */}
-      <div
-        className={cn(
-          "absolute top-4 inset-x-4 flex items-center justify-between z-20 transition-opacity duration-300",
+          "absolute top-3 inset-x-3 flex items-center justify-between z-20 transition-opacity duration-200",
           showControls || !isPlaying ? "opacity-100" : "opacity-0"
         )}
       >
-        <Badge variant={currentStatus.variant} dot pulse={status === "rendering"}>
+        <Badge variant={currentStatus.variant} dot pulse={status === "rendering" || status === "queued"}>
           {currentStatus.label}
         </Badge>
 
-        <div className="flex items-center gap-2">
-          <span className="font-mono text-[11px] text-ink-secondary bg-black/60 backdrop-blur-md px-2 py-0.5 rounded-[4px] border border-white/10">
-            9:16 HD
-          </span>
-        </div>
+        <span className="font-mono text-[11px] text-white/95 bg-[#16150F]/70 px-2 py-0.5 rounded-sm">
+          9:16 HD
+        </span>
       </div>
 
-      {/* Center Big Play Button (Fades out when playing) */}
+      {/* Center Big Play Button */}
       <div
         className={cn(
-          "absolute inset-0 flex items-center justify-center z-20 pointer-events-none transition-all duration-300",
-          isPlaying ? "opacity-0 scale-90" : "opacity-100 scale-100"
+          "absolute inset-0 flex items-center justify-center z-20 pointer-events-none transition-all duration-200",
+          isPlaying ? "opacity-0 scale-95" : "opacity-100 scale-100"
         )}
       >
-        <div className="w-16 h-16 rounded-full bg-canvas-surface/85 backdrop-blur-md border border-border-medium flex items-center justify-center text-alpenglow shadow-floating transition-transform duration-300 group-hover:scale-110">
-          <Play className="w-7 h-7 fill-current ml-1" />
+        <div className="w-13 h-13 rounded-full bg-surface/90 border border-border flex items-center justify-center text-moss shadow-popover transition-transform duration-200 group-hover:scale-105">
+          <Play className="w-5 h-5 fill-current ml-0.5 text-moss" />
         </div>
       </div>
 
-      {/* Bottom Audio & Scrubber Controls */}
+      {/* Bottom Controls Scrim & Track */}
       <div
         className={cn(
-          "absolute bottom-0 inset-x-0 p-4 pt-12 z-20 bg-gradient-to-t from-black/95 via-black/70 to-transparent transition-opacity duration-300",
+          "absolute bottom-0 inset-x-0 p-3 pt-10 z-20 bg-gradient-to-t from-[#16150F]/80 via-[#16150F]/40 to-transparent transition-opacity duration-200",
           showControls || !isPlaying ? "opacity-100" : "opacity-0"
         )}
       >
-        {/* Scrubber Progress Track */}
         <div
           onClick={handleSeek}
-          className="relative h-1.5 w-full rounded-full bg-white/20 hover:h-2 transition-all cursor-pointer mb-3 overflow-hidden"
+          className="relative h-1 w-full rounded-full bg-white/30 hover:h-1.5 transition-all cursor-pointer mb-2.5 overflow-hidden"
         >
           <div
-            className="absolute top-0 left-0 bottom-0 bg-alpenglow rounded-full transition-all duration-100"
+            className="absolute top-0 left-0 bottom-0 bg-moss rounded-full"
             style={{ width: `${progressPct}%` }}
           />
         </div>
 
-        {/* Time counter and secondary action icons */}
-        <div className="flex items-center justify-between text-xs font-mono text-ink-secondary">
+        <div className="flex items-center justify-between text-xs font-mono text-white/90">
           <div className="flex items-center gap-1.5">
-            <span className="text-ink-primary font-medium">{formatTime(currentTime)}</span>
-            <span className="text-ink-muted">/</span>
-            <span>{formatTime(totalDuration)}</span>
+            <span className="font-medium text-white">{formatTime(currentTime)}</span>
+            <span className="text-white/50">/</span>
+            <span className="text-white/80">{formatTime(totalDuration)}</span>
           </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={toggleMute}
-              className="p-1 rounded-[4px] hover:bg-white/10 text-ink-secondary hover:text-ink-primary transition-colors"
+              className="p-1 rounded-sm hover:bg-white/10 text-white/90 hover:text-white transition-fast"
               title={isMuted ? "Unmute" : "Mute"}
             >
-              {isMuted ? (
-                <VolumeX className="w-4 h-4" />
-              ) : (
-                <Volume2 className="w-4 h-4 text-alpenglow" />
-              )}
+              {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 text-white" />}
             </button>
 
             <button
               onClick={toggleFullscreen}
-              className="p-1 rounded-[4px] hover:bg-white/10 text-ink-secondary hover:text-ink-primary transition-colors"
+              className="p-1 rounded-sm hover:bg-white/10 text-white/90 hover:text-white transition-fast"
               title="Fullscreen"
             >
               <Maximize2 className="w-3.5 h-3.5" />

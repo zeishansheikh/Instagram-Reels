@@ -4,67 +4,60 @@ import * as React from "react";
 import { CheckCircle2, AlertCircle, Info, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export interface ToastMessage {
+export interface Toast {
   id: string;
-  type?: "info" | "success" | "error";
+  type?: "success" | "warning" | "error" | "info";
   title: string;
   description?: string;
 }
 
 interface ToastContextType {
-  toasts: ToastMessage[];
-  addToast: (toast: Omit<ToastMessage, "id">) => void;
+  toasts: Toast[];
+  addToast: (toast: Omit<Toast, "id">) => void;
   removeToast: (id: string) => void;
 }
 
 const ToastContext = React.createContext<ToastContextType | undefined>(undefined);
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
-  const [toasts, setToasts] = React.useState<ToastMessage[]>([]);
+  const [toasts, setToasts] = React.useState<Toast[]>([]);
+
+  const addToast = React.useCallback((toast: Omit<Toast, "id">) => {
+    const id = Math.random().toString(36).substring(2, 9);
+    setToasts((prev) => [...prev, { ...toast, id }]);
+
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 4000);
+  }, []);
 
   const removeToast = React.useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  const addToast = React.useCallback(
-    ({ type = "info", title, description }: Omit<ToastMessage, "id">) => {
-      const id = Math.random().toString(36).substring(2, 9);
-      setToasts((prev) => [...prev, { id, type, title, description }]);
-      setTimeout(() => {
-        removeToast(id);
-      }, 4000);
-    },
-    [removeToast]
-  );
-
   return (
     <ToastContext.Provider value={{ toasts, addToast, removeToast }}>
       {children}
-      <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none">
-        {toasts.map((toast) => (
+      {/* Toast viewport fixed at bottom right */}
+      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none">
+        {toasts.map((t) => (
           <div
-            key={toast.id}
-            className={cn(
-              "pointer-events-auto flex items-start gap-3 p-3.5 rounded-[8px] bg-canvas-surface border shadow-floating animate-in slide-in-from-bottom-2 fade-in duration-200",
-              toast.type === "success" && "border-mist/30 text-mist",
-              toast.type === "error" && "border-duskerror/30 text-duskerror",
-              toast.type === "info" && "border-border-medium text-alpenglow"
-            )}
+            key={t.id}
+            className="pointer-events-auto flex items-start gap-3 rounded-md bg-surface border border-border p-3.5 shadow-popover animate-in slide-in-from-bottom-2 fade-in duration-200"
           >
             <div className="shrink-0 mt-0.5">
-              {toast.type === "success" && <CheckCircle2 className="w-4 h-4 text-mist" />}
-              {toast.type === "error" && <AlertCircle className="w-4 h-4 text-duskerror" />}
-              {toast.type === "info" && <Info className="w-4 h-4 text-alpenglow" />}
+              {t.type === "success" && <CheckCircle2 className="w-4 h-4 text-status-success" />}
+              {t.type === "warning" && <AlertCircle className="w-4 h-4 text-status-warning" />}
+              {t.type === "error" && <AlertCircle className="w-4 h-4 text-status-error" />}
+              {(!t.type || t.type === "info") && <Info className="w-4 h-4 text-moss" />}
             </div>
-            <div className="flex-1">
-              <h4 className="text-xs font-semibold text-ink-primary font-sans">{toast.title}</h4>
-              {toast.description && (
-                <p className="text-[11px] text-ink-muted mt-0.5 font-sans">{toast.description}</p>
-              )}
+            <div className="flex-1 space-y-0.5">
+              <p className="font-sans text-xs font-semibold text-ink-primary tracking-tight">{t.title}</p>
+              {t.description && <p className="font-sans text-[11px] text-ink-secondary leading-snug">{t.description}</p>}
             </div>
             <button
-              onClick={() => removeToast(toast.id)}
-              className="text-ink-muted hover:text-ink-primary rounded p-0.5"
+              onClick={() => removeToast(t.id)}
+              className="text-ink-muted hover:text-ink-primary p-0.5 rounded-sm transition-fast"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -82,4 +75,3 @@ export function useToast() {
   }
   return context;
 }
-

@@ -9,10 +9,9 @@ import {
   Clock,
   Send,
   AlertCircle,
-  ArrowRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { StatusDot } from "./badge";
+import { StatusDot } from "./status-dot";
 
 export type PipelineStageStatus = "completed" | "active" | "pending" | "failed";
 
@@ -93,18 +92,18 @@ export function PipelineTimeline({
   return (
     <div
       className={cn(
-        "rounded-[16px] bg-canvas-surface/80 border border-border-subtle p-6 backdrop-blur-md shadow-card space-y-6",
+        "rounded-md bg-surface border border-border p-6 space-y-6 select-none",
         className
       )}
     >
       {/* Header with Title and Current Pipeline Summary */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border-subtle/50 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="font-mono text-[10px] uppercase tracking-widest text-alpenglow">
+            <span className="font-mono text-[10px] uppercase tracking-widest text-moss font-medium">
               Autonomous Pipeline
             </span>
-            <span className="text-border-medium">•</span>
+            <span className="text-ink-muted">•</span>
             <span className="font-mono text-[10px] uppercase tracking-widest text-ink-muted">
               Live Lifecycle
             </span>
@@ -114,15 +113,15 @@ export function PipelineTimeline({
           </h3>
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-auto px-3 py-1.5 rounded-full bg-canvas-card border border-border-subtle text-xs font-mono text-ink-secondary">
-          <StatusDot status="mist" pulse />
+        <div className="flex items-center gap-2 self-start sm:self-auto px-2.5 py-1 rounded-sm bg-subtle border border-border text-xs font-mono text-ink-secondary">
+          <StatusDot status="warning" pulse />
           <span>Stage 04 of 05 Active · Queued</span>
         </div>
       </div>
 
       {/* Horizontal Staged Timeline */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-3 relative">
-        {stages.map((stage, idx) => {
+        {stages.map((stage) => {
           const Icon = stage.icon;
           const isCompleted = stage.status === "completed";
           const isActive = stage.status === "active";
@@ -133,11 +132,11 @@ export function PipelineTimeline({
             <div
               key={stage.id}
               className={cn(
-                "group relative p-3.5 rounded-[12px] border transition-all duration-300 flex flex-col justify-between select-none",
-                isActive && "bg-canvas-card/90 border-border-focus/70 shadow-alpenglow",
-                isCompleted && "bg-canvas-card/50 border-border-subtle hover:border-border-medium",
-                isPending && "bg-canvas-card/20 border-border-subtle/40 opacity-70",
-                isFailed && "bg-canvas-card/70 border-duskerror/50"
+                "group relative p-3.5 rounded-sm border transition-fast flex flex-col justify-between select-none",
+                isActive && "bg-moss-subtle border-moss/30",
+                isCompleted && "bg-subtle/50 border-border hover:border-border-strong",
+                isPending && "bg-surface border-border/60 opacity-60",
+                isFailed && "bg-status-error/10 border-status-error/30"
               )}
             >
               {/* Step indicator and Status Icon */}
@@ -145,7 +144,7 @@ export function PipelineTimeline({
                 <span
                   className={cn(
                     "font-mono text-[11px] font-semibold tracking-wider",
-                    isActive ? "text-alpenglow" : isCompleted ? "text-mist" : "text-ink-muted"
+                    isActive ? "text-moss" : isCompleted ? "text-status-success" : isFailed ? "text-status-error" : "text-ink-muted"
                   )}
                 >
                   {stage.stepNumber}
@@ -153,22 +152,22 @@ export function PipelineTimeline({
 
                 <div className="flex items-center">
                   {isCompleted && (
-                    <div className="w-5 h-5 rounded-full bg-mist/15 border border-mist/30 flex items-center justify-center text-mist">
+                    <div className="w-5 h-5 rounded-full bg-status-success/15 border border-status-success/30 flex items-center justify-center text-status-success">
                       <Check className="w-3 h-3 stroke-[2.5]" />
                     </div>
                   )}
                   {isActive && (
-                    <div className="w-5 h-5 rounded-full bg-alpenglow/15 border border-alpenglow/40 flex items-center justify-center text-alpenglow">
-                      <span className="w-2 h-2 rounded-full bg-alpenglow animate-pulse-mist" />
+                    <div className="w-5 h-5 rounded-full bg-moss/15 border border-moss/30 flex items-center justify-center text-moss">
+                      <span className="w-2 h-2 rounded-full bg-moss animate-pulse" />
                     </div>
                   )}
                   {isPending && (
-                    <div className="w-5 h-5 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-ink-muted">
+                    <div className="w-5 h-5 rounded-full bg-subtle border border-border flex items-center justify-center text-ink-muted">
                       <span className="w-1.5 h-1.5 rounded-full bg-ink-muted/50" />
                     </div>
                   )}
                   {isFailed && (
-                    <div className="w-5 h-5 rounded-full bg-duskerror/15 border border-duskerror/30 flex items-center justify-center text-duskerror">
+                    <div className="w-5 h-5 rounded-full bg-status-error/15 border border-status-error/30 flex items-center justify-center text-status-error">
                       <AlertCircle className="w-3 h-3" />
                     </div>
                   )}
@@ -181,7 +180,7 @@ export function PipelineTimeline({
                   <Icon
                     className={cn(
                       "w-3.5 h-3.5",
-                      isActive ? "text-alpenglow" : isCompleted ? "text-ink-primary" : "text-ink-muted"
+                      isActive ? "text-moss" : isCompleted ? "text-ink-primary" : "text-ink-muted"
                     )}
                   />
                   <h4 className="font-sans text-xs font-semibold text-ink-primary tracking-tight">
@@ -194,12 +193,12 @@ export function PipelineTimeline({
               </div>
 
               {/* Technical Metadata Footer */}
-              <div className="pt-2.5 border-t border-border-subtle/40 flex items-center justify-between font-mono text-[10px] text-ink-muted">
+              <div className="pt-2.5 border-t border-border flex items-center justify-between font-mono tabular-nums text-[10px] text-ink-muted">
                 <span className="truncate max-w-[110px]" title={stage.detail}>
                   {stage.detail}
                 </span>
                 {stage.timestamp && (
-                  <span className="shrink-0 text-ink-muted/80">{stage.timestamp}</span>
+                  <span className="shrink-0 text-ink-muted">{stage.timestamp}</span>
                 )}
               </div>
             </div>

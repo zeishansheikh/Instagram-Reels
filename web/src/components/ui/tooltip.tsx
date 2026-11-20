@@ -21,9 +21,9 @@ export function Tooltip({ content, children, side = "top", align = "center" }: T
         <TooltipPrimitive.Content
           side={side}
           align={align}
-          sideOffset={6}
+          sideOffset={5}
           className={cn(
-            "z-50 overflow-hidden rounded-[4px] bg-canvas-surface border border-border-medium px-2.5 py-1 text-[11px] font-sans text-ink-primary shadow-card animate-in fade-in-0 zoom-in-95"
+            "z-50 overflow-hidden rounded-sm bg-surface border border-border px-2.5 py-1 text-[11px] font-sans text-ink-primary shadow-popover animate-in fade-in-80"
           )}
         >
           {content}
@@ -32,4 +32,3 @@ export function Tooltip({ content, children, side = "top", align = "center" }: T
     </TooltipPrimitive.Root>
   );
 }
-
