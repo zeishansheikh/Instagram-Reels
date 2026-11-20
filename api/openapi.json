@@ -1,0 +1,2497 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Reel Forge Studio API",
+    "description": "\n### Reel Forge Studio API\nAutomated Calm Nature Quote Instagram Reels Engine & Publishing Backend.\n\n* **Reels**: List, filter, inspect, stream video, extract thumbnails, and review (keep / discard / regenerate).\n* **Generation**: Bulk AI quote generation, deduplication, background footage selection, and rendering with background job polling.\n* **Footage & Quotes**: Browse background clips with usage tracking and inspect generated quote pools.\n* **Publishing**: Upload to cloud storage (Supabase / R2) and publish to Instagram Reels via Meta Graph API.\n* **Settings & Schedule**: Runtime configuration update and queue management.\n    ",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "Health & Diagnostics"
+        ],
+        "summary": "System health and prerequisite status",
+        "description": "Check availability of system dependencies: SQLite DB, FFmpeg, Gemini API, and Instagram credentials.",
+        "operationId": "get_health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reels": {
+      "get": {
+        "tags": [
+          "Reels"
+        ],
+        "summary": "List generated reels with filters",
+        "description": "Retrieve date-partitioned reels joined with quote text and clip metadata.",
+        "operationId": "list_reels_reels_get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by status (e.g. completed, approved, discarded, published)",
+              "title": "Status"
+            },
+            "description": "Filter by status (e.g. completed, approved, discarded, published)"
+          },
+          {
+            "name": "theme",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by theme",
+              "title": "Theme"
+            },
+            "description": "Filter by theme"
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by date partition (e.g. 2026-11-20)",
+              "title": "Date"
+            },
+            "description": "Filter by date partition (e.g. 2026-11-20)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "API key as query parameter (useful for media streaming)",
+              "title": "Api Key"
+            },
+            "description": "API key as query parameter (useful for media streaming)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReelSummary"
+                  },
+                  "title": "Response List Reels Reels Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reels/{id}": {
+      "get": {
+        "tags": [
+          "Reels"
+        ],
+        "summary": "Get full reel details by ID",
+        "description": "Retrieve full metadata, file size, duration, and publish history for a reel.",
+        "operationId": "get_reel_reels__id__get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Id"
+            }
+          },
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "API key as query parameter (useful for media streaming)",
+              "title": "Api Key"
+            },
+            "description": "API key as query parameter (useful for media streaming)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReelDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reels/{id}/video": {
+      "get": {
+        "tags": [
+          "Reels"
+        ],
+        "summary": "Stream reel video file",
+        "description": "Serve reel MP4 video file with support for partial HTTP range requests.",
+        "operationId": "stream_reel_video_reels__id__video_get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Id"
+            }
+          },
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "API key as query parameter (useful for media streaming)",
+              "title": "Api Key"
+            },
+            "description": "API key as query parameter (useful for media streaming)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reels/{id}/thumbnail": {
+      "get": {
+        "tags": [
+          "Reels"
+        ],
+        "summary": "Serve reel thumbnail image",
+        "description": "Serve JPEG thumbnail frame for reel. Auto-extracts from video if not already generated.",
+        "operationId": "get_reel_thumbnail_reels__id__thumbnail_get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Id"
+            }
+          },
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "API key as query parameter (useful for media streaming)",
+              "title": "Api Key"
+            },
+            "description": "API key as query parameter (useful for media streaming)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reels/generate": {
+      "post": {
+        "tags": [
+          "Reels"
+        ],
+        "summary": "Trigger bulk reel generation",
+        "description": "Generate finished quote reels in bulk with video, caption, and metadata packaging.\n\nCan be executed as a tracked background job (default) or synchronously.",
+        "operationId": "generate_reels_reels_generate_post",
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "API key as query parameter (useful for media streaming)",
+              "title": "Api Key"
+            },
+            "description": "API key as query parameter (useful for media streaming)"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Generate Reels Reels Generate Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reels/{id}/approve": {
+      "post": {
+        "tags": [
+          "Reels"
+        ],
+        "summary": "Approve reel for publication",
+        "description": "Mark reel status as 'approved' in database for scheduled Instagram publication.",
+        "operationId": "approve_reel_reels__id__approve_post",
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Id"
+            }
+          },
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "API key as query parameter (useful for media streaming)",
+              "title": "Api Key"
+            },
+            "description": "API key as query parameter (useful for media streaming)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReelActionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reels/{id}/discard": {
+      "post": {
+        "tags": [
+          "Reels"
+        ],
+        "summary": "Discard reel and move to _rejected",
+        "description": "Move discarded reel folder to output/_rejected/ and mark status as 'discarded'.",
+        "operationId": "discard_reel_reels__id__discard_post",
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Id"
+            }
+          },
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "API key as query parameter (useful for media streaming)",
+              "title": "Api Key"
+            },
+            "description": "API key as query parameter (useful for media streaming)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReelActionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reels/{id}/regenerate": {
+      "post": {
+        "tags": [
+          "Reels"
+        ],
+        "summary": "Regenerate reel with new background footage",
+        "description": "Re-render reel keeping the quote text but picking a new background clip.",
+        "operationId": "regenerate_reel_reels__id__regenerate_post",
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Id"
+            }
+          },
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "API key as query parameter (useful for media streaming)",
+              "title": "Api Key"
+            },
+            "description": "API key as query parameter (useful for media streaming)"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegenerateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Regenerate Reel Reels  Id  Regenerate Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/quotes": {
+      "get": {
+        "tags": [
+          "Quotes"
+        ],
+        "summary": "List stored quotes with usage metrics",
+        "description": "Retrieve generated and deduplicated quotes from the database.",
+        "operationId": "list_quotes_quotes_get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "theme",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by theme (e.g. hope, solitude, gratitude)",
+              "title": "Theme"
+            },
+            "description": "Filter by theme (e.g. hope, solitude, gratitude)"
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by language code (e.g. en, urdu)",
+              "title": "Lang"
+            },
+            "description": "Filter by language code (e.g. en, urdu)"
+          },
+          {
+            "name": "used",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by usage status (True=used, False=unused)",
+              "title": "Used"
+            },
+            "description": "Filter by usage status (True=used, False=unused)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "API key as query parameter (useful for media streaming)",
+              "title": "Api Key"
+            },
+            "description": "API key as query parameter (useful for media streaming)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuoteModel"
+                  },
+                  "title": "Response List Quotes Quotes Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/clips": {
+      "get": {
+        "tags": [
+          "Clips & Footage"
+        ],
+        "summary": "List background video clips with provider and usage",
+        "description": "Retrieve background video footage tracks across all configured providers with usage metrics.",
+        "operationId": "list_clips_clips_get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by provider (local_folder, gdrive, pexels)",
+              "title": "Provider"
+            },
+            "description": "Filter by provider (local_folder, gdrive, pexels)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "API key as query parameter (useful for media streaming)",
+              "title": "Api Key"
+            },
+            "description": "API key as query parameter (useful for media streaming)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ClipModel"
+                  },
+                  "title": "Response List Clips Clips Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schedule": {
+      "get": {
+        "tags": [
+          "Schedule & Queue"
+        ],
+        "summary": "Get publication queue and schedule overview",
+        "description": "Retrieve schedule status, counts of pending vs approved reels, and queue of ready-to-publish reels.",
+        "operationId": "get_schedule_schedule_get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "API key as query parameter (useful for media streaming)",
+              "title": "Api Key"
+            },
+            "description": "API key as query parameter (useful for media streaming)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/settings": {
+      "get": {
+        "tags": [
+          "Settings & Configuration"
+        ],
+        "summary": "Retrieve current configuration settings",
+        "description": "Retrieve runtime settings, defaults, render parameters, and provider statuses.",
+        "operationId": "get_settings_settings_get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "API key as query parameter (useful for media streaming)",
+              "title": "Api Key"
+            },
+            "description": "API key as query parameter (useful for media streaming)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Settings & Configuration"
+        ],
+        "summary": "Update configuration settings",
+        "description": "Update settings in config.yaml (defaults, background provider, video render quality, etc.).",
+        "operationId": "update_settings_settings_put",
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "API key as query parameter (useful for media streaming)",
+              "title": "Api Key"
+            },
+            "description": "API key as query parameter (useful for media streaming)"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SettingsUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/publish-log": {
+      "get": {
+        "tags": [
+          "Publishing"
+        ],
+        "summary": "Get publication history and status logs",
+        "description": "Retrieve history of published reels, Meta Graph container IDs, media IDs, and live permalinks.",
+        "operationId": "list_publish_logs_publish_log_get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by status (published, failed, dry_run)",
+              "title": "Status"
+            },
+            "description": "Filter by status (published, failed, dry_run)"
+          },
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "API key as query parameter (useful for media streaming)",
+              "title": "Api Key"
+            },
+            "description": "API key as query parameter (useful for media streaming)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PublishLogItem"
+                  },
+                  "title": "Response List Publish Logs Publish Log Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/publish/{id}": {
+      "post": {
+        "tags": [
+          "Publishing"
+        ],
+        "summary": "Publish specific reel to Instagram",
+        "description": "Upload video to public cloud storage and publish as Instagram Reel via Meta Graph API.",
+        "operationId": "publish_reel_by_id_publish__id__post",
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Id"
+            }
+          },
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "API key as query parameter (useful for media streaming)",
+              "title": "Api Key"
+            },
+            "description": "API key as query parameter (useful for media streaming)"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Publish Reel By Id Publish  Id  Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs": {
+      "get": {
+        "tags": [
+          "Jobs & Status Polling"
+        ],
+        "summary": "List recent background jobs",
+        "description": "Retrieve list of background generation and publish tasks.",
+        "operationId": "list_jobs_jobs_get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "API key as query parameter (useful for media streaming)",
+              "title": "Api Key"
+            },
+            "description": "API key as query parameter (useful for media streaming)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/JobResponse"
+                  },
+                  "title": "Response List Jobs Jobs Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{id}": {
+      "get": {
+        "tags": [
+          "Jobs & Status Polling"
+        ],
+        "summary": "Poll background job status and logs",
+        "description": "Poll job status, progress percentage, execution logs, and output results.",
+        "operationId": "get_job_jobs__id__get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Id"
+            }
+          },
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "API key as query parameter (useful for media streaming)",
+              "title": "Api Key"
+            },
+            "description": "API key as query parameter (useful for media streaming)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ClipModel": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "default": "local_folder"
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Id"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "use_count": {
+            "type": "integer",
+            "title": "Use Count",
+            "default": 0
+          },
+          "last_used_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Used At"
+          },
+          "exists_on_disk": {
+            "type": "boolean",
+            "title": "Exists On Disk",
+            "default": true
+          },
+          "size_bytes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Size Bytes"
+          },
+          "preview_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preview Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "path"
+        ],
+        "title": "ClipModel"
+      },
+      "GenerateRequest": {
+        "properties": {
+          "count": {
+            "type": "integer",
+            "maximum": 50.0,
+            "minimum": 1.0,
+            "title": "Count",
+            "description": "Number of reels to generate in batch",
+            "default": 10
+          },
+          "theme": {
+            "type": "string",
+            "title": "Theme",
+            "description": "Quote theme (e.g. hope, solitude, gratitude, resilience)",
+            "default": "hope"
+          },
+          "lang": {
+            "type": "string",
+            "title": "Lang",
+            "description": "Language: en, roman-urdu, urdu",
+            "default": "en"
+          },
+          "style": {
+            "type": "string",
+            "title": "Style",
+            "description": "Path to style preset YAML or 'random'",
+            "default": "styles/degraaf.yaml"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider",
+            "description": "Background provider override: local_folder, gdrive, pexels"
+          },
+          "run_in_background": {
+            "type": "boolean",
+            "title": "Run In Background",
+            "description": "Run generation as asynchronous background job",
+            "default": true
+          }
+        },
+        "type": "object",
+        "title": "GenerateRequest"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "ok"
+          },
+          "app_name": {
+            "type": "string",
+            "title": "App Name",
+            "default": "Reel Forge"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version",
+            "default": "0.1.0"
+          },
+          "database_connected": {
+            "type": "boolean",
+            "title": "Database Connected"
+          },
+          "ffmpeg_available": {
+            "type": "boolean",
+            "title": "Ffmpeg Available"
+          },
+          "gemini_api_key_configured": {
+            "type": "boolean",
+            "title": "Gemini Api Key Configured"
+          },
+          "background_provider": {
+            "type": "string",
+            "title": "Background Provider"
+          },
+          "storage_provider": {
+            "type": "string",
+            "title": "Storage Provider"
+          },
+          "instagram_configured": {
+            "type": "boolean",
+            "title": "Instagram Configured"
+          },
+          "active_background_jobs": {
+            "type": "integer",
+            "title": "Active Background Jobs"
+          }
+        },
+        "type": "object",
+        "required": [
+          "database_connected",
+          "ffmpeg_available",
+          "gemini_api_key_configured",
+          "background_provider",
+          "storage_provider",
+          "instagram_configured",
+          "active_background_jobs"
+        ],
+        "title": "HealthResponse"
+      },
+      "JobDetailResponse": {
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "title": "Job Id"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "progress": {
+            "type": "number",
+            "title": "Progress"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "poll_url": {
+            "type": "string",
+            "title": "Poll Url"
+          },
+          "params": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Params"
+          },
+          "result": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "logs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Logs"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "type",
+          "status",
+          "message",
+          "progress",
+          "created_at",
+          "poll_url"
+        ],
+        "title": "JobDetailResponse"
+      },
+      "JobResponse": {
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "title": "Job Id"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "progress": {
+            "type": "number",
+            "title": "Progress"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "poll_url": {
+            "type": "string",
+            "title": "Poll Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "type",
+          "status",
+          "message",
+          "progress",
+          "created_at",
+          "poll_url"
+        ],
+        "title": "JobResponse"
+      },
+      "PublishLogItem": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "reel_path": {
+            "type": "string",
+            "title": "Reel Path"
+          },
+          "container_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Container Id"
+          },
+          "media_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Media Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "permalink": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Permalink"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "reel_path",
+          "status",
+          "created_at"
+        ],
+        "title": "PublishLogItem"
+      },
+      "PublishRequest": {
+        "properties": {
+          "dry_run": {
+            "type": "boolean",
+            "title": "Dry Run",
+            "description": "Simulate publish without uploading or calling Instagram API",
+            "default": false
+          },
+          "run_in_background": {
+            "type": "boolean",
+            "title": "Run In Background",
+            "description": "Run publish in background job",
+            "default": true
+          }
+        },
+        "type": "object",
+        "title": "PublishRequest"
+      },
+      "QuoteModel": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "theme": {
+            "type": "string",
+            "title": "Theme"
+          },
+          "lang": {
+            "type": "string",
+            "title": "Lang"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "used_count": {
+            "type": "integer",
+            "title": "Used Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "text",
+          "theme",
+          "lang",
+          "created_at",
+          "used_count"
+        ],
+        "title": "QuoteModel"
+      },
+      "ReelActionResponse": {
+        "properties": {
+          "reel_id": {
+            "type": "integer",
+            "title": "Reel Id"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "reel": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReelSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "reel_id",
+          "action",
+          "status",
+          "message"
+        ],
+        "title": "ReelActionResponse"
+      },
+      "ReelDetail": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "quote_id": {
+            "type": "integer",
+            "title": "Quote Id"
+          },
+          "quote_text": {
+            "type": "string",
+            "title": "Quote Text"
+          },
+          "theme": {
+            "type": "string",
+            "title": "Theme"
+          },
+          "lang": {
+            "type": "string",
+            "title": "Lang"
+          },
+          "mood": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mood"
+          },
+          "clip_id": {
+            "type": "integer",
+            "title": "Clip Id"
+          },
+          "clip_path": {
+            "type": "string",
+            "title": "Clip Path"
+          },
+          "style": {
+            "type": "string",
+            "title": "Style"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "video_url": {
+            "type": "string",
+            "title": "Video Url"
+          },
+          "thumbnail_url": {
+            "type": "string",
+            "title": "Thumbnail Url"
+          },
+          "caption": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Caption"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "is_published": {
+            "type": "boolean",
+            "title": "Is Published",
+            "default": false
+          },
+          "meta_json": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Meta Json"
+          },
+          "file_size_bytes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Size Bytes"
+          },
+          "duration_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Seconds"
+          },
+          "publish_history": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Publish History"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "quote_id",
+          "quote_text",
+          "theme",
+          "lang",
+          "clip_id",
+          "clip_path",
+          "style",
+          "path",
+          "video_url",
+          "thumbnail_url",
+          "status",
+          "created_at"
+        ],
+        "title": "ReelDetail"
+      },
+      "ReelSummary": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "quote_id": {
+            "type": "integer",
+            "title": "Quote Id"
+          },
+          "quote_text": {
+            "type": "string",
+            "title": "Quote Text"
+          },
+          "theme": {
+            "type": "string",
+            "title": "Theme"
+          },
+          "lang": {
+            "type": "string",
+            "title": "Lang"
+          },
+          "mood": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mood"
+          },
+          "clip_id": {
+            "type": "integer",
+            "title": "Clip Id"
+          },
+          "clip_path": {
+            "type": "string",
+            "title": "Clip Path"
+          },
+          "style": {
+            "type": "string",
+            "title": "Style"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "video_url": {
+            "type": "string",
+            "title": "Video Url"
+          },
+          "thumbnail_url": {
+            "type": "string",
+            "title": "Thumbnail Url"
+          },
+          "caption": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Caption"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "is_published": {
+            "type": "boolean",
+            "title": "Is Published",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "quote_id",
+          "quote_text",
+          "theme",
+          "lang",
+          "clip_id",
+          "clip_path",
+          "style",
+          "path",
+          "video_url",
+          "thumbnail_url",
+          "status",
+          "created_at"
+        ],
+        "title": "ReelSummary"
+      },
+      "RegenerateRequest": {
+        "properties": {
+          "style": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Style",
+            "description": "Style YAML path override or 'random'"
+          },
+          "run_in_background": {
+            "type": "boolean",
+            "title": "Run In Background",
+            "description": "Run regeneration in background job",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "RegenerateRequest"
+      },
+      "ScheduleItem": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "reel_path": {
+            "type": "string",
+            "title": "Reel Path"
+          },
+          "quote_snippet": {
+            "type": "string",
+            "title": "Quote Snippet"
+          },
+          "theme": {
+            "type": "string",
+            "title": "Theme"
+          },
+          "style": {
+            "type": "string",
+            "title": "Style"
+          },
+          "thumbnail_url": {
+            "type": "string",
+            "title": "Thumbnail Url"
+          },
+          "video_url": {
+            "type": "string",
+            "title": "Video Url"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "reel_path",
+          "quote_snippet",
+          "theme",
+          "style",
+          "thumbnail_url",
+          "video_url",
+          "status",
+          "created_at"
+        ],
+        "title": "ScheduleItem"
+      },
+      "ScheduleResponse": {
+        "properties": {
+          "pending_approval_count": {
+            "type": "integer",
+            "title": "Pending Approval Count"
+          },
+          "approved_ready_to_publish_count": {
+            "type": "integer",
+            "title": "Approved Ready To Publish Count"
+          },
+          "published_count": {
+            "type": "integer",
+            "title": "Published Count"
+          },
+          "scheduled_reels": {
+            "items": {
+              "$ref": "#/components/schemas/ScheduleItem"
+            },
+            "type": "array",
+            "title": "Scheduled Reels"
+          },
+          "recommended_next_publish_date": {
+            "type": "string",
+            "title": "Recommended Next Publish Date"
+          },
+          "publication_cadence": {
+            "type": "string",
+            "title": "Publication Cadence",
+            "default": "1 reel per day at 18:00 (optimal engagement)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pending_approval_count",
+          "approved_ready_to_publish_count",
+          "published_count",
+          "scheduled_reels",
+          "recommended_next_publish_date"
+        ],
+        "title": "ScheduleResponse"
+      },
+      "SettingsResponse": {
+        "properties": {
+          "config": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Config"
+          },
+          "environment": {
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "type": "object",
+            "title": "Environment"
+          }
+        },
+        "type": "object",
+        "required": [
+          "config",
+          "environment"
+        ],
+        "title": "SettingsResponse"
+      },
+      "SettingsUpdateRequest": {
+        "properties": {
+          "theme": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Theme"
+          },
+          "lang": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lang"
+          },
+          "count": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 50.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Count"
+          },
+          "style": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Style"
+          },
+          "background_provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Background Provider"
+          },
+          "gdrive_folder_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gdrive Folder Id"
+          },
+          "clip_reuse_cooldown": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Clip Reuse Cooldown"
+          },
+          "storage_provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Storage Provider"
+          },
+          "supabase_bucket": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supabase Bucket"
+          },
+          "r2_bucket_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "R2 Bucket Name"
+          },
+          "crf": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 40.0,
+                "minimum": 10.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Crf"
+          },
+          "preset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preset"
+          }
+        },
+        "type": "object",
+        "title": "SettingsUpdateRequest"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "APIKeyHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key"
+      },
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

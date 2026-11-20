@@ -22,6 +22,8 @@ dependencies = [
     "pillow>=10.0.0",
     "google-api-python-client",
     "google-auth-oauthlib",
+    "fastapi>=0.110.0",
+    "uvicorn>=0.28.0",
 ]
 
 [project.scripts]

@@ -312,6 +312,19 @@ def publish(
     )
 
 
+@app.command("api")
+def serve_api(
+    host: Annotated[str, typer.Option("--host", "-h", help="Bind host address")] = "0.0.0.0",
+    port: Annotated[int, typer.Option("--port", "-p", help="Port to listen on")] = 8000,
+    reload: Annotated[bool, typer.Option("--reload", help="Enable auto-reload on code changes")] = False,
+) -> None:
+    """Start the Reel Forge FastAPI backend server."""
+    import uvicorn
+
+    typer.echo(f"⚡ Starting Reel Forge API server at http://{host}:{port} (docs: http://{host}:{port}/docs)...")
+    uvicorn.run("api.main:app", host=host, port=port, reload=reload)
+
+
 @app.command()
 def clean() -> None:
     """Clear temporary render cache and cached footage."""
