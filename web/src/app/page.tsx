@@ -11,12 +11,25 @@ import {
   AlertCircle,
   ExternalLink,
   ShieldCheck,
+  Film,
+  BookOpen,
+  Layers,
+  Clock,
+  ArrowRight,
+  TrendingUp,
+  Key,
 } from "lucide-react";
 
 import {
+  AppShell,
   Button,
   Badge,
   StatusDot,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
   Dialog,
   DialogContent,
   DialogFooter,
@@ -26,51 +39,89 @@ import {
   Skeleton,
   EmptyState,
   QuoteBlock,
-  CommandBar,
   HeroPlayer,
-  PipelineTimeline,
-  SideStats,
 } from "@/components";
 
-type ScreenState = "ready" | "loading" | "empty" | "failure";
+type ScreenState = "ready" | "loading" | "empty" | "error";
+
+interface PipelineStep {
+  name: string;
+  status: "completed" | "active" | "pending";
+  detail: string;
+  timestamp: string;
+}
+
+const PIPELINE_STEPS: PipelineStep[] = [
+  {
+    name: "Clip picked",
+    status: "completed",
+    detail: "WhatsApp Video #1 · 1024×576 @ 30fps · Luma 0.19",
+    timestamp: "08:15:10",
+  },
+  {
+    name: "Quote written",
+    status: "completed",
+    detail: "Roman Urdu (Loss) · Noto Serif SemiBold 30pt",
+    timestamp: "08:15:32",
+  },
+  {
+    name: "Rendered",
+    status: "completed",
+    detail: "1080×1920 @ 60fps · Lanczos upscale · CRF 16",
+    timestamp: "08:16:45",
+  },
+  {
+    name: "Queued",
+    status: "active",
+    detail: "Staged in swap/ready_to_post · Manifest verified",
+    timestamp: "08:17:02",
+  },
+  {
+    name: "Published",
+    status: "pending",
+    detail: "Scheduled for 18:00 UTC · Buffer @enoent.7",
+    timestamp: "Pending",
+  },
+];
+
+export default function TodayPage() {
+  return (
+    <ToastProvider>
+      <TooltipProvider>
+        <TodayScreenContent />
+      </TooltipProvider>
+    </ToastProvider>
+  );
+}
 
 function TodayScreenContent() {
   const { addToast } = useToast();
 
-  // Screen View States: ready (default live hero), loading (skeletons), empty, failure
+  // Screen View States: ready (default), loading (skeleton), empty, error
   const [screenState, setScreenState] = React.useState<ScreenState>("ready");
   const [isGenerateModalOpen, setIsGenerateModalOpen] = React.useState(false);
-  const [activePreset, setActivePreset] = React.useState("degraaf");
   const [reelStatus, setReelStatus] = React.useState<"ready" | "queued" | "rendering" | "published" | "discarded">("queued");
 
-  // Generate Modal Form State
-  const [genCount, setGenCount] = React.useState("5");
-  const [genTheme, setGenTheme] = React.useState("hope");
-  const [genStyle, setGenStyle] = React.useState("degraaf");
-  const [genProvider, setGenProvider] = React.useState("local_folder");
-
-  // Today's Featured Reel Data
+  // Realistic seed data matching Formula D3
   const currentReel = {
-    id: 3,
-    theme: "Hope",
-    mood: "Snow & Winter Light",
-    quote:
-      "Frost coats the glass tonight, but underneath the sleeping soil, a small seed remembers how to reach for spring.",
+    id: "reel_2026-11-21_a",
+    slot: "Slot A",
+    scheduledTime: "Today, 18:00 UTC (08:30 PKT)",
+    clipName: "WhatsApp_Video_2026-11-20_at_6.36.16_AM",
+    style: "d3_roman_urdu",
+    theme: "Loss & Yaadein",
+    song: "Dil Ki Khamoshi - alonesinghkdm",
+    quote: "toote huye dil ke tukde sambhalte nahi, / aur log puchte hain tum badal kyu gaye.",
     caption:
-      "Winter holds promises we cannot yet see in the frozen ground. Take a breath and trust the quiet growth.",
-    hashtags: [
-      "#nature",
-      "#positivity",
-      "#naturetherapy",
-      "#quietmoments",
-      "#winterlight",
-      "#gentlehope",
-    ],
-    videoSrc: "/output/2026-11-20/reel_001/reel.mp4",
-    posterSrc: "/output/2026-11-20/reel_001/thumbnail.jpg",
-    duration: 11.55,
-    resolution: "1080 × 1920",
+      "toote huye dil ke tukde sambhalte nahi,\naur log puchte hain tum badal kyu gaye.\n\n#sad #dard #tanhai",
+    hashtags: ["#sad", "#dard", "#tanhai"],
+    videoSrc: "/static/swap/ready_to_post/reel_2026-11-21_a.mp4",
+    posterSrc: "/static/swap/ready_to_post/thumbnail_a.jpg",
+    duration: 5.42,
+    resolution: "1080 × 1920 @ 60fps",
+    bitrate: "15.02 Mbps",
     contrastRatio: 0.22,
+    placementBand: "y = 800 (luma: 76.1)",
   };
 
   const handleApprove = () => {
@@ -78,7 +129,7 @@ function TodayScreenContent() {
     addToast({
       type: "success",
       title: "Reel Approved",
-      description: "Scheduled for today's 18:00 UTC Instagram publication window.",
+      description: "Slot A confirmed for today's 18:00 UTC Buffer queue.",
     });
   };
 
@@ -87,156 +138,133 @@ function TodayScreenContent() {
     addToast({
       type: "info",
       title: "Regenerating Background Footage",
-      description: "Selecting new HD winter footage while preserving quote text...",
+      description: "Fetching next fresh Pinterest nature clip and running 60fps prep...",
     });
     setTimeout(() => {
       setReelStatus("ready");
       addToast({
         type: "success",
         title: "Regeneration Complete",
-        description: "New background clip matched and re-rendered with 0.24 contrast.",
+        description: "New clip matched. Contrast re-verified at 0.24.",
       });
-    }, 2000);
+    }, 1800);
   };
 
   const handlePublishNow = () => {
     addToast({
       type: "info",
-      title: "Publishing to Instagram",
-      description: "Uploading MP4 to storage and creating Meta Graph container...",
+      title: "Publishing via Buffer",
+      description: "Dispatching direct release to @enoent.7 / noori.shed...",
     });
     setTimeout(() => {
       setReelStatus("published");
       addToast({
         type: "success",
-        title: "Live on Instagram Reels",
-        description: "Media ID: 18039485729103942 · Permalink generated.",
+        title: "Published to Instagram",
+        description: "Media ID: 18042918402941 · Live link recorded.",
       });
-    }, 2500);
-  };
-
-  const handleRunGenerate = () => {
-    setIsGenerateModalOpen(false);
-    addToast({
-      type: "info",
-      title: "Batch Generation Initiated",
-      description: `Generating ${genCount} quotes with theme '${genTheme}' via Gemini Flash...`,
-    });
-
-    setTimeout(() => {
-      setScreenState("ready");
-      addToast({
-        type: "success",
-        title: "Batch Generation Complete",
-        description: `Successfully rendered and packaged ${genCount} reels for today.`,
-      });
-    }, 2800);
+    }, 2000);
   };
 
   return (
-    <div className="min-h-screen bg-page text-ink-primary font-sans relative pb-24">
-      {/* 1. Floating Top Command Bar */}
-      <CommandBar
-        activePreset={activePreset}
-        isPublishReady={true}
-        onGenerate={() => setIsGenerateModalOpen(true)}
-        onSearch={() =>
-          addToast({
-            type: "info",
-            title: "Quick Search",
-            description: "Opening reel archive and command palette...",
-          })
-        }
-      />
-
-      {/* Main Canvas Container */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-8 space-y-10">
-        {/* Top Editorial Kicker & Date */}
-        <section className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border pb-6">
+    <AppShell
+      title="Today"
+      subtitle="Friday, 21 Nov 2026"
+      onGenerateClick={() => setIsGenerateModalOpen(true)}
+      onSearchClick={() =>
+        addToast({
+          type: "info",
+          title: "Quick Search",
+          description: "Search dialog activated (Cmd+K).",
+        })
+      }
+    >
+      <div className="space-y-8">
+        {/* =====================================================================
+            1. PAGE HEADER STRIP
+            ===================================================================== */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border pb-5">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="font-mono text-[11px] uppercase tracking-widest text-moss font-medium">
-                Issue #042 · Today's Curation
+              <span className="font-mono text-[10px] uppercase tracking-wider text-moss font-medium">
+                Curation Batch #042
               </span>
-              <span className="text-ink-muted">•</span>
-              <span className="font-mono text-[11px] uppercase tracking-widest text-ink-muted">
-                Dusk Edition
-              </span>
-            </div>
-            <h1 className="font-serif italic text-3xl sm:text-4xl lg:text-5xl font-normal text-ink-primary tracking-tight">
-              Quiet Solitude in Winter
-            </h1>
-          </div>
-
-          {/* Right Meta Info & Navigation pill to /design */}
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex flex-col text-right">
-              <span className="font-mono text-xs text-ink-primary">
-                Friday, 20 Nov 2026
-              </span>
-              <span className="font-sans text-[11px] text-ink-muted">
-                Publishing window: 18:00 UTC
+              <span className="text-border-strong">•</span>
+              <span className="font-mono text-[10px] uppercase tracking-wider text-ink-muted">
+                Formula D3
               </span>
             </div>
-
-            <Link
-              href="/design"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-surface border border-border hover:border-border-strong text-xs font-mono text-ink-secondary hover:text-ink-primary transition-fast"
-            >
-              <span>Design System</span>
-              <ExternalLink className="w-3 h-3 text-moss" />
-            </Link>
+            <h2 className="font-serif italic text-2xl sm:text-3xl font-normal text-ink-primary tracking-tight">
+              Quiet Solitude & Reflection
+            </h2>
           </div>
-        </section>
 
-        {/* 2. Side / Header Stats Strip */}
-        <section>
-          <SideStats
-            postsThisWeek={5}
-            totalWeeklyTarget={7}
-            queueSize={3}
-            nextScheduledSlot="Today, 18:00 UTC"
-            geminiHealth="healthy"
-            instagramHealth="connected"
-            storageHealth="ready"
-          />
-        </section>
+          {/* Interactive State Previewer for UI inspection */}
+          <div className="flex items-center gap-1 p-1 rounded-sm bg-surface border border-border self-start sm:self-auto">
+            <span className="text-[10px] text-ink-muted px-1.5 font-mono uppercase tracking-widest">
+              State:
+            </span>
+            {(["ready", "loading", "empty", "error"] as ScreenState[]).map((st) => (
+              <button
+                key={st}
+                onClick={() => setScreenState(st)}
+                className={`px-2 py-0.5 rounded-sm text-xs font-mono capitalize transition-fast ${
+                  screenState === st
+                    ? "bg-moss text-white font-medium"
+                    : "text-ink-secondary hover:text-ink-primary"
+                }`}
+              >
+                {st === "ready" ? "Live" : st}
+              </button>
+            ))}
+          </div>
+        </div>
 
-        {/* 3. HERO SECTION & DESIGNED STATES */}
+        {/* =====================================================================
+            2. DESIGNED SCREEN STATES: SKELETON / EMPTY / ERROR
+            ===================================================================== */}
 
-        {/* A. LOADING STATE (Skeletons) */}
+        {/* A. SKELETON LOADING STATE */}
         {screenState === "loading" && (
-          <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start py-4">
-            <div className="lg:col-span-5 flex justify-center">
-              <Skeleton className="aspect-[9/16] w-full max-w-[360px] rounded-lg" />
-            </div>
-            <div className="lg:col-span-7 space-y-6 pt-2">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* Left 7 cols Skeleton */}
+            <div className="lg:col-span-7 space-y-4">
               <Skeleton className="w-32 h-4 rounded-sm" />
-              <div className="space-y-3">
-                <Skeleton className="w-full h-10 rounded-sm" />
-                <Skeleton className="w-5/6 h-10 rounded-sm" />
-                <Skeleton className="w-4/6 h-10 rounded-sm" />
-              </div>
-              <Skeleton className="w-full h-24 rounded-md" />
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <Skeleton className="h-16 rounded-sm" />
-                <Skeleton className="h-16 rounded-sm" />
-                <Skeleton className="h-16 rounded-sm" />
-              </div>
-              <div className="flex gap-3 pt-4">
-                <Skeleton className="w-36 h-9 rounded-sm" />
-                <Skeleton className="w-32 h-9 rounded-sm" />
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 items-start">
+                <div className="sm:col-span-6 lg:col-span-5 flex justify-center">
+                  <Skeleton className="aspect-[9/16] w-full max-w-[360px] rounded-md" />
+                </div>
+                <div className="sm:col-span-6 lg:col-span-7 space-y-4">
+                  <Skeleton className="w-48 h-5 rounded-sm" />
+                  <Skeleton className="w-full h-16 rounded-sm" />
+                  <Skeleton className="w-full h-24 rounded-sm" />
+                  <div className="space-y-2">
+                    <Skeleton className="w-full h-4 rounded-sm" />
+                    <Skeleton className="w-3/4 h-4 rounded-sm" />
+                    <Skeleton className="w-2/3 h-4 rounded-sm" />
+                  </div>
+                  <div className="flex gap-2 pt-2">
+                    <Skeleton className="w-24 h-8 rounded-sm" />
+                    <Skeleton className="w-28 h-8 rounded-sm" />
+                  </div>
+                </div>
               </div>
             </div>
-          </section>
+
+            {/* Right 5 cols Skeleton */}
+            <div className="lg:col-span-5 space-y-6">
+              <Skeleton className="w-full h-64 rounded-md" />
+              <Skeleton className="w-full h-40 rounded-md" />
+            </div>
+          </div>
         )}
 
         {/* B. EMPTY STATE */}
         {screenState === "empty" && (
-          <section className="p-8 md:p-16 rounded-md bg-surface border border-border text-center">
+          <div className="p-12 md:p-16 rounded-md bg-surface border border-border text-center max-w-2xl mx-auto">
             <EmptyState
-              title="The Canvas is Clear"
-              description="No reel is currently queued for today. Trigger the Gemini quote generator to match winter footage and render your next aesthetic reel."
+              title="No Reel Staged for Today"
+              description="The publishing queue is empty. Generate fresh nature quotes and render your next aesthetic reel with 1080p60 quality gates."
               action={
                 <Button
                   size="md"
@@ -244,38 +272,38 @@ function TodayScreenContent() {
                   icon={<Sparkles className="w-4 h-4" />}
                   onClick={() => setIsGenerateModalOpen(true)}
                 >
-                  Generate Today's First Reel
+                  Generate Reel for Slot A
                 </Button>
               }
             />
-          </section>
+          </div>
         )}
 
-        {/* C. FAILURE STATE */}
-        {screenState === "failure" && (
-          <section className="p-6 md:p-8 rounded-md bg-surface border border-status-error/30 space-y-5">
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-full bg-status-error/15 border border-status-error/30 flex items-center justify-center shrink-0 text-status-error">
-                <AlertCircle className="w-5 h-5" />
+        {/* C. ERROR STATE */}
+        {screenState === "error" && (
+          <div className="p-6 md:p-8 rounded-md bg-surface border border-status-error/40 space-y-4 max-w-3xl">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-sm bg-status-error/10 border border-status-error/30 flex items-center justify-center shrink-0 text-status-error">
+                <AlertCircle className="w-4 h-4" />
               </div>
               <div className="space-y-1">
-                <h3 className="font-sans text-base font-semibold text-ink-primary">
-                  Render Precheck Failed: Low Luminance Contrast (0.09)
+                <h3 className="font-sans text-sm font-semibold text-ink-primary">
+                  Preflight Quality Gate Check Failed
                 </h3>
-                <p className="font-sans text-xs text-ink-secondary leading-relaxed max-w-2xl">
-                  The automated contrast validator detected that the background video region behind the text box
-                  does not meet the minimum WCAG AA threshold. The text may be difficult to read on mobile screens.
+                <p className="font-sans text-xs text-ink-secondary leading-relaxed">
+                  The automated contrast gate detected insufficient luminance separation behind the text placement band.
+                  WCAG AA compliance requires &gt; 0.180, measured at 0.091.
                 </p>
               </div>
             </div>
 
-            <div className="p-4 rounded-sm bg-subtle border border-border text-xs font-mono space-y-1 text-ink-secondary">
-              <p><span className="text-ink-muted">Clip:</span> assets/backgrounds/winter_snow.mp4</p>
-              <p><span className="text-ink-muted">Calculated Contrast:</span> 0.091 (Required: &gt; 0.180)</p>
-              <p><span className="text-ink-muted">Recommended Remedy:</span> Increase darken overlay to 55% or rotate background clip.</p>
+            <div className="p-3 rounded-sm bg-subtle border border-border text-xs font-mono space-y-1 text-ink-secondary">
+              <p><span className="text-ink-muted">Clip:</span> assets/backgrounds/WhatsApp Video 2026-11-20 at 6.36.16 AM.mp4</p>
+              <p><span className="text-ink-muted">Band:</span> Center column x: 340–740, y: 960 (Measured Luma: 84.2 &gt; 80.0 limit)</p>
+              <p><span className="text-ink-muted">Action:</span> Shift placement lock to darker band at y=800 or apply adaptive grade.</p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3 pt-2">
+            <div className="flex items-center gap-2.5 pt-2">
               <Button
                 size="sm"
                 variant="primary"
@@ -284,12 +312,12 @@ function TodayScreenContent() {
                   setScreenState("ready");
                   addToast({
                     type: "success",
-                    title: "Auto-Darken Applied",
-                    description: "Overlay increased to 52%. Safe contrast verified at 0.23.",
+                    title: "Quality Remediated",
+                    description: "Shifted placement lock to y=800 with contrast 0.22.",
                   });
                 }}
               >
-                Auto-Darken & Re-Render
+                Auto-Fix & Re-Render
               </Button>
               <Button
                 size="sm"
@@ -299,362 +327,338 @@ function TodayScreenContent() {
                   handleRegenerate();
                 }}
               >
-                Pick Different Footage
+                Rotate to Next Clip
               </Button>
             </div>
-          </section>
+          </div>
         )}
 
-        {/* D. LIVE / READY STATE: EDITORIAL HERO SPREAD */}
+        {/* =====================================================================
+            3. LIVE TODAY SCREEN: 12-COLUMN EDITORIAL GRID
+            ===================================================================== */}
         {screenState === "ready" && (
-          <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-            {/* Left Column: Big 9:16 Video Player */}
-            <div className="lg:col-span-5 flex flex-col items-center">
-              <HeroPlayer
-                videoSrc={currentReel.videoSrc}
-                posterSrc={currentReel.posterSrc}
-                duration={currentReel.duration}
-                status={reelStatus}
-              />
-              <p className="text-[11px] font-mono text-ink-muted mt-3 text-center">
-                Hover to scrub · Spacebar or click to play
-              </p>
-            </div>
-
-            {/* Right Column: Editorial Typesetting Beside Player */}
-            <div className="lg:col-span-7 space-y-6 pt-1">
-              {/* Badges / Mood / Theme */}
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="moss">{currentReel.theme}</Badge>
-                <Badge variant="default">{currentReel.mood}</Badge>
-                <span className="font-mono text-xs text-ink-muted bg-subtle px-2 py-0.5 rounded-sm border border-border">
-                  Style: {activePreset}
-                </span>
-                <span className="font-mono tabular-nums text-xs text-ink-muted bg-subtle px-2 py-0.5 rounded-sm border border-border">
-                  {currentReel.duration}s
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* -----------------------------------------------------------------
+                LEFT 7 COLS: "NEXT REEL" HERO SPREAD
+                ----------------------------------------------------------------- */}
+            <section className="lg:col-span-7 space-y-4">
+              {/* Section Header */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-sans text-xs font-semibold uppercase tracking-wider text-ink-primary">
+                    Next reel
+                  </h3>
+                  <Badge variant="moss">{currentReel.slot}</Badge>
+                </div>
+                <span className="font-mono tabular-nums text-xs text-ink-muted">
+                  {currentReel.scheduledTime}
                 </span>
               </div>
 
-              {/* Large Editorial Serif Quote */}
-              <QuoteBlock
-                size="xl"
-                author="Reel Forge · Autonomous Curation"
-                theme={currentReel.theme.toLowerCase()}
-              >
-                {currentReel.quote}
-              </QuoteBlock>
-
-              {/* Instagram Caption & Hashtags Block */}
-              <div className="p-4 rounded-md bg-surface border border-border space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-[10px] uppercase tracking-wider text-ink-muted">
-                    Instagram Caption
-                  </span>
-                  <span className="font-mono tabular-nums text-[10px] text-moss font-medium">
-                    {currentReel.caption.length} chars
-                  </span>
-                </div>
-
-                <p className="font-sans text-xs sm:text-sm text-ink-secondary leading-relaxed italic">
-                  "{currentReel.caption}"
-                </p>
-
-                <div className="flex flex-wrap gap-1.5 pt-1">
-                  {currentReel.hashtags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="font-mono text-[11px] text-moss bg-moss-subtle border border-moss/20 px-2 py-0.5 rounded-sm"
-                    >
-                      {tag}
+              {/* Main Reel Presentation Card */}
+              <Card className="p-5 sm:p-6 bg-surface">
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 items-start">
+                  {/* 9:16 Video Player (max-w-[360px]) */}
+                  <div className="sm:col-span-6 lg:col-span-5 flex flex-col items-center">
+                    <div className="w-full max-w-[360px]">
+                      <HeroPlayer
+                        videoSrc={currentReel.videoSrc}
+                        posterSrc={currentReel.posterSrc}
+                        duration={currentReel.duration}
+                        status={reelStatus}
+                      />
+                    </div>
+                    <span className="font-mono text-[10px] text-ink-muted mt-2 text-center block">
+                      Hover to preview · Click for audio
                     </span>
-                  ))}
-                </div>
-              </div>
+                  </div>
 
-              {/* Technical Preflight Quality Matrix */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 font-mono text-xs">
-                <div className="p-3 rounded-sm bg-subtle border border-border space-y-1">
-                  <span className="text-[10px] uppercase text-ink-muted block">
-                    Contrast Check
-                  </span>
-                  <div className="flex items-center gap-1.5 text-status-success font-medium">
-                    <StatusDot status="success" />
-                    <span className="tabular-nums">0.22 (Optimal)</span>
+                  {/* Beside Player: Quote in Serif, Caption, Meta, Actions */}
+                  <div className="sm:col-span-6 lg:col-span-7 flex flex-col justify-between space-y-5">
+                    {/* Serif Quote with Optical Hanging Punctuation */}
+                    <div className="space-y-2">
+                      <span className="font-mono text-[10px] uppercase tracking-wider text-moss font-medium">
+                        Quote (Formula D3 · Roman Urdu)
+                      </span>
+                      <QuoteBlock size="md" theme="loss">
+                        {currentReel.quote}
+                      </QuoteBlock>
+                    </div>
+
+                    {/* Instagram Caption Block */}
+                    <div className="p-3 rounded-sm bg-subtle border border-border space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-[9px] uppercase tracking-wider text-ink-muted">
+                          Instagram Caption
+                        </span>
+                        <span className="font-mono tabular-nums text-[10px] text-ink-muted">
+                          {currentReel.caption.length} chars
+                        </span>
+                      </div>
+                      <p className="font-sans text-xs text-ink-secondary leading-relaxed whitespace-pre-line italic">
+                        {currentReel.caption}
+                      </p>
+                    </div>
+
+                    {/* Meta Specifications */}
+                    <div className="divide-y divide-border border-y border-border py-1 text-xs font-mono">
+                      <div className="flex items-center justify-between py-1.5">
+                        <span className="text-ink-muted">Clip Name</span>
+                        <span className="text-ink-primary truncate max-w-[190px] text-right" title={currentReel.clipName}>
+                          {currentReel.clipName}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between py-1.5">
+                        <span className="text-ink-muted">Style</span>
+                        <span className="text-ink-primary font-medium">{currentReel.style}</span>
+                      </div>
+                      <div className="flex items-center justify-between py-1.5">
+                        <span className="text-ink-muted">Scheduled Time</span>
+                        <span className="text-ink-primary tabular-nums">18:00 UTC (Slot A)</span>
+                      </div>
+                      <div className="flex items-center justify-between py-1.5">
+                        <span className="text-ink-muted">Format</span>
+                        <span className="text-ink-primary tabular-nums">{currentReel.resolution}</span>
+                      </div>
+                      <div className="flex items-center justify-between py-1.5">
+                        <span className="text-ink-muted">Placement</span>
+                        <span className="text-moss font-medium">{currentReel.placementBand}</span>
+                      </div>
+                    </div>
+
+                    {/* Approve / Regenerate Actions */}
+                    <div className="flex flex-wrap items-center gap-2 pt-1">
+                      <Button
+                        size="sm"
+                        variant="primary"
+                        icon={<Check className="w-3.5 h-3.5" />}
+                        onClick={handleApprove}
+                      >
+                        Approve
+                      </Button>
+
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        icon={<RefreshCw className="w-3.5 h-3.5" />}
+                        onClick={handleRegenerate}
+                      >
+                        Regenerate
+                      </Button>
+
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        icon={<Send className="w-3.5 h-3.5 text-moss" />}
+                        onClick={handlePublishNow}
+                      >
+                        Publish Now
+                      </Button>
+
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        icon={<Trash2 className="w-3.5 h-3.5 text-status-error" />}
+                        onClick={() => {
+                          setReelStatus("discarded");
+                          addToast({
+                            type: "info",
+                            title: "Reel Discarded",
+                            description: "Moved to output/_rejected.",
+                          });
+                        }}
+                      >
+                        Discard
+                      </Button>
+                    </div>
                   </div>
                 </div>
+              </Card>
+            </section>
 
-                <div className="p-3 rounded-sm bg-subtle border border-border space-y-1">
-                  <span className="text-[10px] uppercase text-ink-muted block">
-                    Safe Margin
-                  </span>
-                  <div className="flex items-center gap-1.5 text-status-success font-medium">
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                    <span>90px Compliant</span>
+            {/* -----------------------------------------------------------------
+                RIGHT 5 COLS: "PIPELINE" TIMELINE & "THIS WEEK" STATS
+                ----------------------------------------------------------------- */}
+            <aside className="lg:col-span-5 space-y-6">
+              {/* 1. Pipeline Vertical Timeline */}
+              <Card className="p-5 bg-surface space-y-4">
+                <div className="flex items-center justify-between border-b border-border pb-3">
+                  <div className="space-y-0.5">
+                    <h3 className="font-sans text-xs font-semibold uppercase tracking-wider text-ink-primary">
+                      Pipeline
+                    </h3>
+                    <p className="font-mono text-[10px] text-ink-muted">
+                      Today's automated production timeline
+                    </p>
+                  </div>
+                  <Badge variant="default">Auto 60fps</Badge>
+                </div>
+
+                {/* Vertical Timeline with Thin 1px Rule and Status Dots */}
+                <div className="relative pl-6 space-y-4">
+                  {/* Vertical Thin Rule */}
+                  <div
+                    className="absolute left-[7px] top-1.5 bottom-2 w-px bg-border"
+                    aria-hidden="true"
+                  />
+
+                  {PIPELINE_STEPS.map((step, idx) => {
+                    const isCompleted = step.status === "completed";
+                    const isActive = step.status === "active";
+
+                    return (
+                      <div key={step.name} className="relative flex items-start gap-3">
+                        {/* 6px Status Dot centered on timeline */}
+                        <div
+                          className="absolute -left-6 top-1 flex items-center justify-center w-3.5 h-3.5 bg-surface rounded-full"
+                          aria-hidden="true"
+                        >
+                          <StatusDot
+                            status={
+                              isCompleted
+                                ? "success"
+                                : isActive
+                                ? "warning"
+                                : "neutral"
+                            }
+                            pulse={isActive}
+                          />
+                        </div>
+
+                        {/* Step Details */}
+                        <div className="flex-1 min-w-0 space-y-0.5">
+                          <div className="flex items-center justify-between text-xs">
+                            <span
+                              className={`font-sans font-medium ${
+                                isCompleted
+                                  ? "text-ink-primary"
+                                  : isActive
+                                  ? "text-moss font-semibold"
+                                  : "text-ink-muted"
+                              }`}
+                            >
+                              {step.name}
+                            </span>
+                            <span className="font-mono tabular-nums text-[10px] text-ink-muted">
+                              {step.timestamp}
+                            </span>
+                          </div>
+                          <p className="font-mono text-[11px] text-ink-secondary leading-tight truncate">
+                            {step.detail}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </Card>
+
+              {/* 2. Compact "This week" List with Tabular Numerals */}
+              <Card className="p-5 bg-surface space-y-3.5">
+                <div className="flex items-center justify-between border-b border-border pb-3">
+                  <div className="space-y-0.5">
+                    <h3 className="font-sans text-xs font-semibold uppercase tracking-wider text-ink-primary">
+                      This week
+                    </h3>
+                    <p className="font-mono text-[10px] text-ink-muted">
+                      Cadence: 2 reels/day (@enoent.7)
+                    </p>
+                  </div>
+                  <TrendingUp className="w-3.5 h-3.5 text-moss" />
+                </div>
+
+                <div className="divide-y divide-border text-xs font-mono space-y-0">
+                  {/* Posts Scheduled */}
+                  <div className="flex items-center justify-between py-2">
+                    <span className="text-ink-secondary font-sans">Posts</span>
+                    <div className="flex items-center gap-2">
+                      <span className="tabular-nums font-medium text-ink-primary">
+                        12 / 14
+                      </span>
+                      <span className="text-[10px] text-moss bg-moss-subtle px-1.5 py-0.2 rounded border border-moss/20">
+                        85%
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Success Rate */}
+                  <div className="flex items-center justify-between py-2">
+                    <span className="text-ink-secondary font-sans">Success rate</span>
+                    <span className="tabular-nums font-medium text-status-success">
+                      98.4%
+                    </span>
+                  </div>
+
+                  {/* Token Health */}
+                  <div className="flex items-center justify-between py-2">
+                    <span className="text-ink-secondary font-sans">Token expires in</span>
+                    <div className="flex items-center gap-1.5">
+                      <Key className="w-3 h-3 text-ink-muted" />
+                      <span className="tabular-nums font-medium text-ink-primary">
+                        58 days
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Contrast Score */}
+                  <div className="flex items-center justify-between py-2">
+                    <span className="text-ink-secondary font-sans">Avg contrast</span>
+                    <span className="tabular-nums font-medium text-ink-primary">
+                      0.23 (Safe AA)
+                    </span>
+                  </div>
+
+                  {/* Audio Gate Compliance */}
+                  <div className="flex items-center justify-between py-2">
+                    <span className="text-ink-secondary font-sans">Audio gate</span>
+                    <span className="tabular-nums text-ink-secondary text-[11px]">
+                      &lt; 90 BPM (100%)
+                    </span>
                   </div>
                 </div>
-
-                <div className="p-3 rounded-sm bg-subtle border border-border space-y-1 col-span-2 sm:col-span-1">
-                  <span className="text-[10px] uppercase text-ink-muted block">
-                    Resolution
-                  </span>
-                  <span className="text-ink-primary font-mono block">
-                    {currentReel.resolution}
-                  </span>
-                </div>
-              </div>
-
-              {/* Editorial Decision Buttons */}
-              <div className="flex flex-wrap items-center gap-2.5 pt-4 border-t border-border">
-                <Button
-                  size="md"
-                  variant="primary"
-                  onClick={handlePublishNow}
-                  icon={<Send className="w-3.5 h-3.5" />}
-                >
-                  Publish Now
-                </Button>
-
-                <Button
-                  size="md"
-                  variant="secondary"
-                  onClick={handleApprove}
-                  icon={<Check className="w-3.5 h-3.5 text-status-success" />}
-                >
-                  Approve for 18:00
-                </Button>
-
-                <Button
-                  size="md"
-                  variant="secondary"
-                  onClick={handleRegenerate}
-                  icon={<RefreshCw className="w-3.5 h-3.5" />}
-                >
-                  Regenerate Clip
-                </Button>
-
-                <Button
-                  size="md"
-                  variant="ghost"
-                  onClick={() => {
-                    setReelStatus("discarded");
-                    addToast({
-                      type: "info",
-                      title: "Reel Discarded",
-                      description: "Moved to output/_rejected/ partition.",
-                    });
-                  }}
-                  icon={<Trash2 className="w-3.5 h-3.5 text-status-error" />}
-                >
-                  Discard
-                </Button>
-              </div>
-            </div>
-          </section>
+              </Card>
+            </aside>
+          </div>
         )}
-
-        {/* 4. CALM PIPELINE TIMELINE UNDER THE HERO */}
-        <section>
-          <PipelineTimeline />
-        </section>
-
-        {/* 5. FOOTER & STATE SWITCHER */}
-        <footer className="pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-ink-muted">
-          <div className="flex items-center gap-2">
-            <span>Reel Forge v0.1.0</span>
-            <span>•</span>
-            <span className="text-moss font-medium">Light Editorial</span>
-          </div>
-
-          {/* Interactive State Switcher for reviewer inspection */}
-          <div className="flex items-center gap-1.5 p-1 rounded-sm bg-surface border border-border">
-            <span className="text-[10px] text-ink-muted px-2 uppercase tracking-widest">
-              State:
-            </span>
-            <button
-              onClick={() => setScreenState("ready")}
-              className={`px-2.5 py-1 rounded-sm text-[11px] transition-fast ${
-                screenState === "ready"
-                  ? "bg-moss text-white font-medium"
-                  : "text-ink-secondary hover:text-ink-primary"
-              }`}
-            >
-              Live
-            </button>
-            <button
-              onClick={() => setScreenState("loading")}
-              className={`px-2.5 py-1 rounded-sm text-[11px] transition-fast ${
-                screenState === "loading"
-                  ? "bg-moss text-white font-medium"
-                  : "text-ink-secondary hover:text-ink-primary"
-              }`}
-            >
-              Loading
-            </button>
-            <button
-              onClick={() => setScreenState("empty")}
-              className={`px-2.5 py-1 rounded-sm text-[11px] transition-fast ${
-                screenState === "empty"
-                  ? "bg-moss text-white font-medium"
-                  : "text-ink-secondary hover:text-ink-primary"
-              }`}
-            >
-              Empty
-            </button>
-            <button
-              onClick={() => setScreenState("failure")}
-              className={`px-2.5 py-1 rounded-sm text-[11px] transition-fast ${
-                screenState === "failure"
-                  ? "bg-status-error text-white font-medium"
-                  : "text-ink-secondary hover:text-ink-primary"
-              }`}
-            >
-              Error
-            </button>
-          </div>
-        </footer>
-      </main>
+      </div>
 
       {/* GENERATE BATCH DIALOG */}
       <Dialog open={isGenerateModalOpen} onOpenChange={setIsGenerateModalOpen}>
-        <DialogContent title="Generate Quote Reels" description="Configure autonomous batch generation parameters.">
+        <DialogContent title="Generate Reel" description="Trigger the autonomous D3 production pipeline.">
           <div className="space-y-4 py-2 text-xs font-sans text-ink-secondary">
-            {/* Count Selector */}
-            <div className="space-y-1.5">
-              <label className="font-mono text-[11px] text-ink-muted uppercase tracking-wider block">
-                Batch Count
-              </label>
-              <div className="grid grid-cols-4 gap-2">
-                {["1", "3", "5", "10"].map((cnt) => (
-                  <button
-                    key={cnt}
-                    onClick={() => setGenCount(cnt)}
-                    className={`py-2 rounded-sm border font-mono text-xs transition-fast ${
-                      genCount === cnt
-                        ? "bg-moss text-white border-moss"
-                        : "bg-surface border-border text-ink-secondary hover:border-border-strong"
-                    }`}
-                  >
-                    {cnt} Reels
-                  </button>
-                ))}
-              </div>
-            </div>
+            <p>
+              This will discover a fresh Pinterest nature video, generate Roman Urdu sad lines with Gemini Flash,
+              apply the middle-centre placement lock, adaptive grade, 60fps lanczos upscale, and stage the reel deliverable.
+            </p>
 
-            {/* Theme Selector */}
-            <div className="space-y-1.5">
-              <label className="font-mono text-[11px] text-ink-muted uppercase tracking-wider block">
-                Theme / Philosophy
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { id: "hope", label: "Hope" },
-                  { id: "solitude", label: "Solitude" },
-                  { id: "gratitude", label: "Gratitude" },
-                  { id: "resilience", label: "Resilience" },
-                  { id: "calm", label: "Calm Nature" },
-                  { id: "mystery", label: "Forest Dark" },
-                ].map((th) => (
-                  <button
-                    key={th.id}
-                    onClick={() => setGenTheme(th.id)}
-                    className={`py-2 px-2.5 rounded-sm border text-xs text-left transition-fast ${
-                      genTheme === th.id
-                        ? "bg-moss-subtle border-moss/40 text-ink-primary font-medium"
-                        : "bg-surface border-border text-ink-secondary hover:border-border-strong"
-                    }`}
-                  >
-                    {th.label}
-                  </button>
-                ))}
-              </div>
+            <div className="p-3 rounded-sm bg-subtle border border-border font-mono text-[11px] space-y-1">
+              <p><span className="text-ink-muted">Slot:</span> Slot A (08:30 PKT) / Slot B (16:00 PKT)</p>
+              <p><span className="text-ink-muted">Destination:</span> swap/ready_to_post/reel_YYYY-MM-DD_a.mp4</p>
+              <p><span className="text-ink-muted">Channel:</span> @enoent.7 via Buffer 'noori.shed'</p>
             </div>
-
-            {/* Style Selector */}
-            <div className="space-y-1.5">
-              <label className="font-mono text-[11px] text-ink-muted uppercase tracking-wider block">
-                Typography & Grade Style
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  { id: "degraaf", name: "De Graaf (Editorial Serif)" },
-                  { id: "serif_quiet", name: "Serif Quiet (Newsreader)" },
-                  { id: "sans_minimal", name: "Sans Minimal (Clean)" },
-                  { id: "random", name: "Random Preset Rotation" },
-                ].map((st) => (
-                  <button
-                    key={st.id}
-                    onClick={() => {
-                      setGenStyle(st.id);
-                      setActivePreset(st.id);
-                    }}
-                    className={`py-2 px-2.5 rounded-sm border text-xs text-left transition-fast ${
-                      genStyle === st.id
-                        ? "bg-moss-subtle border-moss/40 text-ink-primary font-medium"
-                        : "bg-surface border-border text-ink-secondary hover:border-border-strong"
-                    }`}
-                  >
-                    {st.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Background Provider */}
-            <div className="space-y-1.5">
-              <label className="font-mono text-[11px] text-ink-muted uppercase tracking-wider block">
-                Background Footage Source
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { id: "local_folder", name: "Local Assets" },
-                  { id: "pexels", name: "Pexels 1080p" },
-                  { id: "gdrive", name: "Google Drive" },
-                ].map((prov) => (
-                  <button
-                    key={prov.id}
-                    onClick={() => setGenProvider(prov.id)}
-                    className={`py-2 px-2 rounded-sm border text-xs text-center transition-fast ${
-                      genProvider === prov.id
-                        ? "bg-moss-subtle border-moss/40 text-ink-primary font-medium"
-                        : "bg-surface border-border text-ink-secondary hover:border-border-strong"
-                    }`}
-                  >
-                    {prov.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <DialogFooter>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsGenerateModalOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                icon={<Sparkles className="w-3.5 h-3.5" />}
-                onClick={handleRunGenerate}
-              >
-                Generate {genCount} Reels
-              </Button>
-            </DialogFooter>
           </div>
+          <DialogFooter>
+            <Button variant="ghost" size="sm" onClick={() => setIsGenerateModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              icon={<Sparkles className="w-3.5 h-3.5" />}
+              onClick={() => {
+                setIsGenerateModalOpen(false);
+                addToast({
+                  type: "info",
+                  title: "D3 Pipeline Started",
+                  description: "Generating slot deliverable in background...",
+                });
+              }}
+            >
+              Start Build
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
-  );
-}
-
-export default function TodayScreenPage() {
-  return (
-    <ToastProvider>
-      <TooltipProvider>
-        <TodayScreenContent />
-      </TooltipProvider>
-    </ToastProvider>
+    </AppShell>
   );
 }
