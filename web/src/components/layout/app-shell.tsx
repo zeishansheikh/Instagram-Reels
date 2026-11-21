@@ -19,6 +19,7 @@ import {
   ChevronDown,
   ExternalLink,
   ShieldCheck,
+  CheckSquare,
   Sparkles,
 } from "lucide-react";
 
@@ -42,6 +43,7 @@ export interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { label: "Today", href: "/", icon: Calendar },
+  { label: "Review", href: "/review", icon: CheckSquare, badge: "3" },
   { label: "Reels", href: "/#reels", icon: Film, badge: "12" },
   { label: "Clips", href: "/#clips", icon: Video },
   { label: "Quotes", href: "/#quotes", icon: BookOpen },

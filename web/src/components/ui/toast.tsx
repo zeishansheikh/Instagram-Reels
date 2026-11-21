@@ -9,6 +9,11 @@ export interface Toast {
   type?: "success" | "warning" | "error" | "info";
   title: string;
   description?: string;
+  action?: {
+    label: string;
+    onClick: () => void;
+  };
+  duration?: number;
 }
 
 interface ToastContextType {
@@ -26,9 +31,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     const id = Math.random().toString(36).substring(2, 9);
     setToasts((prev) => [...prev, { ...toast, id }]);
 
+    const timeout = toast.duration ?? (toast.action ? 6000 : 4000);
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 4000);
+    }, timeout);
   }, []);
 
   const removeToast = React.useCallback((id: string) => {
@@ -51,13 +57,25 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               {t.type === "error" && <AlertCircle className="w-4 h-4 text-status-error" />}
               {(!t.type || t.type === "info") && <Info className="w-4 h-4 text-moss" />}
             </div>
-            <div className="flex-1 space-y-0.5">
+            <div className="flex-1 space-y-0.5 min-w-0">
               <p className="font-sans text-xs font-semibold text-ink-primary tracking-tight">{t.title}</p>
               {t.description && <p className="font-sans text-[11px] text-ink-secondary leading-snug">{t.description}</p>}
             </div>
+            {t.action && (
+              <button
+                onClick={() => {
+                  t.action?.onClick();
+                  removeToast(t.id);
+                }}
+                className="px-2 py-1 rounded-sm bg-subtle hover:bg-border text-xs font-mono font-medium text-ink-primary border border-border shrink-0 transition-fast"
+              >
+                {t.action.label}
+              </button>
+            )}
             <button
               onClick={() => removeToast(t.id)}
-              className="text-ink-muted hover:text-ink-primary p-0.5 rounded-sm transition-fast"
+              className="text-ink-muted hover:text-ink-primary p-0.5 rounded-sm transition-fast shrink-0"
+              aria-label="Close notification"
             >
               <X className="w-3.5 h-3.5" />
             </button>
