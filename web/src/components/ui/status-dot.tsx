@@ -11,7 +11,6 @@ export interface StatusDotProps {
 
 export function StatusDot({
   status = "neutral",
-  pulse = false,
   className,
 }: StatusDotProps) {
   const colorMap = {
@@ -22,16 +21,8 @@ export function StatusDot({
   };
 
   return (
-    <span className={cn("relative inline-flex items-center justify-center shrink-0 w-2 h-2", className)}>
-      {pulse && (
-        <span
-          className={cn(
-            "absolute w-full h-full rounded-full opacity-60 animate-ping",
-            colorMap[status]
-          )}
-        />
-      )}
-      <span className={cn("relative w-1.5 h-1.5 rounded-full", colorMap[status])} />
+    <span className={cn("inline-flex items-center justify-center shrink-0 w-2 h-2", className)}>
+      <span className={cn("w-1.5 h-1.5 rounded-full", colorMap[status])} />
     </span>
   );
 }

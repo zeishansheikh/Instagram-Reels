@@ -183,40 +183,24 @@ function TodayScreenContent() {
         {/* =====================================================================
             1. PAGE HEADER STRIP
             ===================================================================== */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border pb-5">
+        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4 border-b border-border pb-6">
           <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] uppercase tracking-wider text-moss font-medium">
-                Curation Batch #042
-              </span>
-              <span className="text-border-strong">•</span>
-              <span className="font-mono text-[10px] uppercase tracking-wider text-ink-muted">
-                Formula D3
-              </span>
+            <div className="flex items-center gap-2 font-mono text-xs text-ink-muted uppercase tracking-wider">
+              <span className="text-moss font-medium">Dispatch #042</span>
+              <span>/</span>
+              <span>Slot A & B Ready</span>
+              <span>/</span>
+              <span>Formula D3</span>
             </div>
-            <h2 className="font-serif italic text-2xl sm:text-3xl font-normal text-ink-primary tracking-tight">
-              Quiet Solitude & Reflection
+            <h2 className="font-serif text-2xl sm:text-3xl font-normal text-ink-primary tracking-tight">
+              Daily Broadcast Overview
             </h2>
           </div>
 
-          {/* Interactive State Previewer for UI inspection */}
-          <div className="flex items-center gap-1 p-1 rounded-sm bg-surface border border-border self-start sm:self-auto">
-            <span className="text-[10px] text-ink-muted px-1.5 font-mono uppercase tracking-widest">
-              State:
-            </span>
-            {(["ready", "loading", "empty", "error"] as ScreenState[]).map((st) => (
-              <button
-                key={st}
-                onClick={() => setScreenState(st)}
-                className={`px-2 py-0.5 rounded-sm text-xs font-mono capitalize transition-fast ${
-                  screenState === st
-                    ? "bg-moss text-white font-medium"
-                    : "text-ink-secondary hover:text-ink-primary"
-                }`}
-              >
-                {st === "ready" ? "Live" : st}
-              </button>
-            ))}
+          <div className="flex items-center gap-3 text-xs font-mono text-ink-secondary">
+            <span>Channel: <strong className="text-ink-primary font-medium">@enoent.7</strong></span>
+            <span className="text-border-strong">|</span>
+            <span>Cadence: <strong className="text-ink-primary font-medium">2 reels today</strong></span>
           </div>
         </div>
 
@@ -359,7 +343,7 @@ function TodayScreenContent() {
               <Card className="p-5 sm:p-6 bg-surface">
                 <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 items-start">
                   {/* 9:16 Video Player (max-w-[360px]) */}
-                  <div className="sm:col-span-6 lg:col-span-5 flex flex-col items-center">
+                  <div className="sm:col-span-6 lg:col-span-5 flex flex-col items-start">
                     <div className="w-full max-w-[360px]">
                       <HeroPlayer
                         videoSrc={currentReel.videoSrc}
@@ -368,7 +352,7 @@ function TodayScreenContent() {
                         status={reelStatus}
                       />
                     </div>
-                    <span className="font-mono text-[10px] text-ink-muted mt-2 text-center block">
+                    <span className="font-mono text-xs text-ink-muted mt-2 text-left block">
                       Hover to preview · Click for audio
                     </span>
                   </div>
@@ -377,7 +361,7 @@ function TodayScreenContent() {
                   <div className="sm:col-span-6 lg:col-span-7 flex flex-col justify-between space-y-5">
                     {/* Serif Quote with Optical Hanging Punctuation */}
                     <div className="space-y-2">
-                      <span className="font-mono text-[10px] uppercase tracking-wider text-moss font-medium">
+                      <span className="font-mono text-xs uppercase tracking-wider text-moss font-medium">
                         Quote (Formula D3 · Roman Urdu)
                       </span>
                       <QuoteBlock size="md" theme="loss">
@@ -386,12 +370,12 @@ function TodayScreenContent() {
                     </div>
 
                     {/* Instagram Caption Block */}
-                    <div className="p-3 rounded-sm bg-subtle border border-border space-y-1.5">
+                    <div className="p-3.5 rounded-sm bg-subtle border border-border space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="font-mono text-[9px] uppercase tracking-wider text-ink-muted">
+                        <span className="font-mono text-xs uppercase tracking-wider text-ink-muted">
                           Instagram Caption
                         </span>
-                        <span className="font-mono tabular-nums text-[10px] text-ink-muted">
+                        <span className="font-mono tabular-nums text-xs text-ink-muted">
                           {currentReel.caption.length} chars
                         </span>
                       </div>
@@ -449,7 +433,7 @@ function TodayScreenContent() {
                       <Button
                         size="sm"
                         variant="ghost"
-                        icon={<Send className="w-3.5 h-3.5 text-moss" />}
+                        icon={<Send className="w-3.5 h-3.5" />}
                         onClick={handlePublishNow}
                       >
                         Publish Now
@@ -458,7 +442,7 @@ function TodayScreenContent() {
                       <Button
                         size="sm"
                         variant="ghost"
-                        icon={<Trash2 className="w-3.5 h-3.5 text-status-error" />}
+                        icon={<Trash2 className="w-3.5 h-3.5" />}
                         onClick={() => {
                           setReelStatus("discarded");
                           addToast({
@@ -560,11 +544,10 @@ function TodayScreenContent() {
                     <h3 className="font-sans text-xs font-semibold uppercase tracking-wider text-ink-primary">
                       This week
                     </h3>
-                    <p className="font-mono text-[10px] text-ink-muted">
+                    <p className="font-mono text-xs text-ink-muted">
                       Cadence: 2 reels/day (@enoent.7)
                     </p>
                   </div>
-                  <TrendingUp className="w-3.5 h-3.5 text-moss" />
                 </div>
 
                 <div className="divide-y divide-border text-xs font-mono space-y-0">
@@ -575,7 +558,7 @@ function TodayScreenContent() {
                       <span className="tabular-nums font-medium text-ink-primary">
                         12 / 14
                       </span>
-                      <span className="text-[10px] text-moss bg-moss-subtle px-1.5 py-0.5 rounded border border-moss/20">
+                      <span className="text-xs font-mono text-moss bg-moss-subtle px-1.5 py-0.5 rounded-xs border border-moss/20 font-medium">
                         85%
                       </span>
                     </div>
@@ -592,12 +575,9 @@ function TodayScreenContent() {
                   {/* Token Health */}
                   <div className="flex items-center justify-between py-2">
                     <span className="text-ink-secondary font-sans">Token expires in</span>
-                    <div className="flex items-center gap-1.5">
-                      <Key className="w-3 h-3 text-ink-muted" />
-                      <span className="tabular-nums font-medium text-ink-primary">
-                        58 days
-                      </span>
-                    </div>
+                    <span className="tabular-nums font-medium text-ink-primary">
+                      58 days
+                    </span>
                   </div>
 
                   {/* Contrast Score */}
@@ -611,7 +591,7 @@ function TodayScreenContent() {
                   {/* Audio Gate Compliance */}
                   <div className="flex items-center justify-between py-2">
                     <span className="text-ink-secondary font-sans">Audio gate</span>
-                    <span className="tabular-nums text-ink-secondary text-[11px]">
+                    <span className="tabular-nums text-ink-secondary text-xs">
                       &lt; 90 BPM (100%)
                     </span>
                   </div>

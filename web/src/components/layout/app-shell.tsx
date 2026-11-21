@@ -91,18 +91,13 @@ export function AppShell({
         <div className="flex flex-col h-full">
           {/* Sidebar Header / Brand */}
           <div className="h-14 px-4 border-b border-border flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="w-6 h-6 rounded-sm bg-moss text-white flex items-center justify-center font-serif italic text-sm font-semibold select-none">
-                R
-              </div>
-              <div className="flex flex-col">
-                <span className="font-serif text-sm font-medium tracking-tight text-ink-primary leading-none group-hover:text-moss transition-fast">
-                  Reel Forge
-                </span>
-                <span className="font-mono text-[9px] uppercase tracking-wider text-ink-muted mt-0.5">
-                  Editorial Studio
-                </span>
-              </div>
+            <Link href="/" className="flex flex-col group py-1">
+              <span className="font-serif text-sm font-semibold tracking-tight text-ink-primary leading-tight group-hover:text-moss transition-fast">
+                Reel Forge
+              </span>
+              <span className="font-mono text-xs uppercase tracking-wider text-ink-muted">
+                Editorial Platform
+              </span>
             </Link>
 
             <button
@@ -116,7 +111,7 @@ export function AppShell({
 
           {/* Navigation Links */}
           <nav className="p-2.5 space-y-1 flex-1 overflow-y-auto" aria-label="Main Navigation">
-            <div className="px-2 py-1 text-[10px] font-mono uppercase tracking-wider text-ink-muted">
+            <div className="px-2.5 py-1 text-xs font-mono uppercase tracking-wider text-ink-muted">
               Platform
             </div>
 
@@ -163,22 +158,22 @@ export function AppShell({
 
           {/* Sidebar Footer: Channel & System Status */}
           <div className="p-3 border-t border-border bg-subtle/40 space-y-2">
-            <div className="flex items-center justify-between text-[11px]">
-              <span className="font-mono text-ink-muted uppercase tracking-wider text-[9px]">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-mono text-ink-muted uppercase tracking-wider text-xs">
                 Connected Channel
               </span>
-              <span className="flex items-center gap-1 font-mono text-[10px] text-status-success font-medium">
+              <span className="flex items-center gap-1.5 font-mono text-xs text-status-success font-medium">
                 <StatusDot status="success" />
                 Active
               </span>
             </div>
 
-            <div className="p-2 rounded-sm bg-surface border border-border flex items-center justify-between">
+            <div className="p-2.5 rounded-sm bg-surface border border-border flex items-center justify-between">
               <div className="flex flex-col min-w-0">
                 <span className="font-mono text-xs text-ink-primary truncate font-medium">
                   @enoent.7
                 </span>
-                <span className="font-mono text-[10px] text-ink-muted truncate">
+                <span className="font-mono text-xs text-ink-muted truncate">
                   noori.shed · Buffer
                 </span>
               </div>
@@ -188,21 +183,21 @@ export function AppShell({
         </div>
       </aside>
 
-      {/* Backdrop for mobile sidebar */}
+      {/* Backdrop for mobile sidebar (Flat, no blur) */}
       {mobileOpen && (
         <div
           onClick={() => setMobileOpen(false)}
-          className="fixed inset-0 bg-ink-primary/20 backdrop-blur-[1px] z-30 md:hidden"
+          className="fixed inset-0 bg-ink-primary/25 z-30 md:hidden"
           aria-hidden="true"
         />
       )}
 
       {/* =========================================================================
-          2. MAIN CONTENT AREA WITH STICKY TOP BAR
+          2. MAIN CONTENT AREA WITH SOLID STICKY TOP BAR
           ========================================================================= */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Bar */}
-        <header className="h-14 bg-surface/90 backdrop-blur-sm border-b border-border px-4 sm:px-6 flex items-center justify-between sticky top-0 z-20">
+        {/* Top Bar (Solid surface, no frosted glass blur) */}
+        <header className="h-14 bg-surface border-b border-border px-4 sm:px-6 flex items-center justify-between sticky top-0 z-20">
           {/* Left: Mobile hamburger + Page Title */}
           <div className="flex items-center gap-3">
             <button
@@ -235,7 +230,7 @@ export function AppShell({
             >
               <Search className="w-3.5 h-3.5 text-ink-muted" />
               <span>Search...</span>
-              <kbd className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-surface border border-border text-[10px] text-ink-muted font-medium ml-1">
+              <kbd className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-surface border border-border text-xs text-ink-muted font-medium ml-1">
                 <Command className="w-2.5 h-2.5" />K
               </kbd>
             </button>
@@ -252,17 +247,15 @@ export function AppShell({
               </Button>
             )}
 
-            {/* Account Dropdown Menu */}
+            {/* Account Dropdown Menu (Clean editorial mono representation) */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
-                  className="flex items-center gap-1.5 pl-1.5 pr-2 py-1 rounded-sm border border-border hover:border-border-strong bg-surface transition-fast text-xs outline-none focus-visible:ring-2 focus-visible:ring-moss/40"
+                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-sm border border-border hover:border-border-strong bg-surface transition-fast text-xs outline-none focus-visible:ring-2 focus-visible:ring-moss/40"
                   aria-label="Account menu"
                 >
-                  <div className="w-5 h-5 rounded-full bg-moss/10 text-moss flex items-center justify-center font-mono text-[10px] font-medium uppercase">
-                    E
-                  </div>
-                  <span className="hidden md:inline font-mono text-[11px] text-ink-primary font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-status-success shrink-0" />
+                  <span className="font-mono text-xs text-ink-primary font-medium">
                     @enoent.7
                   </span>
                   <ChevronDown className="w-3 h-3 text-ink-muted" />

@@ -173,22 +173,22 @@ export function HeroPlayer({
         </span>
       </div>
 
-      {/* Center Big Play Button */}
+      {/* Center Big Play Button (Stationary, calm) */}
       <div
         className={cn(
-          "absolute inset-0 flex items-center justify-center z-20 pointer-events-none transition-all duration-200",
-          isPlaying ? "opacity-0 scale-95" : "opacity-100 scale-100"
+          "absolute inset-0 flex items-center justify-center z-20 pointer-events-none transition-opacity duration-150",
+          isPlaying ? "opacity-0" : "opacity-100"
         )}
       >
-        <div className="w-12 h-12 rounded-full bg-surface/90 border border-border flex items-center justify-center text-moss shadow-popover transition-transform duration-200 group-hover:scale-105">
+        <div className="w-12 h-12 rounded-full bg-surface/95 border border-border flex items-center justify-center text-moss">
           <Play className="w-5 h-5 fill-current ml-0.5 text-moss" />
         </div>
       </div>
 
-      {/* Bottom Controls Scrim & Track */}
+      {/* Bottom Controls Track (Solid dark scrim, no blurry gradient) */}
       <div
         className={cn(
-          "absolute bottom-0 inset-x-0 p-3 pt-10 z-20 bg-gradient-to-t from-[#16150F]/80 via-[#16150F]/40 to-transparent transition-opacity duration-200",
+          "absolute bottom-0 inset-x-0 p-3 z-20 bg-[#16150F]/85 border-t border-white/10 transition-opacity duration-150",
           showControls || !isPlaying ? "opacity-100" : "opacity-0"
         )}
       >
