@@ -1410,6 +1410,350 @@
           }
         }
       }
+    },
+    "/d3/status": {
+      "get": {
+        "tags": [
+          "D3 Pipeline (@noori.shed)"
+        ],
+        "summary": "Get complete D3 pipeline status and manifests",
+        "description": "Retrieve state from workflow_state.json and status of staged slot A and B manifests.",
+        "operationId": "get_d3_status_d3_status_get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "API key as query parameter (useful for media streaming)",
+              "title": "Api Key"
+            },
+            "description": "API key as query parameter (useful for media streaming)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get D3 Status D3 Status Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/d3/state": {
+      "get": {
+        "tags": [
+          "D3 Pipeline (@noori.shed)"
+        ],
+        "summary": "Inspect raw workflow_state.json",
+        "description": "Inspect full workflow_state.json including used pins, lines, and songs.",
+        "operationId": "get_workflow_state_d3_state_get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "API key as query parameter (useful for media streaming)",
+              "title": "Api Key"
+            },
+            "description": "API key as query parameter (useful for media streaming)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Workflow State D3 State Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/d3/manifest/{slot}": {
+      "get": {
+        "tags": [
+          "D3 Pipeline (@noori.shed)"
+        ],
+        "summary": "Get staged manifest for slot A or B",
+        "description": "Retrieve manifest for specified slot ('a' or 'b').",
+        "operationId": "get_manifest_d3_manifest__slot__get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "slot",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Slot"
+            }
+          },
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "API key as query parameter (useful for media streaming)",
+              "title": "Api Key"
+            },
+            "description": "API key as query parameter (useful for media streaming)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Manifest D3 Manifest  Slot  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/d3/build": {
+      "post": {
+        "tags": [
+          "D3 Pipeline (@noori.shed)"
+        ],
+        "summary": "Execute 15-step D3 build pipeline",
+        "description": "Execute the full D3 15-step pipeline: fetch footage, audio swap, D3 Roman Urdu lines, 1080p60 encode, and staging.",
+        "operationId": "trigger_d3_build_d3_build_post",
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "API key as query parameter (useful for media streaming)",
+              "title": "Api Key"
+            },
+            "description": "API key as query parameter (useful for media streaming)"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/D3BuildRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Trigger D3 Build D3 Build Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/d3/post/{slot}": {
+      "post": {
+        "tags": [
+          "D3 Pipeline (@noori.shed)"
+        ],
+        "summary": "Post staged D3 reel for slot A or B",
+        "description": "Dispatch staged reel to Buffer channel 'noori.shed' (@enoent.7).",
+        "operationId": "trigger_d3_post_d3_post__slot__post",
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "slot",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Slot"
+            }
+          },
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "API key as query parameter (useful for media streaming)",
+              "title": "Api Key"
+            },
+            "description": "API key as query parameter (useful for media streaming)"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/D3PostRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Trigger D3 Post D3 Post  Slot  Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1496,6 +1840,90 @@
           "path"
         ],
         "title": "ClipModel"
+      },
+      "D3BuildRequest": {
+        "properties": {
+          "slot": {
+            "type": "string",
+            "title": "Slot",
+            "description": "Pipeline slot: 'a' (morning) or 'b' (afternoon)",
+            "default": "a"
+          },
+          "date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date",
+            "description": "Date partition (YYYY-MM-DD)"
+          },
+          "theme": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Theme",
+            "description": "Theme override (loss, yaadein, waqt, tanhai, dard)"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category",
+            "description": "Nature footage category override"
+          },
+          "run_in_background": {
+            "type": "boolean",
+            "title": "Run In Background",
+            "description": "Run build in background thread",
+            "default": true
+          }
+        },
+        "type": "object",
+        "title": "D3BuildRequest"
+      },
+      "D3PostRequest": {
+        "properties": {
+          "date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date",
+            "description": "Expected date partition (YYYY-MM-DD)"
+          },
+          "dry_run": {
+            "type": "boolean",
+            "title": "Dry Run",
+            "description": "Simulate publish without external network call",
+            "default": false
+          },
+          "run_in_background": {
+            "type": "boolean",
+            "title": "Run In Background",
+            "description": "Run publish in background thread",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "D3PostRequest"
       },
       "GenerateRequest": {
         "properties": {
