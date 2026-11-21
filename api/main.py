@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
-from api.routes import clips, health, jobs, publish, quotes, reels, schedule, settings
+from api.routes import clips, d3_pipeline, health, jobs, publish, quotes, reels, schedule, settings
 from reelforge.config import load_config
 from reelforge.db import init_db
 
@@ -68,6 +68,10 @@ assets_path = Path("assets")
 assets_path.mkdir(parents=True, exist_ok=True)
 app.mount("/static/assets", StaticFiles(directory=str(assets_path)), name="assets_static")
 
+swap_path = Path("swap")
+swap_path.mkdir(parents=True, exist_ok=True)
+app.mount("/static/swap", StaticFiles(directory=str(swap_path)), name="swap_static")
+
 # 3. Register Routers
 app.include_router(health.router)
 app.include_router(reels.router)
@@ -77,6 +81,7 @@ app.include_router(schedule.router)
 app.include_router(settings.router)
 app.include_router(publish.router)
 app.include_router(jobs.router)
+app.include_router(d3_pipeline.router)
 
 
 @app.get("/", include_in_schema=False)

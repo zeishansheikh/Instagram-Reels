@@ -217,8 +217,9 @@ def test_instagram_publisher_full_pipeline_mocked(tmp_path: Path) -> None:
 
 def test_publish_date_reels_dry_run_and_idempotency(tmp_path: Path) -> None:
     """Verify publish_date_reels dry-run validation and idempotency protection."""
+    import datetime
     output_base = tmp_path / "output"
-    date_str = "2026-11-20"
+    date_str = datetime.date.today().isoformat()
     db_file = tmp_path / "test.db"
 
     # Create dummy video and package into output/2026-11-20/reel_001

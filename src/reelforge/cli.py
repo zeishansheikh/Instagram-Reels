@@ -325,6 +325,124 @@ def serve_api(
     uvicorn.run("api.main:app", host=host, port=port, reload=reload)
 
 
+# ==============================================================================
+# D3 REEL PIPELINE COMMANDS (Formula D3 - @noori.shed / @enoent.7)
+# ==============================================================================
+
+pipeline_app = typer.Typer(
+    name="pipeline",
+    help="D3 Reel Pipeline commands: Build, Post, Status, and Quality Verification.",
+    no_args_is_help=True,
+)
+
+
+@pipeline_app.command("build")
+def pipeline_build(
+    slot: Annotated[str, typer.Option("--slot", "-s", help="Pipeline slot: a (morning 08:30) or b (afternoon 16:00)")] = "a",
+    date: Annotated[Optional[str], typer.Option("--date", "-d", help="Date partition (format: YYYY-MM-DD)")] = None,
+    theme: Annotated[Optional[str], typer.Option("--theme", "-t", help="Theme override (loss, yaadein, waqt, tanhai, dard)")] = None,
+    category: Annotated[Optional[str], typer.Option("--category", "-c", help="Nature category override")] = None,
+    dry_run: Annotated[bool, typer.Option("--dry-run", help="Simulate build without heavy encodes")] = False,
+) -> None:
+    """Execute the full 15-step D3 build pipeline for Slot A or Slot B."""
+    from reelforge.pipeline.builder import build_d3_reel
+
+    typer.echo(f"🎬 Starting D3 Build Pipeline for Slot '{slot.upper()}'...")
+    res = build_d3_reel(
+        slot=slot,
+        target_date=date,
+        theme_override=theme,
+        category_override=category,
+        dry_run=dry_run,
+    )
+
+    if res.get("status") == "success":
+        typer.echo(f"\n✨ D3 Reel Build for Slot '{slot.upper()}' SUCCESSFUL!")
+        typer.echo(f"   Date: {res['date']}")
+        typer.echo(f"   Video: {res['video_path']}")
+        typer.echo(f"   Manifest: {res['manifest_path']}")
+        typer.echo(f"   Quote: \"{res['quote']}\"")
+        typer.echo(f"   Song: {res['song']}")
+        typer.echo(f"   Verified 1080p60: {res['verified']}")
+    else:
+        typer.echo(f"\n❌ D3 Build Failed at step {res.get('step')}: {res.get('error')}", err=True)
+        raise typer.Exit(1)
+
+
+@pipeline_app.command("post")
+def pipeline_post(
+    slot: Annotated[str, typer.Option("--slot", "-s", help="Slot to post: a or b")] = "a",
+    date: Annotated[Optional[str], typer.Option("--date", "-d", help="Expected date partition (YYYY-MM-DD)")] = None,
+    dry_run: Annotated[bool, typer.Option("--dry-run", help="Validate manifest & video without network post")] = False,
+) -> None:
+    """Post today's staged reel to Buffer channel 'noori.shed' (@enoent.7)."""
+    from reelforge.pipeline.poster import post_d3_reel
+
+    typer.echo(f"🚀 Initiating D3 post job for Slot '{slot.upper()}'{' (DRY-RUN)' if dry_run else ''}...")
+    res = post_d3_reel(slot=slot, target_date=date, dry_run=dry_run)
+
+    if res.get("status") in ("published", "dry_run"):
+        typer.echo(f"\n✅ Slot '{slot.upper()}' Post Succeeded!")
+        typer.echo(f"   Status: {res['status'].upper()}")
+        typer.echo(f"   Media ID: {res.get('media_id')}")
+        typer.echo(f"   Live Link: {res.get('live_link')}")
+    else:
+        typer.echo(f"\n❌ Post Failed: {res.get('error')}", err=True)
+        raise typer.Exit(1)
+
+
+@pipeline_app.command("status")
+def pipeline_status() -> None:
+    """Display workflow state, used counts, and readiness of staged manifests."""
+    from reelforge.pipeline.workflow_state import WorkflowState
+    from reelforge.pipeline.manifest import ReelManifest
+
+    state = WorkflowState.load()
+    console.print("\n[bold]=== D3 Workflow State (workflow_state.json) ===[/bold]")
+    console.print(f"Used Pins: [cyan]{len(state.used_pins)}[/cyan]")
+    console.print(f"Used Lines: [cyan]{len(state.used_lines)}[/cyan]")
+    console.print(f"Used Songs: [cyan]{len(state.used_songs)}[/cyan]")
+    console.print(f"Used Reels: [cyan]{len(state.used_reels)}[/cyan]")
+    console.print(f"Last Category: [green]{state.last_category or 'None'}[/green]")
+    console.print(f"Last Song: [green]{state.last_song or 'None'}[/green]")
+    console.print(f"Last Run Tag: [green]{state.last_run or 'None'}[/green]\n")
+
+    # Inspect ready_to_post manifests
+    console.print("[bold]=== Staged Ready-to-Post Manifests ===[/bold]")
+    for s in ("a", "b"):
+        m = ReelManifest.load(s)
+        if m:
+            console.print(f"Slot [bold]{s.upper()}[/bold]: Ready for date [cyan]{m.date}[/cyan] ({Path(m.video_path).name})")
+        else:
+            console.print(f"Slot [bold]{s.upper()}[/bold]: [dim]Not staged yet[/dim]")
+    console.print()
+
+
+@pipeline_app.command("verify")
+def pipeline_verify(
+    video: Annotated[Path, typer.Argument(help="Video file to test with Section 5 verification gates", exists=True)],
+) -> None:
+    """Verify video meets Section 5 spec (1080x1920, 60fps, 15M, AAC, audio audible)."""
+    from reelforge.pipeline.gates import verify_final_reel
+
+    typer.echo(f"🔍 Running Section 5 Verification on: {video}")
+    passed, logs = verify_final_reel(video)
+
+    for log in logs:
+        typer.echo(f"   • {log}")
+
+    if passed:
+        typer.echo("\n✅ Verification PASSED: Video is compliant with 1080p60 Instagram master specs.")
+    else:
+        typer.echo("\n❌ Verification FAILED: Requirements not satisfied.", err=True)
+        raise typer.Exit(1)
+
+
+# Register pipeline sub-app under both 'pipeline' and 'd3'
+app.add_typer(pipeline_app, name="pipeline")
+app.add_typer(pipeline_app, name="d3")
+
+
 @app.command()
 def clean() -> None:
     """Clear temporary render cache and cached footage."""

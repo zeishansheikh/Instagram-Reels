@@ -166,7 +166,8 @@ def test_batch_generate_rotates_random_styles(tmp_path: Path) -> None:
         meta = json.loads(meta_file.read_text(encoding="utf-8"))
         used_styles.append(meta["style"])
 
-    # Across 3 reels with 3 available presets, all 3 presets should have been rotated!
+    # Across 3 reels, 3 distinct presets should have been rotated from the available pool
     assert len(set(used_styles)) == 3
-    for expected in STYLE_PRESET_NAMES:
-        assert expected in used_styles
+    all_styles = [p.stem for p in get_available_styles()]
+    for s in used_styles:
+        assert s in all_styles

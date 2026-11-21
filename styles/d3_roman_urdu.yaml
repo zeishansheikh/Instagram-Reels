@@ -1,0 +1,47 @@
+name: d3_roman_urdu
+formula: D3
+description: "D3 Formula (locked 2026-11-21): Sad deep Gen Z lines in Roman Urdu, sad beats, real Pinterest nature, middle-centre placement lock, 1080p60."
+canvas:
+  width: 1080
+  height: 1920
+  fps: 60
+duration:
+  min: 8.0
+  max: 20.0
+background:
+  provider: pinterest
+  grade: adaptive
+  upscale: lanczos
+  unsharp: "5:5:0.5"
+text:
+  font: "/usr/share/fonts/truetype/noto/NotoSerif-SemiBold.ttf"
+  size: 30
+  color: "#FFFFFF"
+  shadow:
+    x: 0
+    y: 2
+    color: "black@0.9"
+  position: "middle_centre"
+  target_y: 960
+  min_y: 640
+  max_y: 1280
+  max_luma: 80
+  align: "center"
+  reveal: "all_at_once"
+  max_lines: 3
+audio:
+  mode: "sad_beats"
+  target_bpm_max: 95
+  vocal_band: "300-3400"
+  fade: 0.5
+hashtags_base:
+  - "#sad"
+  - "#dard"
+  - "#tanhai"
+encode:
+  video_bitrate: "15M"
+  maxrate: "20M"
+  bufsize: "40M"
+  audio_bitrate: "128k"
+  master_crf: 16
+
