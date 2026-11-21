@@ -213,60 +213,62 @@ function SettingsContent() {
               Preferences
             </span>
 
-            {[
-              {
-                id: "connections",
-                label: "Connections",
-                icon: Link2,
-                statusDot: "success" as const,
-              },
-              {
-                id: "styles",
-                label: "Styles & Presets",
-                icon: Palette,
-                statusDot: undefined,
-              },
-              {
-                id: "automation",
-                label: "Automation",
-                icon: Cpu,
-                statusDot: dryRunMode ? ("warning" as const) : ("success" as const),
-              },
-              {
-                id: "notifications",
-                label: "Notifications",
-                icon: Bell,
-                statusDot: undefined,
-              },
-            ].map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
+            <nav className="flex md:flex-col overflow-x-auto gap-1 pb-2 md:pb-0" aria-label="Settings navigation">
+              {[
+                {
+                  id: "connections",
+                  label: "Connections",
+                  icon: Link2,
+                  statusDot: "success" as const,
+                },
+                {
+                  id: "styles",
+                  label: "Styles & Presets",
+                  icon: Palette,
+                  statusDot: undefined,
+                },
+                {
+                  id: "automation",
+                  label: "Automation",
+                  icon: Cpu,
+                  statusDot: dryRunMode ? ("warning" as const) : ("success" as const),
+                },
+                {
+                  id: "notifications",
+                  label: "Notifications",
+                  icon: Bell,
+                  statusDot: undefined,
+                },
+              ].map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.id;
 
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as SettingsTab)}
-                  className={cn(
-                    "w-full flex items-center justify-between px-3 py-2 rounded-sm text-xs font-sans transition-fast select-none relative outline-none",
-                    isActive
-                      ? "bg-surface border border-border text-ink-primary font-medium before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-[2px] before:bg-moss before:rounded-r shadow-xs"
-                      : "text-ink-secondary hover:text-ink-primary hover:bg-subtle/70"
-                  )}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Icon
-                      className={cn(
-                        "w-4 h-4 stroke-[1.5]",
-                        isActive ? "text-moss" : "text-ink-muted"
-                      )}
-                    />
-                    <span>{tab.label}</span>
-                  </div>
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as SettingsTab)}
+                    className={cn(
+                      "w-auto md:w-full shrink-0 md:shrink whitespace-nowrap flex items-center justify-between px-3 py-2 rounded-sm text-xs font-sans transition-fast select-none relative outline-none focus-visible:ring-2 focus-visible:ring-moss/40",
+                      isActive
+                        ? "bg-surface border border-border text-ink-primary font-medium before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-[2px] before:bg-moss before:rounded-r"
+                        : "text-ink-secondary hover:text-ink-primary hover:bg-subtle/70"
+                    )}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Icon
+                        className={cn(
+                          "w-4 h-4 stroke-[1.5]",
+                          isActive ? "text-moss" : "text-ink-muted"
+                        )}
+                      />
+                      <span>{tab.label}</span>
+                    </div>
 
-                  {tab.statusDot && <StatusDot status={tab.statusDot} />}
-                </button>
-              );
-            })}
+                    {tab.statusDot && <StatusDot status={tab.statusDot} className="ml-2 md:ml-0" />}
+                  </button>
+                );
+              })}
+            </nav>
           </aside>
 
           {/* ===================================================================
@@ -355,11 +357,12 @@ function SettingsContent() {
 
                   {/* Write-only Token Secret Input */}
                   <div className="space-y-1 text-xs">
-                    <label className="font-mono text-[10px] uppercase tracking-wider text-ink-muted flex items-center gap-1.5">
+                    <label htmlFor="setting-ig-token" className="font-mono text-[10px] uppercase tracking-wider text-ink-muted flex items-center gap-1.5">
                       <Lock className="w-3 h-3 text-ink-muted" />
                       <span>Update Access Token (Masked · Write-Only)</span>
                     </label>
                     <Input
+                      id="setting-ig-token"
                       type="password"
                       placeholder="••••••••••••••••••••••••••••••••"
                       value={secrets.instagramToken}
@@ -405,11 +408,12 @@ function SettingsContent() {
                   </div>
 
                   <div className="space-y-1 text-xs">
-                    <label className="font-mono text-[10px] uppercase tracking-wider text-ink-muted flex items-center gap-1.5">
+                    <label htmlFor="setting-gdrive-key" className="font-mono text-[10px] uppercase tracking-wider text-ink-muted flex items-center gap-1.5">
                       <Lock className="w-3 h-3 text-ink-muted" />
                       <span>Service Account Credentials JSON (Write-Only)</span>
                     </label>
                     <Input
+                      id="setting-gdrive-key"
                       type="password"
                       placeholder="••••••••••••••••••••••••••••••••"
                       value={secrets.gdriveKey}
@@ -455,11 +459,12 @@ function SettingsContent() {
                   </div>
 
                   <div className="space-y-1 text-xs">
-                    <label className="font-mono text-[10px] uppercase tracking-wider text-ink-muted flex items-center gap-1.5">
+                    <label htmlFor="setting-gemini-key" className="font-mono text-[10px] uppercase tracking-wider text-ink-muted flex items-center gap-1.5">
                       <Lock className="w-3 h-3 text-ink-muted" />
                       <span>Update Gemini API Key (Masked · Write-Only)</span>
                     </label>
                     <Input
+                      id="setting-gemini-key"
                       type="password"
                       placeholder="••••••••••••••••••••••••••••••••"
                       value={secrets.geminiKey}
@@ -505,11 +510,12 @@ function SettingsContent() {
                   </div>
 
                   <div className="space-y-1 text-xs">
-                    <label className="font-mono text-[10px] uppercase tracking-wider text-ink-muted flex items-center gap-1.5">
+                    <label htmlFor="setting-storage-secret" className="font-mono text-[10px] uppercase tracking-wider text-ink-muted flex items-center gap-1.5">
                       <Lock className="w-3 h-3 text-ink-muted" />
                       <span>Storage Access Secret Key (Masked · Write-Only)</span>
                     </label>
                     <Input
+                      id="setting-storage-secret"
                       type="password"
                       placeholder="••••••••••••••••••••••••••••••••"
                       value={secrets.storageSecret}
@@ -552,9 +558,9 @@ function SettingsContent() {
                           key={preset.id}
                           onClick={() => setSelectedStyleId(preset.id)}
                           className={cn(
-                            "p-4 rounded-md border transition-fast cursor-pointer space-y-2 select-none relative",
+                            "p-4 rounded-md border transition-fast cursor-pointer space-y-2 select-none relative outline-none focus-visible:ring-2 focus-visible:ring-moss/40",
                             isSelected
-                              ? "bg-surface border-moss shadow-sm before:absolute before:left-0 before:top-2 before:bottom-2 before:w-[3px] before:bg-moss before:rounded-r"
+                              ? "bg-surface border-moss before:absolute before:left-0 before:top-2 before:bottom-2 before:w-[3px] before:bg-moss before:rounded-r"
                               : "bg-surface/80 border-border hover:border-border-strong text-ink-secondary"
                           )}
                         >
@@ -592,7 +598,7 @@ function SettingsContent() {
                     </span>
 
                     <Card className="p-4 bg-surface flex flex-col items-center space-y-3">
-                      <div className="relative aspect-[9/16] w-full max-w-[240px] rounded-md overflow-hidden bg-ink-primary border border-border shadow-sm flex items-center justify-center p-3 text-center">
+                      <div className="relative aspect-[9/16] w-full max-w-[240px] rounded-md overflow-hidden bg-ink-primary border border-border flex items-center justify-center p-3 text-center">
                         {/* Background Video Poster Simulation */}
                         <img
                           src="/static/swap/ready_to_post/thumbnail_a.jpg"
@@ -690,7 +696,7 @@ function SettingsContent() {
                   {/* Daily Cap */}
                   <div className="flex items-center justify-between pb-4">
                     <div className="space-y-0.5 max-w-md">
-                      <label className="font-sans text-xs font-semibold text-ink-primary block">
+                      <label htmlFor="setting-daily-cap" className="font-sans text-xs font-semibold text-ink-primary block">
                         Daily Cap
                       </label>
                       <span className="font-sans text-xs text-ink-secondary block leading-relaxed">
@@ -699,9 +705,11 @@ function SettingsContent() {
                     </div>
 
                     <select
+                      id="setting-daily-cap"
                       value={dailyCap}
                       onChange={(e) => setDailyCap(e.target.value)}
-                      className="h-8 px-3 rounded-sm bg-subtle border border-border text-xs font-mono text-ink-primary outline-none focus:border-moss"
+                      aria-label="Daily reel cap"
+                      className="h-8 px-3 rounded-sm bg-subtle border border-border text-xs font-mono text-ink-primary outline-none focus-visible:border-moss focus-visible:ring-1 focus-visible:ring-moss/40"
                     >
                       <option value="1">1 reel / day</option>
                       <option value="2">2 reels / day (D3 Standard)</option>
@@ -749,26 +757,30 @@ function SettingsContent() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
                       <div className="p-3 rounded-sm bg-subtle border border-border space-y-1">
-                        <span className="text-[10px] uppercase text-ink-muted block">Slot A (Morning)</span>
+                        <label htmlFor="setting-slot-a-time" className="text-[10px] uppercase text-ink-muted block cursor-pointer">Slot A (Morning)</label>
                         <div className="flex items-center justify-between">
                           <input
+                            id="setting-slot-a-time"
                             type="time"
                             value={slotATime}
                             onChange={(e) => setSlotATime(e.target.value)}
-                            className="bg-surface border border-border px-2 py-1 rounded-sm text-xs font-mono text-ink-primary outline-none"
+                            aria-label="Slot A release time"
+                            className="bg-surface border border-border px-2 py-1 rounded-sm text-xs font-mono text-ink-primary outline-none focus-visible:border-moss focus-visible:ring-1 focus-visible:ring-moss/40"
                           />
                           <span className="text-ink-muted text-[11px]">08:30 PKT (03:30 UTC)</span>
                         </div>
                       </div>
 
                       <div className="p-3 rounded-sm bg-subtle border border-border space-y-1">
-                        <span className="text-[10px] uppercase text-ink-muted block">Slot B (Afternoon)</span>
+                        <label htmlFor="setting-slot-b-time" className="text-[10px] uppercase text-ink-muted block cursor-pointer">Slot B (Afternoon)</label>
                         <div className="flex items-center justify-between">
                           <input
+                            id="setting-slot-b-time"
                             type="time"
                             value={slotBTime}
                             onChange={(e) => setSlotBTime(e.target.value)}
-                            className="bg-surface border border-border px-2 py-1 rounded-sm text-xs font-mono text-ink-primary outline-none"
+                            aria-label="Slot B release time"
+                            className="bg-surface border border-border px-2 py-1 rounded-sm text-xs font-mono text-ink-primary outline-none focus-visible:border-moss focus-visible:ring-1 focus-visible:ring-moss/40"
                           />
                           <span className="text-ink-muted text-[11px]">16:00 PKT (11:00 UTC)</span>
                         </div>
@@ -826,10 +838,11 @@ function SettingsContent() {
                 <Card className="p-5 bg-surface space-y-4">
                   {/* Alert Email */}
                   <div className="space-y-1.5 text-xs">
-                    <label className="font-mono text-[10px] uppercase tracking-wider text-ink-muted block">
+                    <label htmlFor="setting-alert-email" className="font-mono text-[10px] uppercase tracking-wider text-ink-muted block">
                       Alert Notification Email
                     </label>
                     <Input
+                      id="setting-alert-email"
                       type="email"
                       value={alertEmail}
                       onChange={(e) => setAlertEmail(e.target.value)}
@@ -840,10 +853,11 @@ function SettingsContent() {
 
                   {/* Webhook Endpoint */}
                   <div className="space-y-1.5 text-xs">
-                    <label className="font-mono text-[10px] uppercase tracking-wider text-ink-muted block">
+                    <label htmlFor="setting-webhook-url" className="font-mono text-[10px] uppercase tracking-wider text-ink-muted block">
                       Webhook Endpoint (Slack, Discord, Telegram)
                     </label>
                     <Input
+                      id="setting-webhook-url"
                       type="url"
                       value={webhookUrl}
                       onChange={(e) => setWebhookUrl(e.target.value)}

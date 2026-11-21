@@ -409,7 +409,8 @@ function LibraryContent() {
             <select
               value={providerFilter}
               onChange={(e) => setProviderFilter(e.target.value)}
-              className="h-8 px-2.5 rounded-sm bg-subtle border border-border hover:border-border-strong text-ink-primary font-mono text-xs outline-none focus:border-moss"
+              aria-label="Filter by provider"
+              className="h-8 px-2.5 rounded-sm bg-subtle border border-border hover:border-border-strong text-ink-primary font-mono text-xs outline-none focus-visible:border-moss focus-visible:ring-1 focus-visible:ring-moss/40"
             >
               <option value="all">All Providers</option>
               <option value="gdrive">Google Drive</option>
@@ -421,7 +422,8 @@ function LibraryContent() {
             <select
               value={moodFilter}
               onChange={(e) => setMoodFilter(e.target.value)}
-              className="h-8 px-2.5 rounded-sm bg-subtle border border-border hover:border-border-strong text-ink-primary font-mono text-xs outline-none focus:border-moss"
+              aria-label="Filter by mood"
+              className="h-8 px-2.5 rounded-sm bg-subtle border border-border hover:border-border-strong text-ink-primary font-mono text-xs outline-none focus-visible:border-moss focus-visible:ring-1 focus-visible:ring-moss/40"
             >
               <option value="all">All Moods</option>
               <option value="foggy_pine_forest">Foggy Pine Forest</option>
@@ -436,7 +438,8 @@ function LibraryContent() {
             <select
               value={resolutionFilter}
               onChange={(e) => setResolutionFilter(e.target.value)}
-              className="h-8 px-2.5 rounded-sm bg-subtle border border-border hover:border-border-strong text-ink-primary font-mono text-xs outline-none focus:border-moss"
+              aria-label="Filter by resolution"
+              className="h-8 px-2.5 rounded-sm bg-subtle border border-border hover:border-border-strong text-ink-primary font-mono text-xs outline-none focus-visible:border-moss focus-visible:ring-1 focus-visible:ring-moss/40"
             >
               <option value="all">All Resolutions</option>
               <option value="1080x1920">1080×1920 (9:16)</option>
@@ -447,7 +450,8 @@ function LibraryContent() {
             <select
               value={usageFilter}
               onChange={(e) => setUsageFilter(e.target.value)}
-              className="h-8 px-2.5 rounded-sm bg-subtle border border-border hover:border-border-strong text-ink-primary font-mono text-xs outline-none focus:border-moss"
+              aria-label="Filter by usage status"
+              className="h-8 px-2.5 rounded-sm bg-subtle border border-border hover:border-border-strong text-ink-primary font-mono text-xs outline-none focus-visible:border-moss focus-visible:ring-1 focus-visible:ring-moss/40"
             >
               <option value="all">All Usage</option>
               <option value="unused">Unused (Fresh)</option>
@@ -484,9 +488,10 @@ function LibraryContent() {
               <input
                 type="text"
                 placeholder="Search clips..."
+                aria-label="Search clips by name or mood"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-8 pl-8 pr-2.5 rounded-sm bg-subtle border border-border text-xs font-mono text-ink-primary placeholder:text-ink-muted outline-none focus:border-moss"
+                className="w-full h-8 pl-8 pr-2.5 rounded-sm bg-subtle border border-border text-xs font-mono text-ink-primary placeholder:text-ink-muted outline-none focus-visible:border-moss focus-visible:ring-1 focus-visible:ring-moss/40"
               />
             </div>
 
@@ -497,8 +502,8 @@ function LibraryContent() {
                 className={cn(
                   "p-1.5 rounded-xs transition-fast",
                   viewMode === "grid"
-                    ? "bg-surface text-ink-primary shadow-xs font-medium"
-                    : "text-ink-muted hover:text-ink-primary"
+                    ? "bg-surface text-ink-primary font-medium border border-border"
+                    : "text-ink-muted hover:text-ink-primary border border-transparent"
                 )}
                 aria-label="Grid view"
               >
@@ -509,8 +514,8 @@ function LibraryContent() {
                 className={cn(
                   "p-1.5 rounded-xs transition-fast",
                   viewMode === "table"
-                    ? "bg-surface text-ink-primary shadow-xs font-medium"
-                    : "text-ink-muted hover:text-ink-primary"
+                    ? "bg-surface text-ink-primary font-medium border border-border"
+                    : "text-ink-muted hover:text-ink-primary border border-transparent"
                 )}
                 aria-label="Table view"
               >
@@ -758,7 +763,7 @@ function LibraryContent() {
               <div className="space-y-6 pt-2">
                 {/* 1. Large 9:16 Video Player Preview */}
                 <div className="flex justify-center">
-                  <div className="relative aspect-[9/16] w-full max-w-[280px] rounded-md overflow-hidden bg-ink-primary border border-border shadow-sm">
+                  <div className="relative aspect-[9/16] w-full max-w-[280px] rounded-md overflow-hidden bg-ink-primary border border-border">
                     <video
                       ref={videoRef}
                       src={selectedClip.videoSrc}
@@ -795,7 +800,7 @@ function LibraryContent() {
                         }}
                         className="absolute inset-0 flex items-center justify-center bg-ink-primary/20 cursor-pointer"
                       >
-                        <div className="w-10 h-10 rounded-full bg-surface/90 text-moss flex items-center justify-center shadow-md">
+                        <div className="w-10 h-10 rounded-full bg-surface/90 border border-border text-moss flex items-center justify-center">
                           <Play className="w-4 h-4 ml-0.5" />
                         </div>
                       </div>

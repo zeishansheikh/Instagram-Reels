@@ -385,7 +385,8 @@ function PublishLogContent() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="h-8 px-2.5 rounded-sm bg-subtle border border-border text-xs font-mono text-ink-primary outline-none focus:border-moss"
+              aria-label="Filter publish logs by status"
+              className="h-8 px-2.5 rounded-sm bg-subtle border border-border text-xs font-mono text-ink-primary outline-none focus-visible:border-moss focus-visible:ring-1 focus-visible:ring-moss/40"
             >
               <option value="all">All Statuses ({logs.length})</option>
               <option value="published">Published ({totalPublished})</option>
@@ -398,9 +399,10 @@ function PublishLogContent() {
             <input
               type="text"
               placeholder="Search quote, ID, error..."
+              aria-label="Search publish logs"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-8 pl-8 pr-2.5 rounded-sm bg-subtle border border-border text-xs font-mono text-ink-primary placeholder:text-ink-muted outline-none focus:border-moss"
+              className="w-full h-8 pl-8 pr-2.5 rounded-sm bg-subtle border border-border text-xs font-mono text-ink-primary placeholder:text-ink-muted outline-none focus-visible:border-moss focus-visible:ring-1 focus-visible:ring-moss/40"
             />
           </div>
         </div>

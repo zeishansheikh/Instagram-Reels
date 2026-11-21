@@ -344,13 +344,14 @@ function QuoteStudioContent() {
           <div className="flex flex-wrap items-center gap-3">
             {/* Theme Selector */}
             <div className="flex flex-col gap-1">
-              <label className="font-mono text-[10px] uppercase tracking-wider text-ink-muted">
+              <label htmlFor="studio-theme" className="font-mono text-[10px] uppercase tracking-wider text-ink-muted">
                 Theme
               </label>
               <select
+                id="studio-theme"
                 value={selectedTheme}
                 onChange={(e) => setSelectedTheme(e.target.value)}
-                className="h-8 px-2.5 rounded-sm bg-subtle border border-border text-xs font-mono text-ink-primary outline-none focus:border-moss"
+                className="h-8 px-2.5 rounded-sm bg-subtle border border-border text-xs font-mono text-ink-primary outline-none focus-visible:border-moss focus-visible:ring-1 focus-visible:ring-moss/40"
               >
                 <option value="loss">Loss & Yaadein</option>
                 <option value="tanhai">Tanhai (Solitude)</option>
@@ -363,13 +364,14 @@ function QuoteStudioContent() {
 
             {/* Language Selector */}
             <div className="flex flex-col gap-1">
-              <label className="font-mono text-[10px] uppercase tracking-wider text-ink-muted">
+              <label htmlFor="studio-lang" className="font-mono text-[10px] uppercase tracking-wider text-ink-muted">
                 Language
               </label>
               <select
+                id="studio-lang"
                 value={selectedLang}
                 onChange={(e) => setSelectedLang(e.target.value)}
-                className="h-8 px-2.5 rounded-sm bg-subtle border border-border text-xs font-mono text-ink-primary outline-none focus:border-moss"
+                className="h-8 px-2.5 rounded-sm bg-subtle border border-border text-xs font-mono text-ink-primary outline-none focus-visible:border-moss focus-visible:ring-1 focus-visible:ring-moss/40"
               >
                 <option value="roman-urdu">Roman Urdu (Formula D3)</option>
                 <option value="english">English (Quiet Nature)</option>
@@ -379,13 +381,14 @@ function QuoteStudioContent() {
 
             {/* Count Selector */}
             <div className="flex flex-col gap-1">
-              <label className="font-mono text-[10px] uppercase tracking-wider text-ink-muted">
+              <label htmlFor="studio-count" className="font-mono text-[10px] uppercase tracking-wider text-ink-muted">
                 Batch Count
               </label>
               <select
+                id="studio-count"
                 value={selectedCount}
                 onChange={(e) => setSelectedCount(e.target.value)}
-                className="h-8 px-2.5 rounded-sm bg-subtle border border-border text-xs font-mono text-ink-primary outline-none focus:border-moss"
+                className="h-8 px-2.5 rounded-sm bg-subtle border border-border text-xs font-mono text-ink-primary outline-none focus-visible:border-moss focus-visible:ring-1 focus-visible:ring-moss/40"
               >
                 <option value="3">3 Quotes</option>
                 <option value="5">5 Quotes</option>
@@ -447,17 +450,17 @@ function QuoteStudioContent() {
                 const isEditing = editingId === quote.id;
 
                 return (
-                  <Card
-                    key={quote.id}
-                    onClick={() => setSelectedQuoteId(quote.id)}
-                    className={cn(
-                      "p-4 sm:p-5 transition-fast cursor-pointer relative select-none",
-                      isSelected
-                        ? "bg-surface border-moss shadow-sm before:absolute before:left-0 before:top-2 before:bottom-2 before:w-[3px] before:bg-moss before:rounded-r"
-                        : "bg-surface/80 border-border hover:border-border-strong",
-                      quote.status === "rejected" && "opacity-50"
-                    )}
-                  >
+                    <Card
+                      key={quote.id}
+                      onClick={() => setSelectedQuoteId(quote.id)}
+                      className={cn(
+                        "p-4 sm:p-5 transition-fast cursor-pointer relative select-none outline-none focus-visible:ring-2 focus-visible:ring-moss/40",
+                        isSelected
+                          ? "bg-surface border-moss before:absolute before:left-0 before:top-2 before:bottom-2 before:w-[3px] before:bg-moss before:rounded-r"
+                          : "bg-surface/80 border-border hover:border-border-strong",
+                        quote.status === "rejected" && "opacity-50"
+                      )}
+                    >
                     <div className="space-y-3">
                       {/* Top Bar: Mood tag, Status Badge, Selection Indicator */}
                       <div className="flex items-center justify-between">
@@ -651,7 +654,7 @@ function QuoteStudioContent() {
 
               {/* 9:16 LIVE PLAYER PREVIEW */}
               <div className="flex flex-col items-center pt-2">
-                <div className="relative aspect-[9/16] w-full max-w-[280px] rounded-md overflow-hidden bg-ink-primary border border-border shadow-sm group">
+                <div className="relative aspect-[9/16] w-full max-w-[280px] rounded-md overflow-hidden bg-ink-primary border border-border group">
                   <video
                     ref={videoRef}
                     src={activeClip.src}
@@ -708,7 +711,7 @@ function QuoteStudioContent() {
                       }}
                       className="absolute inset-0 flex items-center justify-center bg-ink-primary/20 cursor-pointer"
                     >
-                      <div className="w-8 h-8 rounded-full bg-surface/90 text-moss flex items-center justify-center shadow-md">
+                      <div className="w-8 h-8 rounded-full bg-surface/90 border border-border text-moss flex items-center justify-center">
                         <Play className="w-3.5 h-3.5 ml-0.5" />
                       </div>
                     </div>
@@ -741,7 +744,7 @@ function QuoteStudioContent() {
         {/* =====================================================================
             3. STICKY FOOTER (BATCH ACTIONS)
             ===================================================================== */}
-        <div className="fixed bottom-0 inset-x-0 z-30 bg-surface/95 backdrop-blur-md border-t border-border px-4 sm:px-8 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+        <div className="fixed bottom-0 inset-x-0 z-30 bg-surface/95 backdrop-blur-md border-t border-border px-4 sm:px-8 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3 text-xs font-mono">
             <span className="font-sans font-semibold text-ink-primary">
               Batch Selection:

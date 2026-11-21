@@ -143,7 +143,7 @@ function DesignSystemView() {
               { name: "Hairline Border", hex: "#E8E6E1", token: "border", border: true },
               { name: "Ink Primary", hex: "#16150F", token: "text-primary", dark: true },
               { name: "Ink Secondary", hex: "#5C5A53", token: "text-secondary", dark: true },
-              { name: "Ink Muted", hex: "#8C8980", token: "text-muted", dark: true },
+              { name: "Ink Muted", hex: "#726F66", token: "text-muted", dark: true },
               { name: "Deep Moss (Accent)", hex: "#2F5D50", token: "accent-moss", dark: true },
             ].map((col) => (
               <div key={col.token} className="space-y-1.5 select-none">
@@ -186,7 +186,7 @@ function DesignSystemView() {
             {/* Sizes: sm, md, lg */}
             <div className="space-y-3 pt-3 border-t border-border">
               <span className="font-mono text-[11px] text-ink-muted block uppercase tracking-wider">
-                Sizes (Small: 28px, Medium: 34px, Large: 40px)
+                Sizes (Small: 28px, Medium: 32px, Large: 40px)
               </span>
               <div className="flex flex-wrap items-center gap-3">
                 <Button size="sm" variant="secondary">Small (sm)</Button>

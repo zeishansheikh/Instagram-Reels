@@ -575,7 +575,7 @@ function TodayScreenContent() {
                       <span className="tabular-nums font-medium text-ink-primary">
                         12 / 14
                       </span>
-                      <span className="text-[10px] text-moss bg-moss-subtle px-1.5 py-0.2 rounded border border-moss/20">
+                      <span className="text-[10px] text-moss bg-moss-subtle px-1.5 py-0.5 rounded border border-moss/20">
                         85%
                       </span>
                     </div>

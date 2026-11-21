@@ -131,8 +131,9 @@ export function AppShell({
                 <Link
                   key={item.label}
                   href={item.href}
+                  aria-current={isActive ? "page" : undefined}
                   className={cn(
-                    "relative flex items-center justify-between px-2.5 py-1.5 rounded-sm text-xs transition-fast select-none group",
+                    "relative flex items-center justify-between px-2.5 py-1.5 rounded-sm text-xs transition-fast select-none group outline-none focus-visible:ring-2 focus-visible:ring-moss/40",
                     isActive
                       ? "text-ink-primary font-medium bg-subtle before:absolute before:left-0 before:top-1 before:bottom-1 before:w-[2px] before:bg-moss before:rounded-r"
                       : "text-ink-secondary hover:text-ink-primary hover:bg-subtle/60"
@@ -151,7 +152,7 @@ export function AppShell({
                   </div>
 
                   {item.badge && (
-                    <span className="font-mono tabular-nums text-[10px] px-1.5 py-0.2 rounded bg-surface border border-border text-ink-muted">
+                    <span className="font-mono tabular-nums text-[10px] px-1.5 py-0.5 rounded bg-surface border border-border text-ink-muted">
                       {item.badge}
                     </span>
                   )}
@@ -234,7 +235,7 @@ export function AppShell({
             >
               <Search className="w-3.5 h-3.5 text-ink-muted" />
               <span>Search...</span>
-              <kbd className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded bg-surface border border-border text-[10px] text-ink-muted font-medium ml-1">
+              <kbd className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-surface border border-border text-[10px] text-ink-muted font-medium ml-1">
                 <Command className="w-2.5 h-2.5" />K
               </kbd>
             </button>

@@ -24,7 +24,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             type={type}
             disabled={disabled}
             className={cn(
-              "h-8.5 w-full rounded-sm bg-surface px-3 font-sans text-sm text-ink-primary placeholder:text-ink-muted border border-border transition-fast",
+              "h-8 w-full rounded-sm bg-surface px-3 font-sans text-sm text-ink-primary placeholder:text-ink-muted border border-border transition-fast",
               "focus:border-moss focus:outline-none focus:ring-1 focus:ring-moss/40",
               "disabled:cursor-not-allowed disabled:bg-subtle disabled:text-ink-muted",
               leftIcon && "pl-8",

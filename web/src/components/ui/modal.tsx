@@ -18,23 +18,23 @@ export const ModalContent = React.forwardRef<
   }
 >(({ className, children, title, description, variant = "center", ...props }, ref) => (
   <DialogPrimitive.Portal>
-    <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-[#0A0908]/80 backdrop-blur-sm transition-opacity duration-300 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+    <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-[#16150F]/40 backdrop-blur-[2px] transition-opacity duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed z-50 bg-canvas-surface border border-border-medium shadow-floating outline-none",
+        "fixed z-50 bg-surface border border-border shadow-popover outline-none",
         variant === "center" &&
-          "left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] w-full max-w-lg rounded-[12px] p-6 duration-300 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+          "left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] w-full max-w-lg rounded-md p-6 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
         variant === "drawer" &&
-          "right-0 top-0 bottom-0 h-full w-full max-w-md p-6 border-l duration-300 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right",
+          "right-0 top-0 bottom-0 h-full w-full max-w-md p-6 border-l duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right",
         className
       )}
       {...props}
     >
-      <div className="flex items-center justify-between pb-3 border-b border-border-subtle/60 mb-4">
+      <div className="flex items-center justify-between pb-3 border-b border-border mb-4">
         {title && (
           <div>
-            <DialogPrimitive.Title className="font-serif text-xl font-normal text-ink-primary">
+            <DialogPrimitive.Title className="font-sans text-base font-semibold text-ink-primary tracking-tight">
               {title}
             </DialogPrimitive.Title>
             {description && (
@@ -44,7 +44,7 @@ export const ModalContent = React.forwardRef<
             )}
           </div>
         )}
-        <DialogPrimitive.Close className="rounded-[4px] p-1 text-ink-muted hover:text-ink-primary hover:bg-canvas-hover transition-colors outline-none focus-visible:ring-1 focus-visible:ring-alpenglow">
+        <DialogPrimitive.Close className="rounded-sm p-1 text-ink-muted hover:text-ink-primary hover:bg-subtle transition-fast outline-none focus-visible:ring-1 focus-visible:ring-moss">
           <X className="w-4 h-4" />
           <span className="sr-only">Close</span>
         </DialogPrimitive.Close>

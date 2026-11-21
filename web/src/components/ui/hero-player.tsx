@@ -180,7 +180,7 @@ export function HeroPlayer({
           isPlaying ? "opacity-0 scale-95" : "opacity-100 scale-100"
         )}
       >
-        <div className="w-13 h-13 rounded-full bg-surface/90 border border-border flex items-center justify-center text-moss shadow-popover transition-transform duration-200 group-hover:scale-105">
+        <div className="w-12 h-12 rounded-full bg-surface/90 border border-border flex items-center justify-center text-moss shadow-popover transition-transform duration-200 group-hover:scale-105">
           <Play className="w-5 h-5 fill-current ml-0.5 text-moss" />
         </div>
       </div>
@@ -213,6 +213,7 @@ export function HeroPlayer({
             <button
               onClick={toggleMute}
               className="p-1 rounded-sm hover:bg-white/10 text-white/90 hover:text-white transition-fast"
+              aria-label={isMuted ? "Unmute" : "Mute"}
               title={isMuted ? "Unmute" : "Mute"}
             >
               {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 text-white" />}
@@ -221,6 +222,7 @@ export function HeroPlayer({
             <button
               onClick={toggleFullscreen}
               className="p-1 rounded-sm hover:bg-white/10 text-white/90 hover:text-white transition-fast"
+              aria-label="Fullscreen"
               title="Fullscreen"
             >
               <Maximize2 className="w-3.5 h-3.5" />

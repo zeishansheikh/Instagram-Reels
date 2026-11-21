@@ -383,9 +383,9 @@ function ReviewContent() {
                       key={reel.id}
                       onClick={() => setSelectedIndex(index)}
                       className={cn(
-                        "w-full text-left p-3 rounded-md border transition-fast flex items-start gap-3 select-none relative outline-none",
+                        "w-full text-left p-3 rounded-md border transition-fast flex items-start gap-3 select-none relative outline-none focus-visible:ring-2 focus-visible:ring-moss/40",
                         isSelected
-                          ? "bg-surface border-moss shadow-sm before:absolute before:left-0 before:top-2 before:bottom-2 before:w-[3px] before:bg-moss before:rounded-r"
+                          ? "bg-surface border-moss before:absolute before:left-0 before:top-2 before:bottom-2 before:w-[3px] before:bg-moss before:rounded-r"
                           : "bg-surface/70 border-border hover:bg-surface hover:border-border-strong text-ink-secondary"
                       )}
                     >
@@ -445,7 +445,7 @@ function ReviewContent() {
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
                   {/* 1. Large 9:16 Player with LIVE OVERLAY PREVIEW */}
                   <div className="md:col-span-5 flex flex-col items-center">
-                    <div className="relative aspect-[9/16] w-full max-w-[340px] rounded-md overflow-hidden bg-ink-primary border border-border shadow-sm group">
+                    <div className="relative aspect-[9/16] w-full max-w-[340px] rounded-md overflow-hidden bg-ink-primary border border-border group">
                       {/* Video Element */}
                       <video
                         ref={videoRef}
@@ -484,7 +484,7 @@ function ReviewContent() {
                           onClick={togglePlay}
                           className="absolute inset-0 flex items-center justify-center bg-ink-primary/20 cursor-pointer"
                         >
-                          <div className="w-10 h-10 rounded-full bg-surface/90 text-ink-primary flex items-center justify-center shadow-md">
+                          <div className="w-10 h-10 rounded-full bg-surface/90 border border-border text-ink-primary flex items-center justify-center">
                             <Play className="w-4 h-4 ml-0.5 text-moss" />
                           </div>
                         </div>
@@ -539,12 +539,13 @@ function ReviewContent() {
                     {/* Editable Quote Input */}
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <label className="font-mono text-[10px] uppercase tracking-wider text-ink-muted">
+                        <label htmlFor="review-quote-input" className="font-mono text-[10px] uppercase tracking-wider text-ink-muted">
                           Editable Quote (Burns directly into video)
                         </label>
                         <span className="font-mono text-[10px] text-moss">Live sync</span>
                       </div>
                       <Textarea
+                        id="review-quote-input"
                         rows={3}
                         value={editableQuote}
                         onChange={(e) => setEditableQuote(e.target.value)}
@@ -556,7 +557,7 @@ function ReviewContent() {
                     {/* Editable Caption */}
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <label className="font-mono text-[10px] uppercase tracking-wider text-ink-muted">
+                        <label htmlFor="review-caption-input" className="font-mono text-[10px] uppercase tracking-wider text-ink-muted">
                           Instagram Caption & Hashtags
                         </label>
                         <span className="font-mono tabular-nums text-[10px] text-ink-muted">
@@ -564,6 +565,7 @@ function ReviewContent() {
                         </span>
                       </div>
                       <Textarea
+                        id="review-caption-input"
                         rows={4}
                         value={editableCaption}
                         onChange={(e) => setEditableCaption(e.target.value)}
@@ -616,7 +618,7 @@ function ReviewContent() {
                         onClick={handleApprove}
                       >
                         <span>Approve</span>
-                        <kbd className="ml-1 px-1 py-0.2 rounded bg-black/20 text-[10px] font-mono">
+                        <kbd className="ml-1 px-1 py-0.5 rounded bg-black/20 text-[10px] font-mono">
                           A
                         </kbd>
                       </Button>
@@ -628,7 +630,7 @@ function ReviewContent() {
                         onClick={handleRegenerate}
                       >
                         <span>Regenerate</span>
-                        <kbd className="ml-1 px-1 py-0.2 rounded bg-subtle text-[10px] font-mono text-ink-muted border border-border">
+                        <kbd className="ml-1 px-1 py-0.5 rounded bg-subtle text-[10px] font-mono text-ink-muted border border-border">
                           R
                         </kbd>
                       </Button>
@@ -640,7 +642,7 @@ function ReviewContent() {
                         onClick={handleDiscard}
                       >
                         <span className="text-status-error">Discard</span>
-                        <kbd className="ml-1 px-1 py-0.2 rounded bg-subtle text-[10px] font-mono text-status-error border border-border">
+                        <kbd className="ml-1 px-1 py-0.5 rounded bg-subtle text-[10px] font-mono text-status-error border border-border">
                           X
                         </kbd>
                       </Button>

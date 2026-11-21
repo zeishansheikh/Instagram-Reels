@@ -40,7 +40,7 @@ export function CommandBar({
         className
       )}
     >
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-13 flex items-center justify-between gap-4">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
         {/* Brand / Logo + Status */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">

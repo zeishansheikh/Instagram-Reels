@@ -339,7 +339,7 @@ function ScheduleContent() {
                   Today at 18:00 UTC (Slot A)
                 </strong>
               </span>
-              <span className="text-moss font-medium tabular-nums bg-moss-subtle px-1.5 py-0.2 rounded border border-moss/20">
+              <span className="text-moss font-medium tabular-nums bg-moss-subtle px-1.5 py-0.5 rounded border border-moss/20">
                 in 2h 42m
               </span>
             </div>
@@ -352,10 +352,10 @@ function ScheduleContent() {
               <button
                 onClick={() => setViewMode("week")}
                 className={cn(
-                  "px-2.5 py-1 rounded-xs transition-fast select-none",
+                  "px-2.5 py-1 rounded-xs transition-fast select-none outline-none focus-visible:ring-1 focus-visible:ring-moss",
                   viewMode === "week"
-                    ? "bg-surface text-ink-primary shadow-xs font-semibold"
-                    : "text-ink-muted hover:text-ink-primary"
+                    ? "bg-surface text-ink-primary font-semibold border border-border"
+                    : "text-ink-muted hover:text-ink-primary border border-transparent"
                 )}
               >
                 Week
@@ -363,10 +363,10 @@ function ScheduleContent() {
               <button
                 onClick={() => setViewMode("month")}
                 className={cn(
-                  "px-2.5 py-1 rounded-xs transition-fast select-none",
+                  "px-2.5 py-1 rounded-xs transition-fast select-none outline-none focus-visible:ring-1 focus-visible:ring-moss",
                   viewMode === "month"
-                    ? "bg-surface text-ink-primary shadow-xs font-semibold"
-                    : "text-ink-muted hover:text-ink-primary"
+                    ? "bg-surface text-ink-primary font-semibold border border-border"
+                    : "text-ink-muted hover:text-ink-primary border border-transparent"
                 )}
               >
                 Month
@@ -447,7 +447,7 @@ function ScheduleContent() {
                     className={cn(
                       "rounded-md border p-2.5 transition-fast flex flex-col gap-2.5 min-h-[460px]",
                       day.isToday
-                        ? "bg-surface border-moss/80 shadow-xs"
+                        ? "bg-surface border-moss/80"
                         : "bg-surface/70 border-border hover:border-border-strong",
                       isDragOver && "bg-moss-subtle/50 border-dashed border-moss"
                     )}
@@ -465,7 +465,7 @@ function ScheduleContent() {
                         </div>
 
                         {day.isToday && (
-                          <span className="font-mono text-[9px] uppercase tracking-wider text-moss bg-moss-subtle px-1 py-0.2 rounded border border-moss/20 font-semibold">
+                          <span className="font-mono text-[9px] uppercase tracking-wider text-moss bg-moss-subtle px-1 py-0.5 rounded border border-moss/20 font-semibold">
                             Today
                           </span>
                         )}
@@ -526,7 +526,7 @@ function ScheduleContent() {
                                 )}
                                 <span
                                   className={cn(
-                                    "px-1 py-0.2 rounded text-[9px] font-mono uppercase",
+                                    "px-1 py-0.5 rounded text-[9px] font-mono uppercase",
                                     isPublished
                                       ? "bg-surface text-ink-muted border border-border"
                                       : isScheduled
