@@ -137,7 +137,7 @@ function SettingsContent() {
   React.useEffect(() => {
     setPreviewFontSize(activeStyle.fontSize);
     setPreviewDarken(activeStyle.darkenOverlay);
-  }, [activeStyle.id]);
+  }, [activeStyle.id, activeStyle.fontSize, activeStyle.darkenOverlay]);
 
   // Automation state
   const [dailyCap, setDailyCap] = React.useState("2");

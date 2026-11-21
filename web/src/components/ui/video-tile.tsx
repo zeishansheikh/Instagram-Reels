@@ -72,7 +72,7 @@ export function VideoTile({
         /* Subtle architectural background if no video source */
         <div className="absolute inset-0 w-full h-full bg-subtle flex items-center justify-center p-4">
           <p className="font-serif italic text-xs text-ink-muted text-center line-clamp-3">
-            "{quote}"
+            &ldquo;{quote}&rdquo;
           </p>
         </div>
       )}

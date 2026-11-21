@@ -17,7 +17,7 @@ import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 from loguru import logger
-from PIL import Image
+from PIL import Image, ImageStat
 
 
 def ffprobe_source_gate(video_path: Path | str) -> Tuple[bool, str, Dict[str, Any]]:
@@ -139,8 +139,7 @@ def brightness_and_saturation_gate(
                 try:
                     with Image.open(frame_p) as img:
                         gray = img.convert("L")
-                        stat = list(gray.getdata())
-                        avg_luma = (sum(stat) / len(stat)) / 255.0
+                        avg_luma = ImageStat.Stat(gray).mean[0] / 255.0
                         luma_values.append(avg_luma)
                 except Exception:
                     pass
@@ -202,14 +201,14 @@ def watermark_and_quality_check(video_path: Path | str) -> Tuple[bool, str]:
                 top_right = img.crop((int(w * 0.70), 0, w, int(h * 0.12))).convert("L")
                 bottom_right = img.crop((int(w * 0.70), int(h * 0.88), w, h)).convert("L")
                 
-                # Check pixel standard deviation in corners (synthetic text has sharp spikes)
-                tr_data = list(top_right.getdata())
-                br_data = list(bottom_right.getdata())
+                # Check corners for high brightness text overlays
+                tr_mean = ImageStat.Stat(top_right).mean[0] if top_right.size[0] > 0 and top_right.size[1] > 0 else 0
+                br_mean = ImageStat.Stat(bottom_right).mean[0] if bottom_right.size[0] > 0 and bottom_right.size[1] > 0 else 0
                 
                 # If corner is almost pure white block (e.g. logo)
-                if tr_data and (sum(tr_data) / len(tr_data)) > 248:
+                if tr_mean > 248:
                     return False, "Detected bright logo/watermark in top-right corner."
-                if br_data and (sum(br_data) / len(br_data)) > 248:
+                if br_mean > 248:
                     return False, "Detected bright logo/watermark in bottom-right corner."
 
         except Exception as exc:

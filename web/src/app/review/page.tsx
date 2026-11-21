@@ -147,10 +147,14 @@ function ReviewContent() {
   const videoRef = React.useRef<HTMLVideoElement>(null);
 
   // Update local form state whenever selection changes
+  const activeReelId = activeReel?.id;
+  const activeReelQuote = activeReel?.quote;
+  const activeReelCaption = activeReel?.caption;
+
   React.useEffect(() => {
-    if (activeReel) {
-      setEditableQuote(activeReel.quote);
-      setEditableCaption(activeReel.caption);
+    if (activeReelId && activeReelQuote !== undefined && activeReelCaption !== undefined) {
+      setEditableQuote(activeReelQuote);
+      setEditableCaption(activeReelCaption);
       setIsPlaying(false);
       setCurrentTime(0);
       if (videoRef.current) {
@@ -158,7 +162,7 @@ function ReviewContent() {
         videoRef.current.pause();
       }
     }
-  }, [activeReel?.id]);
+  }, [activeReelId, activeReelQuote, activeReelCaption]);
 
   // Handle Approve
   const handleApprove = React.useCallback(() => {
@@ -347,7 +351,7 @@ function ReviewContent() {
                 All Reels Reviewed
               </h3>
               <p className="font-sans text-xs text-ink-secondary leading-relaxed">
-                The waiting queue is clear. Today's slots have been approved or discarded.
+                The waiting queue is clear. Today&apos;s slots have been approved or discarded.
               </p>
               <Button
                 variant="secondary"

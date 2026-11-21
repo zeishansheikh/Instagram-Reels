@@ -16,7 +16,7 @@ import tempfile
 from pathlib import Path
 from typing import Optional, Tuple
 from loguru import logger
-from PIL import Image
+from PIL import Image, ImageStat
 
 
 def detect_scene_tone(clip_path: Path | str) -> str:
@@ -30,16 +30,7 @@ def detect_scene_tone(clip_path: Path | str) -> str:
             try:
                 with Image.open(tmp_frame) as img:
                     rgb = img.convert("RGB")
-                    r, g, b = 0, 0, 0
-                    pixels = list(rgb.getdata())
-                    step = max(1, len(pixels) // 500)
-                    sampled = pixels[::step]
-                    for px in sampled:
-                        r += px[0]
-                        g += px[1]
-                        b += px[2]
-                    n = len(sampled)
-                    avg_r, avg_g, avg_b = r / n, g / n, b / n
+                    avg_r, avg_g, avg_b = ImageStat.Stat(rgb).mean
                     if avg_r > (avg_b * 1.15):
                         return "warm"
             except Exception as exc:

@@ -472,7 +472,7 @@ function TodayScreenContent() {
                       Pipeline
                     </h3>
                     <p className="font-mono text-[10px] text-ink-muted">
-                      Today's automated production timeline
+                      Today&apos;s automated production timeline
                     </p>
                   </div>
                   <Badge variant="default">Auto 60fps</Badge>
@@ -614,7 +614,7 @@ function TodayScreenContent() {
             <div className="p-3 rounded-sm bg-subtle border border-border font-mono text-[11px] space-y-1">
               <p><span className="text-ink-muted">Slot:</span> Slot A (08:30 PKT) / Slot B (16:00 PKT)</p>
               <p><span className="text-ink-muted">Destination:</span> swap/ready_to_post/reel_YYYY-MM-DD_a.mp4</p>
-              <p><span className="text-ink-muted">Channel:</span> @enoent.7 via Buffer 'noori.shed'</p>
+              <p><span className="text-ink-muted">Channel:</span> @enoent.7 via Buffer &apos;noori.shed&apos;</p>
             </div>
           </div>
           <DialogFooter>

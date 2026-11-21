@@ -16,7 +16,7 @@ import tempfile
 from pathlib import Path
 from typing import List, Optional, Tuple
 from loguru import logger
-from PIL import Image, ImageFont
+from PIL import Image, ImageFont, ImageStat
 
 
 def resolve_d3_font() -> str:
@@ -73,8 +73,7 @@ def find_optimal_center_y(
                         y2 = min(h, int((center_candidate + (text_height // 2)) * scale_y))
 
                         band = img.crop((x1, y1, x2, y2)).convert("L")
-                        data = list(band.getdata())
-                        avg_luma = sum(data) / len(data) if data else 128.0
+                        avg_luma = ImageStat.Stat(band).mean[0] if band.size[0] > 0 and band.size[1] > 0 else 128.0
                         band_lumas[center_candidate] = avg_luma
             except Exception as exc:
                 logger.debug(f"Center band measurement error: {exc}")
