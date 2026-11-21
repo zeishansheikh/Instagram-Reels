@@ -47,7 +47,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Library", href: "/library", icon: Video, badge: "24" },
   { label: "Reels", href: "/#reels", icon: Film, badge: "12" },
   { label: "Quote Studio", href: "/quotes", icon: BookOpen },
-  { label: "Schedule", href: "/#schedule", icon: CalendarDays },
+  { label: "Schedule", href: "/schedule", icon: CalendarDays },
   { label: "Settings", href: "/#settings", icon: Settings },
   { label: "Design System", href: "/design", icon: Palette },
 ];
