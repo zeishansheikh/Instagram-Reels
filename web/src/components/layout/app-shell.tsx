@@ -50,7 +50,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Quote Studio", href: "/quotes", icon: BookOpen },
   { label: "Schedule", href: "/schedule", icon: CalendarDays },
   { label: "Publish Log", href: "/publish-log", icon: Send },
-  { label: "Settings", href: "/#settings", icon: Settings },
+  { label: "Settings", href: "/settings", icon: Settings },
   { label: "Design System", href: "/design", icon: Palette },
 ];
 
