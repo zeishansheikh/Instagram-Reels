@@ -139,6 +139,10 @@ def generate_d3_quote(
     api_key = os.getenv("GEMINI_API_KEY")
     if api_key:
         try:
+            from reelforge.config import load_config
+            cfg = load_config()
+            target_model = os.getenv("GEMINI_MODEL") or cfg.gemini.model or "gemini-3.8-flash"
+
             client = genai.Client(api_key=api_key)
             recent_used = workflow_state.used_lines[-20:] if workflow_state.used_lines else []
             used_block = "\n".join(f"- {l}" for l in recent_used) if recent_used else "(None)"
@@ -150,7 +154,7 @@ def generate_d3_quote(
             )
 
             response = client.models.generate_content(
-                model=os.getenv("GEMINI_MODEL", "gemini-2.0-flash"),
+                model=target_model,
                 contents=prompt,
                 config=dict(
                     response_mime_type="application/json",

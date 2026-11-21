@@ -1,14 +1,16 @@
 {
   "used_pins": [
     "1037939045357806520",
-    "pin_test_999"
+    "pin_test_999",
+    "WhatsApp_Video_2026-11-20_at_6.36.16_AM"
   ],
   "used_lines": [
     "sab kehte hain waqt sab theek kar deta hai, / mera waqt to bas yaadein de gaya.",
     "sab kehte hain akela rehna buri baat hai, / par bheed mein bhi to main akela hi tha.",
     "kuch baatein dil mein hi achi lagti hain, / zuban par aate hi rishtey tod deti hain.",
     "woh jo kabhi jaan hua karte the, / aaj unka naam lene par bhi khamoshi cha jati hai.",
-    "raat gehri ho to yaadein cheekhti hain, / din ke ujalon mein hum muskura kar thak jaate hain."
+    "raat gehri ho to yaadein cheekhti hain, / din ke ujalon mein hum muskura kar thak jaate hain.",
+    "toote huye dil ke tukde sambhalte nahi, / aur log puchte hain tum badal kyu gaye."
   ],
   "used_songs": [
     {
@@ -26,14 +28,19 @@
     {
       "song": "Tanhai Beats - sad_lofi_urdu",
       "date": "2026-11-21"
+    },
+    {
+      "song": "Dil Ki Khamoshi - alonesinghkdm",
+      "date": "2026-11-21"
     }
   ],
   "used_reels": [
     "PIN:1037939045357806520",
-    "PIN:pin_test_999"
+    "PIN:pin_test_999",
+    "PIN:WhatsApp_Video_2026-11-20_at_6.36.16_AM"
   ],
-  "last_category": "alpine meadow",
-  "last_song": "Tanhai Beats - sad_lofi_urdu",
-  "last_quote": "raat gehri ho to yaadein cheekhti hain, / din ke ujalon mein hum muskura kar thak jaate hain.",
+  "last_category": "autumn forest path",
+  "last_song": "Dil Ki Khamoshi - alonesinghkdm",
+  "last_quote": "toote huye dil ke tukde sambhalte nahi, / aur log puchte hain tum badal kyu gaye.",
   "last_run": "2026-11-21-d3"
 }
