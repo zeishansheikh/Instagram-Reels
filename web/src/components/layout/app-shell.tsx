@@ -21,6 +21,7 @@ import {
   ShieldCheck,
   CheckSquare,
   Sparkles,
+  Send,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -48,6 +49,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Reels", href: "/#reels", icon: Film, badge: "12" },
   { label: "Quote Studio", href: "/quotes", icon: BookOpen },
   { label: "Schedule", href: "/schedule", icon: CalendarDays },
+  { label: "Publish Log", href: "/publish-log", icon: Send },
   { label: "Settings", href: "/#settings", icon: Settings },
   { label: "Design System", href: "/design", icon: Palette },
 ];
