@@ -101,9 +101,11 @@ function TodayScreenContent() {
   const [screenState, setScreenState] = React.useState<ScreenState>("ready");
   const [isGenerateModalOpen, setIsGenerateModalOpen] = React.useState(false);
   const [reelStatus, setReelStatus] = React.useState<"ready" | "queued" | "rendering" | "published" | "discarded">("queued");
+  const [isBuilding, setIsBuilding] = React.useState(false);
+  const [buildMessage, setBuildMessage] = React.useState("");
 
   // Realistic seed data matching Formula D3
-  const currentReel = {
+  const [currentReel, setCurrentReel] = React.useState({
     id: "reel_2026-11-21_a",
     slot: "Slot A",
     scheduledTime: "Today, 18:00 UTC (08:30 PKT)",
@@ -122,6 +124,110 @@ function TodayScreenContent() {
     bitrate: "15.02 Mbps",
     contrastRatio: 0.22,
     placementBand: "y = 800 (luma: 76.1)",
+    filePath: "swap/ready_to_post/reel_2026-11-21_a.mp4",
+  });
+
+  // Load real staged reel from backend /d3/status
+  const loadLatestStagedReel = React.useCallback(async () => {
+    try {
+      const res = await fetch("/d3/status");
+      if (!res.ok) return;
+      const data = await res.json();
+      const manifestA = data.slots?.slot_a?.manifest;
+      if (manifestA && manifestA.video_path) {
+        const filename = manifestA.video_path.split("/").pop() || "reel_2026-11-21_a.mp4";
+        setCurrentReel((prev) => ({
+          ...prev,
+          id: filename.replace(".mp4", ""),
+          quote: manifestA.quote || prev.quote,
+          caption: manifestA.caption || prev.caption,
+          hashtags: manifestA.hashtags || prev.hashtags,
+          song: manifestA.song || prev.song,
+          videoSrc: `/static/swap/ready_to_post/${filename}?t=${Date.now()}`,
+          posterSrc: `/static/swap/ready_to_post/thumbnail_a.jpg?t=${Date.now()}`,
+          clipName: filename,
+          filePath: `swap/ready_to_post/${filename}`,
+        }));
+      }
+    } catch {
+      // Keep initial reel
+    }
+  }, []);
+
+  React.useEffect(() => {
+    loadLatestStagedReel();
+  }, [loadLatestStagedReel]);
+
+  // Handle Real D3 Pipeline Generation
+  const handleStartBuild = async () => {
+    setIsGenerateModalOpen(false);
+    setIsBuilding(true);
+    setBuildMessage("Contacting autonomous D3 pipeline...");
+    addToast({
+      type: "info",
+      title: "D3 Pipeline Started",
+      description: "Generating 1080p60 Roman Urdu reel in background...",
+    });
+
+    try {
+      const res = await fetch("/d3/build", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slot: "a", run_in_background: true }),
+      });
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const jobId = data.job_id;
+
+      if (!jobId) {
+        await loadLatestStagedReel();
+        setIsBuilding(false);
+        addToast({
+          type: "success",
+          title: "Reel Generated!",
+          description: "Staged in swap/ready_to_post/.",
+        });
+        return;
+      }
+
+      const timer = setInterval(async () => {
+        try {
+          const jobRes = await fetch(`/jobs/${jobId}`);
+          if (!jobRes.ok) return;
+          const job = await jobRes.json();
+          if (job.status === "running") {
+            setBuildMessage(job.message || "Encoding 1080p60 video & burning text...");
+          } else if (job.status === "completed") {
+            clearInterval(timer);
+            setIsBuilding(false);
+            await loadLatestStagedReel();
+            addToast({
+              type: "success",
+              title: "Reel Generated Successfully!",
+              description: "New reel staged in swap/ready_to_post/",
+            });
+          } else if (job.status === "failed") {
+            clearInterval(timer);
+            setIsBuilding(false);
+            addToast({
+              type: "error",
+              title: "Build Failed",
+              description: job.error || "Generation pipeline failed.",
+            });
+          }
+        } catch {
+          // continue polling
+        }
+      }, 2000);
+    } catch (err: any) {
+      setIsBuilding(false);
+      addToast({
+        type: "error",
+        title: "Build Trigger Error",
+        description: err.message || "Failed to contact backend API.",
+      });
+    }
   };
 
   const handleApprove = () => {
@@ -134,36 +240,39 @@ function TodayScreenContent() {
   };
 
   const handleRegenerate = () => {
-    setReelStatus("rendering");
-    addToast({
-      type: "info",
-      title: "Regenerating Background Footage",
-      description: "Fetching next fresh Pinterest nature clip and running 60fps prep...",
-    });
-    setTimeout(() => {
-      setReelStatus("ready");
-      addToast({
-        type: "success",
-        title: "Regeneration Complete",
-        description: "New clip matched. Contrast re-verified at 0.24.",
-      });
-    }, 1800);
+    handleStartBuild();
   };
 
-  const handlePublishNow = () => {
+  const handlePublishNow = async () => {
     addToast({
       type: "info",
       title: "Publishing via Buffer",
-      description: "Dispatching direct release to @enoent.7 / noori.shed...",
+      description: "Dispatching staged reel to @enoent.7 / noori.shed...",
     });
-    setTimeout(() => {
+
+    try {
+      const res = await fetch("/d3/post/a", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dry_run: true }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.detail || "Publishing failed.");
+      }
       setReelStatus("published");
       addToast({
         type: "success",
-        title: "Published to Instagram",
-        description: "Media ID: 18042918402941 · Live link recorded.",
+        title: "Published Successfully!",
+        description: data.mode === "dry_run" ? "Dry run verified: simulated publish to @enoent.7." : `Live published: ${data.media_id || "Staged"}`,
       });
-    }, 2000);
+    } catch (err: any) {
+      addToast({
+        type: "error",
+        title: "Publish Failed",
+        description: err.message || "Failed to dispatch post.",
+      });
+    }
   };
 
   return (
@@ -339,6 +448,17 @@ function TodayScreenContent() {
                 </span>
               </div>
 
+              {/* Build in progress banner */}
+              {isBuilding && (
+                <div className="p-3.5 rounded-md bg-moss-subtle border border-moss/30 flex items-center justify-between text-xs font-mono text-moss animate-pulse">
+                  <span className="flex items-center gap-2">
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    {buildMessage}
+                  </span>
+                  <span className="text-[11px] text-ink-muted">Processing...</span>
+                </div>
+              )}
+
               {/* Main Reel Presentation Card */}
               <Card className="p-5 sm:p-6 bg-surface">
                 <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 items-start">
@@ -407,6 +527,12 @@ function TodayScreenContent() {
                       <div className="flex items-center justify-between py-1.5">
                         <span className="text-ink-muted">Placement</span>
                         <span className="text-moss font-medium">{currentReel.placementBand}</span>
+                      </div>
+                      <div className="flex items-center justify-between py-1.5">
+                        <span className="text-ink-muted">Saved File</span>
+                        <span className="text-ink-primary font-mono text-[11px] truncate max-w-[200px]" title={currentReel.filePath}>
+                          {currentReel.filePath}
+                        </span>
                       </div>
                     </div>
 
@@ -625,14 +751,7 @@ function TodayScreenContent() {
               variant="primary"
               size="sm"
               icon={<Sparkles className="w-3.5 h-3.5" />}
-              onClick={() => {
-                setIsGenerateModalOpen(false);
-                addToast({
-                  type: "info",
-                  title: "D3 Pipeline Started",
-                  description: "Generating slot deliverable in background...",
-                });
-              }}
+              onClick={handleStartBuild}
             >
               Start Build
             </Button>

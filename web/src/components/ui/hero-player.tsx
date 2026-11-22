@@ -38,6 +38,14 @@ export function HeroPlayer({
   const containerRef = React.useRef<HTMLDivElement>(null);
   const timerRef = React.useRef<NodeJS.Timeout | null>(null);
 
+  React.useEffect(() => {
+    setIsPlaying(false);
+    setCurrentTime(0);
+    if (videoRef.current) {
+      videoRef.current.load();
+    }
+  }, [videoSrc]);
+
   const togglePlay = () => {
     if (!videoRef.current) return;
     if (isPlaying) {
