@@ -84,3 +84,4 @@ export function applyTheme(themeId: string): void {
   if (typeof window === "undefined") return;
   document.documentElement.setAttribute("data-theme", themeId);
 }
+
