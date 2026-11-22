@@ -39,6 +39,7 @@ import {
   QuoteBlock,
 } from "@/components";
 import { cn } from "@/lib/utils";
+import { THEMES, getStoredTheme, setStoredTheme } from "@/lib/themes";
 
 type SettingsTab = "connections" | "styles" | "automation" | "notifications";
 
@@ -115,6 +116,17 @@ function SettingsContent() {
   const { addToast } = useToast();
 
   const [activeTab, setActiveTab] = React.useState<SettingsTab>("connections");
+  const [activeTheme, setActiveTheme] = React.useState("moss");
+
+  React.useEffect(() => {
+    setActiveTheme(getStoredTheme());
+    const handleThemeChange = (e: Event) => {
+      const custom = e as CustomEvent<string>;
+      if (custom.detail) setActiveTheme(custom.detail);
+    };
+    window.addEventListener("reelforge:theme-changed", handleThemeChange);
+    return () => window.removeEventListener("reelforge:theme-changed", handleThemeChange);
+  }, []);
 
   // Connection Test States
   const [testingId, setTestingId] = React.useState<string | null>(null);
@@ -533,17 +545,98 @@ function SettingsContent() {
                 TAB 2: STYLES (Preset List + Live Preview)
                 ----------------------------------------------------------------- */}
             {activeTab === "styles" && (
-              <div className="space-y-5">
-                <div className="border-b border-border pb-3">
-                  <h3 className="font-sans text-sm font-semibold text-ink-primary">
-                    Typography & Rendering Presets
-                  </h3>
-                  <p className="font-sans text-xs text-ink-muted mt-0.5">
-                    Configure typography scale, drop shadow intensity, and placement locks for video burns.
-                  </p>
+              <div className="space-y-8">
+                {/* 1. Global Platform Color Themes */}
+                <div className="space-y-4">
+                  <div className="border-b border-border pb-3 flex items-center justify-between">
+                    <div>
+                      <h3 className="font-sans text-sm font-semibold text-ink-primary">
+                        Platform Color Themes
+                      </h3>
+                      <p className="font-sans text-xs text-ink-muted mt-0.5">
+                        Choose a coordinated 3-color palette applied instantly across the entire platform.
+                      </p>
+                    </div>
+                    <Badge variant="moss">6 Curated Themes</Badge>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {THEMES.map((theme) => {
+                      const isSelected = activeTheme === theme.id;
+                      return (
+                        <div
+                          key={theme.id}
+                          onClick={() => {
+                            setActiveTheme(theme.id);
+                            setStoredTheme(theme.id);
+                            addToast({
+                              type: "success",
+                              title: "Theme Applied",
+                              description: `Switched platform color palette to ${theme.name}.`,
+                            });
+                          }}
+                          className={cn(
+                            "p-4 rounded-md border transition-fast cursor-pointer space-y-3 relative select-none outline-none focus-visible:ring-2 focus-visible:ring-moss/40",
+                            isSelected
+                              ? "bg-surface border-moss before:absolute before:left-0 before:top-2 before:bottom-2 before:w-[3px] before:bg-moss before:rounded-r shadow-xs"
+                              : "bg-surface/70 border-border hover:bg-surface hover:border-border-strong text-ink-secondary"
+                          )}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-sans text-xs font-semibold text-ink-primary">
+                              {theme.name}
+                            </span>
+                            {isSelected ? (
+                              <Badge variant="moss">Active</Badge>
+                            ) : (
+                              <span className="font-mono text-[10px] text-ink-muted">
+                                {theme.isDark ? "Dark" : "Light"}
+                              </span>
+                            )}
+                          </div>
+
+                          <p className="font-sans text-[11px] text-ink-muted leading-tight">
+                            {theme.tagline}
+                          </p>
+
+                          {/* 3 Signature Color Swatches */}
+                          <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border">
+                            {theme.colors.map((color, idx) => (
+                              <div key={idx} className="space-y-1">
+                                <div
+                                  className="h-7 w-full rounded-sm border border-black/15 shadow-2xs"
+                                  style={{ backgroundColor: color }}
+                                  title={`${theme.colorLabels[idx]}: ${color}`}
+                                />
+                                <div className="space-y-0.5">
+                                  <p className="font-mono text-[9px] text-ink-muted truncate">
+                                    {theme.colorLabels[idx]}
+                                  </p>
+                                  <p className="font-mono text-[9px] text-ink-primary font-medium">
+                                    {color}
+                                  </p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                {/* 2. Typography & Video Rendering Presets */}
+                <div className="space-y-4 pt-2">
+                  <div className="border-b border-border pb-3">
+                    <h3 className="font-sans text-sm font-semibold text-ink-primary">
+                      Typography & Rendering Presets
+                    </h3>
+                    <p className="font-sans text-xs text-ink-muted mt-0.5">
+                      Configure typography scale, drop shadow intensity, and placement locks for video burns.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                   {/* Preset Selector & Options (7 cols) */}
                   <div className="lg:col-span-7 space-y-3">
                     <span className="font-mono text-[10px] uppercase tracking-wider text-ink-muted block">
@@ -666,7 +759,8 @@ function SettingsContent() {
                   </div>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
             {/* -----------------------------------------------------------------
                 TAB 3: AUTOMATION (Daily cap, review mode, dry-run, post time)

@@ -22,9 +22,11 @@ import {
   CheckSquare,
   Sparkles,
   Send,
+  Check,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { THEMES, DEFAULT_THEME_ID, getStoredTheme, setStoredTheme, applyTheme } from "@/lib/themes";
 import { Button } from "../ui/button";
 import { StatusDot } from "../ui/status-dot";
 import {
@@ -71,6 +73,23 @@ export function AppShell({
 }: AppShellProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [currentTheme, setCurrentTheme] = React.useState<string>(DEFAULT_THEME_ID);
+
+  // Synchronize active theme from storage & custom events
+  React.useEffect(() => {
+    const initial = getStoredTheme();
+    setCurrentTheme(initial);
+    applyTheme(initial);
+
+    const handleThemeChange = (e: Event) => {
+      const custom = e as CustomEvent<string>;
+      if (custom.detail) setCurrentTheme(custom.detail);
+    };
+    window.addEventListener("reelforge:theme-changed", handleThemeChange);
+    return () => window.removeEventListener("reelforge:theme-changed", handleThemeChange);
+  }, []);
+
+  const activeThemeObj = THEMES.find((t) => t.id === currentTheme) || THEMES[0];
 
   // Close mobile sidebar when route changes
   React.useEffect(() => {
@@ -246,6 +265,79 @@ export function AppShell({
                 <span>Generate</span>
               </Button>
             )}
+
+            {/* Quick Theme Switcher (6 Combinations with 2-3 Colors) */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className="flex items-center gap-1.5 px-2 py-1.5 rounded-sm border border-border hover:border-border-strong bg-surface transition-fast text-xs outline-none focus-visible:ring-2 focus-visible:ring-moss/40"
+                  aria-label="Switch Theme"
+                  title={`Active Theme: ${activeThemeObj.name}`}
+                >
+                  <Palette className="w-3.5 h-3.5 text-moss shrink-0" />
+                  <span className="hidden lg:inline font-sans text-xs text-ink-primary font-medium">
+                    {activeThemeObj.name}
+                  </span>
+                  {/* 3 mini color swatch dots */}
+                  <span className="flex items-center -space-x-1 shrink-0 ml-0.5">
+                    {activeThemeObj.colors.map((c, i) => (
+                      <span
+                        key={i}
+                        className="w-2.5 h-2.5 rounded-full border border-black/20 shrink-0"
+                        style={{ backgroundColor: c }}
+                      />
+                    ))}
+                  </span>
+                  <ChevronDown className="w-3 h-3 text-ink-muted shrink-0" />
+                </button>
+              </DropdownMenuTrigger>
+
+              <DropdownMenuContent align="end" className="w-64 p-1.5 space-y-1">
+                <div className="px-2.5 py-1.5 border-b border-border">
+                  <p className="font-sans text-xs font-semibold text-ink-primary">Color Themes</p>
+                  <p className="font-sans text-[11px] text-ink-muted">6 Curated 3-Color Palettes</p>
+                </div>
+                {THEMES.map((theme) => {
+                  const isSelected = currentTheme === theme.id;
+                  return (
+                    <DropdownMenuItem
+                      key={theme.id}
+                      onClick={() => {
+                        setCurrentTheme(theme.id);
+                        setStoredTheme(theme.id);
+                      }}
+                      className={cn(
+                        "flex items-center justify-between px-2.5 py-2 cursor-pointer rounded-xs transition-fast",
+                        isSelected ? "bg-subtle font-medium text-ink-primary" : "hover:bg-subtle/60 text-ink-secondary"
+                      )}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        {/* 3 Color Swatches */}
+                        <div className="flex items-center -space-x-1 shrink-0">
+                          {theme.colors.map((col, idx) => (
+                            <span
+                              key={idx}
+                              className="w-3.5 h-3.5 rounded-full border border-black/20 shadow-2xs shrink-0"
+                              style={{ backgroundColor: col }}
+                              title={`${theme.colorLabels[idx]}: ${col}`}
+                            />
+                          ))}
+                        </div>
+                        <div className="truncate">
+                          <p className="font-sans text-xs text-ink-primary leading-tight truncate">
+                            {theme.name}
+                          </p>
+                          <p className="font-sans text-[10px] text-ink-muted leading-tight truncate">
+                            {theme.tagline}
+                          </p>
+                        </div>
+                      </div>
+                      {isSelected && <Check className="w-3.5 h-3.5 text-moss shrink-0 ml-1.5" />}
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             {/* Account Dropdown Menu (Clean editorial mono representation) */}
             <DropdownMenu>
