@@ -107,6 +107,7 @@ function TodayScreenContent() {
   // Realistic seed data matching Formula D3
   const [currentReel, setCurrentReel] = React.useState({
     id: "reel_2026-11-21_a",
+    date: "2026-11-21",
     slot: "Slot A",
     scheduledTime: "Today, 18:00 UTC (08:30 PKT)",
     clipName: "WhatsApp_Video_2026-11-20_at_6.36.16_AM",
@@ -139,6 +140,7 @@ function TodayScreenContent() {
         setCurrentReel((prev) => ({
           ...prev,
           id: filename.replace(".mp4", ""),
+          date: manifestA.date || prev.date,
           quote: manifestA.quote || prev.quote,
           caption: manifestA.caption || prev.caption,
           hashtags: manifestA.hashtags || prev.hashtags,
@@ -254,7 +256,7 @@ function TodayScreenContent() {
       const res = await fetch("/d3/post/a", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ dry_run: true }),
+        body: JSON.stringify({ dry_run: true, date: currentReel.date }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -263,8 +265,8 @@ function TodayScreenContent() {
       setReelStatus("published");
       addToast({
         type: "success",
-        title: "Published Successfully!",
-        description: data.mode === "dry_run" ? "Dry run verified: simulated publish to @enoent.7." : `Live published: ${data.media_id || "Staged"}`,
+        title: "Published (Dry Run)",
+        description: data.message || "Reel verified and simulated for Buffer direct publish.",
       });
     } catch (err: any) {
       addToast({

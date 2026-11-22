@@ -47,8 +47,6 @@ def post_d3_reel(
         Dict with status, live_link, permalink, error, etc.
     """
     slot_clean = slot.lower().strip()
-    expected_date = target_date or get_karachi_today()
-    logger.info(f"=== Running D3 Post Job for Slot {slot_clean.upper()} ({expected_date}) ===")
 
     # 1. Load manifest
     manifest = ReelManifest.load(slot=slot_clean, directory=manifest_dir)
@@ -56,6 +54,11 @@ def post_d3_reel(
         err = f"Manifest for slot '{slot_clean}' not found in {manifest_dir}. Reel is not ready."
         logger.error(err)
         return {"status": "not_ready", "error": err, "slot": slot_clean}
+
+    # If target_date was explicitly requested, validate against it.
+    # Otherwise, accept the staged manifest's recorded date.
+    expected_date = target_date or manifest.date
+    logger.info(f"=== Running D3 Post Job for Slot {slot_clean.upper()} ({expected_date}) ===")
 
     # 2. Validate manifest date and media
     val_ok, val_msg = manifest.validate_for_post(expected_date=expected_date)
