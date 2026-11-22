@@ -36,8 +36,8 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["var(--font-sans)", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
-        serif: ["var(--font-serif)", "Georgia", "serif"],
+        sans: ["Arial", '"Helvetica Neue"', "Helvetica", "sans-serif"],
+        serif: ["Arial", '"Helvetica Neue"', "Helvetica", "sans-serif"],
         mono: ["var(--font-mono)", "monospace"],
       },
       boxShadow: {

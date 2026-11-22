@@ -1,20 +1,5 @@
 import type { Metadata } from "next";
-import { Instrument_Sans, Newsreader } from "next/font/google";
 import "./globals.css";
-
-const instrumentSans = Instrument_Sans({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  display: "swap",
-});
-
-const newsreader = Newsreader({
-  subsets: ["latin"],
-  style: ["normal", "italic"],
-  variable: "--font-serif",
-  display: "swap",
-  adjustFontFallback: false,
-});
 
 export const metadata: Metadata = {
   title: "Reel Forge — Editorial Nature Reels",
@@ -27,7 +12,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${instrumentSans.variable} ${newsreader.variable}`}>
+    <html lang="en">
       <body className="bg-page text-ink-primary font-sans antialiased min-h-screen">
         {children}
       </body>

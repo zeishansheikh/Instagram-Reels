@@ -37,21 +37,24 @@
   /* Shadows (None for flat components, subtle elevation ONLY for popovers) */
   --shadow-popover: 0 4px 16px -2px rgba(22, 21, 15, 0.06), 0 0 0 1px #E8E6E1;
 
-  /* Typography Fonts */
-  --font-sans: "Geist", "Hanken Grotesk", "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-serif: "Newsreader", "Instrument Serif", Georgia, "Times New Roman", serif;
+  /* Typography Fonts (Full Website Arial) */
+  --font-sans: Arial, "Helvetica Neue", Helvetica, sans-serif;
+  --font-serif: Arial, "Helvetica Neue", Helvetica, sans-serif;
   --font-mono: "Geist Mono", "JetBrains Mono", "SF Mono", monospace;
 }
 
 @layer base {
+  * {
+    font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+  }
+
   body {
     background-color: var(--bg-page);
     color: var(--text-primary);
-    font-family: var(--font-sans);
+    font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     min-height: 100vh;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
   ::selection {
