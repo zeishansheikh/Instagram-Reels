@@ -595,7 +595,7 @@ function SettingsContent() {
                           </span>
                         </div>
                         <span className="font-mono text-[10px] text-ink-muted">
-                          Folder ID: 1A2b3C4d5E6f7G8h9 · 24 clips indexed
+                          Folder ID: 1A2b3C4d5E6f7G8h9 · 0 clips indexed
                         </span>
                       </div>
                     </div>

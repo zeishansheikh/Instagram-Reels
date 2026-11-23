@@ -751,10 +751,10 @@ function TodayScreenContent() {
                     <span className="text-ink-secondary font-sans">Posts</span>
                     <div className="flex items-center gap-2">
                       <span className="tabular-nums font-medium text-ink-primary">
-                        12 / 14
+                        0 / 14
                       </span>
-                      <span className="text-xs font-mono text-moss bg-moss-subtle px-1.5 py-0.5 rounded-xs border border-moss/20 font-medium">
-                        85%
+                      <span className="text-xs font-mono text-ink-muted bg-subtle px-1.5 py-0.5 rounded-xs border border-border font-medium">
+                        0%
                       </span>
                     </div>
                   </div>
@@ -762,8 +762,8 @@ function TodayScreenContent() {
                   {/* Success Rate */}
                   <div className="flex items-center justify-between py-2">
                     <span className="text-ink-secondary font-sans">Success rate</span>
-                    <span className="tabular-nums font-medium text-status-success">
-                      98.4%
+                    <span className="tabular-nums font-medium text-ink-muted">
+                      —
                     </span>
                   </div>
 
@@ -778,16 +778,16 @@ function TodayScreenContent() {
                   {/* Contrast Score */}
                   <div className="flex items-center justify-between py-2">
                     <span className="text-ink-secondary font-sans">Avg contrast</span>
-                    <span className="tabular-nums font-medium text-ink-primary">
-                      0.23 (Safe AA)
+                    <span className="tabular-nums font-medium text-ink-muted">
+                      —
                     </span>
                   </div>
 
                   {/* Audio Gate Compliance */}
                   <div className="flex items-center justify-between py-2">
                     <span className="text-ink-secondary font-sans">Audio gate</span>
-                    <span className="tabular-nums text-ink-secondary text-xs">
-                      &lt; 90 BPM (100%)
+                    <span className="tabular-nums text-ink-muted text-xs">
+                      &lt; 90 BPM (Ready)
                     </span>
                   </div>
                 </div>

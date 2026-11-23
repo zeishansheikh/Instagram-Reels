@@ -46,9 +46,9 @@ export interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { label: "Today", href: "/", icon: Calendar },
-  { label: "Review", href: "/review", icon: CheckSquare, badge: "3" },
-  { label: "Library", href: "/library", icon: Video, badge: "24" },
-  { label: "Reels", href: "/#reels", icon: Film, badge: "12" },
+  { label: "Review", href: "/review", icon: CheckSquare },
+  { label: "Library", href: "/library", icon: Video },
+  { label: "Reels", href: "/#reels", icon: Film },
   { label: "Quote Studio", href: "/quotes", icon: BookOpen },
   { label: "Schedule", href: "/schedule", icon: CalendarDays },
   { label: "Publish Log", href: "/publish-log", icon: Send },

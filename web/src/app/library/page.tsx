@@ -129,7 +129,7 @@ function LibraryContent() {
       addToast({
         type: "success",
         title: "Drive Sync Complete",
-        description: "Indexed 24 clips. Quality gates and metadata verified.",
+        description: `Indexed ${clips.length} clips. Quality gates and metadata verified.`,
       });
     }, 1500);
   };
@@ -228,7 +228,7 @@ function LibraryContent() {
               </div>
               <span className="font-mono text-[10px] text-ink-muted">
                 {isDriveConnected
-                  ? `Folder ID: 1A2...8xK · Last synced ${lastSyncTime} · 24 clips indexed`
+                  ? `Folder ID: 1A2...8xK · Last synced ${lastSyncTime} · ${clips.length} clips indexed`
                   : "No Google Drive folder linked in environment"}
               </span>
             </div>
@@ -403,7 +403,7 @@ function LibraryContent() {
                     addToast({
                       type: "success",
                       title: "Drive Connected",
-                      description: "Folder synchronized with 24 clips indexed.",
+                      description: `Folder synchronized with ${clips.length} clips indexed.`,
                     });
                   }}
                 >
