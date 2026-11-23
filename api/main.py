@@ -72,6 +72,10 @@ swap_path = Path("swap")
 swap_path.mkdir(parents=True, exist_ok=True)
 app.mount("/static/swap", StaticFiles(directory=str(swap_path)), name="swap_static")
 
+ready_to_post_path = Path("swap/ready_to_post")
+ready_to_post_path.mkdir(parents=True, exist_ok=True)
+app.mount("/static/ready_to_post", StaticFiles(directory=str(ready_to_post_path)), name="ready_to_post_static")
+
 # 3. Register Routers
 app.include_router(health.router)
 app.include_router(reels.router)
