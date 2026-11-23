@@ -62,8 +62,23 @@ def fetch_pinterest_clip(
     dest_dir = Path(output_dir)
     dest_dir.mkdir(parents=True, exist_ok=True)
 
-    # 1. Directly fetch a fresh nature clip from Pinterest using authenticated cookies
+    # 1. Check if we already have an unused Pinterest HD clip in assets/backgrounds
     bg_dir = Path("assets/backgrounds")
+    if bg_dir.exists():
+        pinterest_clips = sorted(list(bg_dir.glob("pinterest_*.mp4")))
+        for cand in pinterest_clips:
+            pin_id = cand.stem.replace("pinterest_", "")
+            if not workflow_state.is_pin_used(pin_id):
+                gate_ok, _, _ = ffprobe_source_gate(cand)
+                if gate_ok:
+                    luma_ok, _, _ = brightness_and_saturation_gate(cand)
+                    if luma_ok:
+                        wm_ok, _ = watermark_and_quality_check(cand)
+                        if wm_ok:
+                            logger.info(f"Selected verified Pinterest clip '{cand.name}' for pin '{pin_id}'")
+                            return cand, pin_id
+
+    # 2. Directly fetch a fresh nature clip from Pinterest using authenticated cookies
     try:
         from reelforge.pipeline.pinterest_client import fetch_fresh_pinterest_video
         fresh = fetch_fresh_pinterest_video(category=category, output_dir=bg_dir, state=workflow_state)
@@ -74,7 +89,7 @@ def fetch_pinterest_clip(
     except Exception as exc:
         logger.warning(f"Direct Pinterest fetcher error: {exc}")
 
-    # 2. Inspect local background assets in assets/backgrounds as fallback
+    # 3. Inspect other local background assets in assets/backgrounds as fallback
     if bg_dir.exists():
         candidates = sorted(list(bg_dir.glob("*.mp4")) + list(bg_dir.glob("*.mov")))
         for cand in candidates:

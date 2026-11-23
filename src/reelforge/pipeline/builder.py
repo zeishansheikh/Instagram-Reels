@@ -118,7 +118,7 @@ def build_d3_reel(
     logger.info("Step 8 [Real-Footage]: Verified natural scenery without synthetic AI artifacts.")
 
     # Step 9: Quality Prep (Adaptive grade, lanczos upscale, 60fps base)
-    target_duration = min(20.0, max(8.0, float(meta.get("duration") or 12.0)))
+    target_duration = min(10.0, max(5.0, float(meta.get("duration") or 8.0)))
     scene_tone = detect_scene_tone(raw_clip)
     logger.info(f"Step 9 [Quality Prep]: scene_tone='{scene_tone}', target_duration={target_duration:.2f}s")
 
@@ -196,8 +196,8 @@ def build_d3_reel(
         "-i", str(audio_base_path),
         "-vf", full_vf,
         "-c:v", "libx264",
-        "-preset", "slow",
-        "-crf", "16",
+        "-preset", "veryfast",
+        "-crf", "18",
         "-c:a", "copy",
         str(master_path),
     ]
@@ -221,6 +221,7 @@ def build_d3_reel(
         "ffmpeg", "-y",
         "-i", str(master_path),
         "-c:v", "libx264",
+        "-preset", "veryfast",
         "-b:v", "15M",
         "-maxrate", "20M",
         "-bufsize", "40M",
