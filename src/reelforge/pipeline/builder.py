@@ -81,14 +81,16 @@ def build_d3_reel(
         logger.error(err)
         return {"status": "failed", "step": 2, "error": err}
 
-    # Step 3: Fetch Song / Sad Beat
-    # Default sad track candidate
-    song_title = "Dil Ki Khamoshi - alonesinghkdm"
-    if state.last_song and "Dil Ki Khamoshi" in state.last_song:
+    # Step 3: Fetch Song / Sad Beat (Autonomous YouTube Music integration)
+    try:
+        from reelforge.pipeline.music_youtube import fetch_or_pick_lofi_music
+        song_file, song_title = fetch_or_pick_lofi_music(state=state)
+        logger.info(f"Step 3 [Music]: Selected track '{song_title}' ({song_file.name})")
+    except Exception as exc:
+        logger.warning(f"Step 3 [Music] Warning: Could not auto-fetch from YouTube: {exc}")
         song_title = "Tanhai Beats - sad_lofi_urdu"
-
-    music_files = list(Path("assets/music").glob("*.mp3")) if Path("assets/music").exists() else []
-    song_file = music_files[0] if music_files else None
+        music_files = list(Path("assets/music").glob("*.mp3")) if Path("assets/music").exists() else []
+        song_file = music_files[0] if music_files else None
 
     # Step 4: Quality Gate ffprobe check
     gate_ok, gate_msg, meta = ffprobe_source_gate(raw_clip)

@@ -38,7 +38,9 @@ credentials.json
 token.json
 client_secrets.json
 config/pinterest_cookies.*
+config/youtube_cookies.*
 config/*.json
+config/*.txt
 
 # Media Assets & Generated Content
 cache/
