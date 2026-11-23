@@ -59,135 +59,36 @@ interface DayColumn {
   cap: number; // 2
 }
 
-const WEEK_DAYS: DayColumn[] = [
-  { id: "2026-11-17", dayName: "Mon", dayNumber: 17, dateString: "17 Nov", isToday: false, cap: 2 },
-  { id: "2026-11-18", dayName: "Tue", dayNumber: 18, dateString: "18 Nov", isToday: false, cap: 2 },
-  { id: "2026-11-19", dayName: "Wed", dayNumber: 19, dateString: "19 Nov", isToday: false, cap: 2 },
-  { id: "2026-11-20", dayName: "Thu", dayNumber: 20, dateString: "20 Nov", isToday: false, cap: 2 },
-  { id: "2026-11-21", dayName: "Fri", dayNumber: 21, dateString: "21 Nov", isToday: true, cap: 2 },
-  { id: "2026-11-22", dayName: "Sat", dayNumber: 22, dateString: "22 Nov", isToday: false, cap: 2 },
-  { id: "2026-11-23", dayName: "Sun", dayNumber: 23, dateString: "23 Nov", isToday: false, cap: 2 },
-];
+function getCurrentWeekDays(): DayColumn[] {
+  const days: DayColumn[] = [];
+  const now = new Date();
+  const dayOfWeek = now.getDay();
+  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + mondayOffset);
 
-const INITIAL_SCHEDULED_REELS: ScheduledReel[] = [
-  {
-    id: "reel-mon-a",
-    dayId: "2026-11-17",
-    slot: "slot_a",
-    slotLabel: "Slot A · 08:30 PKT",
-    time: "08:30 PKT",
-    quoteSnippet: "woh jo kabhi jaan hua karte the...",
-    theme: "yaadein",
-    clipName: "WhatsApp_Video_...16_AM",
-    posterSrc: "/static/swap/ready_to_post/thumbnail_a.jpg",
-    videoSrc: "/static/swap/ready_to_post/reel_2026-11-21_a.mp4",
-    status: "published",
-  },
-  {
-    id: "reel-mon-b",
-    dayId: "2026-11-17",
-    slot: "slot_b",
-    slotLabel: "Slot B · 16:00 PKT",
-    time: "16:00 PKT",
-    quoteSnippet: "kuch baatein dil mein hi achi lagti hain...",
-    theme: "dard",
-    clipName: "WhatsApp_Video_...18_AM",
-    posterSrc: "/static/swap/ready_to_post/thumbnail_a.jpg",
-    videoSrc: "/static/swap/ready_to_post/reel_2026-11-21_a.mp4",
-    status: "published",
-  },
-  {
-    id: "reel-tue-a",
-    dayId: "2026-11-18",
-    slot: "slot_a",
-    slotLabel: "Slot A · 08:30 PKT",
-    time: "08:30 PKT",
-    quoteSnippet: "sab kehte hain akela rehna buri baat hai...",
-    theme: "tanhai",
-    clipName: "WhatsApp_Video_...21_AM",
-    posterSrc: "/static/swap/ready_to_post/thumbnail_a.jpg",
-    videoSrc: "/static/swap/ready_to_post/reel_2026-11-21_a.mp4",
-    status: "published",
-  },
-  {
-    id: "reel-wed-a",
-    dayId: "2026-11-19",
-    slot: "slot_a",
-    slotLabel: "Slot A · 08:30 PKT",
-    time: "08:30 PKT",
-    quoteSnippet: "sab kehte hain waqt sab theek kar deta hai...",
-    theme: "waqt",
-    clipName: "alpine_meadow_dusk_4k",
-    posterSrc: "/static/swap/ready_to_post/thumbnail_a.jpg",
-    videoSrc: "/static/swap/ready_to_post/reel_2026-11-21_a.mp4",
-    status: "published",
-  },
-  {
-    id: "reel-thu-a",
-    dayId: "2026-11-20",
-    slot: "slot_a",
-    slotLabel: "Slot A · 08:30 PKT",
-    time: "08:30 PKT",
-    quoteSnippet: "Frost coats the glass tonight...",
-    theme: "nature",
-    clipName: "WhatsApp_Video_...23_AM",
-    posterSrc: "/static/swap/ready_to_post/thumbnail_a.jpg",
-    videoSrc: "/static/swap/ready_to_post/reel_2026-11-21_a.mp4",
-    status: "published",
-  },
-  {
-    id: "reel-thu-b",
-    dayId: "2026-11-20",
-    slot: "slot_b",
-    slotLabel: "Slot B · 16:00 PKT",
-    time: "16:00 PKT",
-    quoteSnippet: "Quiet solitude upon still waters...",
-    theme: "calm",
-    clipName: "moody_rain_dark_lake",
-    posterSrc: "/static/swap/ready_to_post/thumbnail_a.jpg",
-    videoSrc: "/static/swap/ready_to_post/reel_2026-11-21_a.mp4",
-    status: "published",
-  },
-  {
-    id: "reel-today-a",
-    dayId: "2026-11-21",
-    slot: "slot_a",
-    slotLabel: "Slot A · 18:00 UTC",
-    time: "18:00 UTC (08:30 PKT)",
-    quoteSnippet: "toote huye dil ke tukde sambhalte nahi...",
-    theme: "loss",
-    clipName: "WhatsApp_Video_2026-11-20_at_6.36.16_AM",
-    posterSrc: "/static/swap/ready_to_post/thumbnail_a.jpg",
-    videoSrc: "/static/swap/ready_to_post/reel_2026-11-21_a.mp4",
-    status: "scheduled",
-  },
-  {
-    id: "reel-sat-a",
-    dayId: "2026-11-22",
-    slot: "slot_a",
-    slotLabel: "Slot A · 08:30 PKT",
-    time: "08:30 PKT",
-    quoteSnippet: "raat gehri ho to yaadein cheekhti hain...",
-    theme: "hope-in-sadness",
-    clipName: "autumn_leaf_fall_path",
-    posterSrc: "/static/swap/ready_to_post/thumbnail_a.jpg",
-    videoSrc: "/static/swap/ready_to_post/reel_2026-11-21_a.mp4",
-    status: "ready",
-  },
-  {
-    id: "reel-sat-b",
-    dayId: "2026-11-22",
-    slot: "slot_b",
-    slotLabel: "Slot B · 16:00 PKT",
-    time: "16:00 PKT",
-    quoteSnippet: "umeed ke diye bujhne na dena...",
-    theme: "hope",
-    clipName: "coastal_cliff_waves_mist",
-    posterSrc: "/static/swap/ready_to_post/thumbnail_a.jpg",
-    videoSrc: "/static/swap/ready_to_post/reel_2026-11-21_a.mp4",
-    status: "ready",
-  },
-];
+  const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const dateStr = d.toISOString().split("T")[0];
+    const isToday = dateStr === now.toISOString().split("T")[0];
+    days.push({
+      id: dateStr,
+      dayName: dayNames[i],
+      dayNumber: d.getDate(),
+      dateString: `${d.getDate()} ${monthNames[d.getMonth()]}`,
+      isToday,
+      cap: 2,
+    });
+  }
+  return days;
+}
+
+const WEEK_DAYS: DayColumn[] = getCurrentWeekDays();
+const INITIAL_SCHEDULED_REELS: ScheduledReel[] = [];
 
 export default function SchedulePage() {
   return (

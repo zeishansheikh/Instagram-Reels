@@ -50,108 +50,16 @@ interface PublishLogEntry {
   suggestedFix?: string;
 }
 
-const INITIAL_LOGS: PublishLogEntry[] = [
-  {
-    id: "pub-001",
-    timestamp: "21 Nov 18:00 UTC",
-    dateStr: "2026-11-21",
-    slot: "Slot A",
-    quotePreview: "toote huye dil ke tukde sambhalte nahi, aur log puchte hain...",
-    status: "published",
-    permalink: "https://www.instagram.com/reel/DA29k8xL1mQ/",
-    mediaId: "18049182940192841",
-    clipName: "WhatsApp_Video_2026-11-20_at_6.36.16_AM",
-  },
-  {
-    id: "pub-002",
-    timestamp: "20 Nov 16:00 PKT",
-    dateStr: "2026-11-20",
-    slot: "Slot B",
-    quotePreview: "Quiet solitude upon still waters reflects what words cannot...",
-    status: "published",
-    permalink: "https://www.instagram.com/reel/DA11p7xM9qP/",
-    mediaId: "18038172948192014",
-    clipName: "moody_rain_dark_lake",
-  },
-  {
-    id: "pub-003",
-    timestamp: "20 Nov 08:30 PKT",
-    dateStr: "2026-11-20",
-    slot: "Slot A",
-    quotePreview: "Frost coats the glass tonight, but underneath sleeping soil...",
-    status: "published",
-    permalink: "https://www.instagram.com/reel/DA09a5xQ8wZ/",
-    mediaId: "18037192840192831",
-    clipName: "WhatsApp_Video_2026-11-20_at_6.36.23_AM",
-  },
-  {
-    id: "pub-004",
-    timestamp: "19 Nov 16:00 PKT",
-    dateStr: "2026-11-19",
-    slot: "Slot B",
-    quotePreview: "sab kehte hain waqt sab theek kar deta hai, mera waqt to...",
-    status: "failed",
-    mediaId: "18036182947192839",
-    clipName: "alpine_meadow_dusk_4k",
-    errorExplanation:
-      "Meta Graph API transcode worker timed out (status_code: ERROR). Video bitrate peaked at 22.4 Mbps, exceeding Instagram's recommended 20 Mbps ceiling.",
-    suggestedFix:
-      "Remedy applied: Re-encode with strict bitrate caps (-b:v 15M -maxrate 20M -bufsize 40M) and click Retry.",
-  },
-  {
-    id: "pub-005",
-    timestamp: "19 Nov 08:30 PKT",
-    dateStr: "2026-11-19",
-    slot: "Slot A",
-    quotePreview: "sab kehte hain akela rehna buri baat hai, par bheed mein bhi...",
-    status: "published",
-    permalink: "https://www.instagram.com/reel/DAy8m4xP7rK/",
-    mediaId: "18035192840192812",
-    clipName: "WhatsApp_Video_2026-11-20_at_6.36.21_AM",
-  },
-  {
-    id: "pub-006",
-    timestamp: "18 Nov 16:00 PKT",
-    dateStr: "2026-11-18",
-    slot: "Slot B",
-    quotePreview: "kuch baatein dil mein hi achi lagti hain, zuban par aate hi...",
-    status: "published",
-    permalink: "https://www.instagram.com/reel/DAx7n3xL6wP/",
-    mediaId: "18034182949192855",
-    clipName: "WhatsApp_Video_2026-11-20_at_6.36.18_AM",
-  },
-  {
-    id: "pub-007",
-    timestamp: "18 Nov 08:30 PKT",
-    dateStr: "2026-11-18",
-    slot: "Slot A",
-    quotePreview: "woh jo kabhi jaan hua karte the, aaj unka naam lene par bhi...",
-    status: "published",
-    permalink: "https://www.instagram.com/reel/DAw6k2xM5qA/",
-    mediaId: "18033172948192801",
-    clipName: "coastal_cliff_waves_mist",
-  },
-  {
-    id: "pub-008",
-    timestamp: "17 Nov 16:00 PKT",
-    dateStr: "2026-11-17",
-    slot: "Slot B",
-    quotePreview: "raat gehri ho to yaadein cheekhti hain, din ke ujalon mein...",
-    status: "published",
-    permalink: "https://www.instagram.com/reel/DAv5j1xQ4zT/",
-    mediaId: "18032182940192877",
-    clipName: "autumn_leaf_fall_path",
-  },
-];
+const INITIAL_LOGS: PublishLogEntry[] = [];
 
 // Weekly post counts for simple SVG line chart
 const WEEKLY_POSTS = [
-  { week: "W43", label: "Oct 18", count: 10 },
-  { week: "W44", label: "Oct 25", count: 14 },
-  { week: "W45", label: "Nov 01", count: 12 },
-  { week: "W46", label: "Nov 08", count: 14 },
-  { week: "W47", label: "Nov 15", count: 13 },
-  { week: "Current", label: "Nov 21", count: 14 },
+  { week: "W43", label: "Oct 18", count: 0 },
+  { week: "W44", label: "Oct 25", count: 0 },
+  { week: "W45", label: "Nov 01", count: 0 },
+  { week: "W46", label: "Nov 08", count: 0 },
+  { week: "W47", label: "Nov 15", count: 0 },
+  { week: "Current", label: "Nov 23", count: 0 },
 ];
 
 export default function PublishLogPage() {
@@ -226,7 +134,7 @@ function PublishLogContent() {
   // Aggregate stats
   const totalPublished = logs.filter((l) => l.status === "published").length;
   const totalFailed = logs.filter((l) => l.status === "failed").length;
-  const successRate = ((totalPublished / logs.length) * 100).toFixed(1);
+  const successRate = logs.length > 0 ? ((totalPublished / logs.length) * 100).toFixed(1) : "100.0";
 
   return (
     <AppShell title="Publish Log" subtitle="Broadcast Telemetry & Meta Graph History">
@@ -424,7 +332,14 @@ function PublishLogContent() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredLogs.map((entry) => {
+              {filteredLogs.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="h-32 text-center text-ink-muted text-xs font-sans">
+                    No publishing records found. Dispatched reels will be recorded here automatically.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredLogs.map((entry) => {
                 const isPublished = entry.status === "published";
                 const isFailed = entry.status === "failed";
                 const isRetrying = retryingId === entry.id;
@@ -536,7 +451,7 @@ function PublishLogContent() {
                     </TableCell>
                   </TableRow>
                 );
-              })}
+              }))}
             </TableBody>
           </Table>
         </Card>

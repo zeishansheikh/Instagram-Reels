@@ -99,45 +99,47 @@ function TodayScreenContent() {
   const { addToast } = useToast();
 
   // Screen View States: ready (default), loading (skeleton), empty, error
-  const [screenState, setScreenState] = React.useState<ScreenState>("ready");
+  const [screenState, setScreenState] = React.useState<ScreenState>("loading");
   const [isGenerateModalOpen, setIsGenerateModalOpen] = React.useState(false);
   const [reelStatus, setReelStatus] = React.useState<"ready" | "queued" | "rendering" | "published" | "discarded">("queued");
   const [isBuilding, setIsBuilding] = React.useState(false);
   const [buildMessage, setBuildMessage] = React.useState("");
 
-  // Realistic seed data matching Formula D3
+  // Staged reel state
   const [currentReel, setCurrentReel] = React.useState({
-    id: "reel_2026-11-21_a",
-    date: "2026-11-21",
+    id: "reel_staged",
+    date: new Date().toISOString().split("T")[0],
     slot: "Slot A",
     scheduledTime: "Today, 18:00 UTC (08:30 PKT)",
-    clipName: "WhatsApp_Video_2026-11-20_at_6.36.16_AM",
+    clipName: "staged_clip.mp4",
     style: "d3_roman_urdu",
     theme: "Loss & Yaadein",
-    song: "Dil Ki Khamoshi - alonesinghkdm",
-    quote: "toote huye dil ke tukde sambhalte nahi, / aur log puchte hain tum badal kyu gaye.",
-    caption:
-      "toote huye dil ke tukde sambhalte nahi,\naur log puchte hain tum badal kyu gaye.\n\n#sad #dard #tanhai",
+    song: "Lo-Fi Sad Ambient",
+    quote: "",
+    caption: "",
     hashtags: ["#sad", "#dard", "#tanhai"],
-    videoSrc: "/static/swap/ready_to_post/reel_2026-11-21_a.mp4",
-    posterSrc: "/static/swap/ready_to_post/thumbnail_a.jpg",
-    duration: 5.42,
+    videoSrc: "",
+    posterSrc: "",
+    duration: 0,
     resolution: "1080 × 1920 @ 60fps",
     bitrate: "15.02 Mbps",
     contrastRatio: 0.22,
     placementBand: "y = 800 (luma: 76.1)",
-    filePath: "swap/ready_to_post/reel_2026-11-21_a.mp4",
+    filePath: "",
   });
 
   // Load real staged reel from backend /d3/status
   const loadLatestStagedReel = React.useCallback(async () => {
     try {
       const res = await fetch("/d3/status");
-      if (!res.ok) return;
+      if (!res.ok) {
+        setScreenState("empty");
+        return;
+      }
       const data = await res.json();
       const manifestA = data.slots?.slot_a?.manifest;
       if (manifestA && manifestA.video_path) {
-        const filename = manifestA.video_path.split("/").pop() || "reel_2026-11-21_a.mp4";
+        const filename = manifestA.video_path.split("/").pop() || "reel.mp4";
         setCurrentReel((prev) => ({
           ...prev,
           id: filename.replace(".mp4", ""),
@@ -146,14 +148,17 @@ function TodayScreenContent() {
           caption: manifestA.caption || prev.caption,
           hashtags: manifestA.hashtags || prev.hashtags,
           song: manifestA.song || prev.song,
-          videoSrc: `/static/swap/ready_to_post/${filename}?t=${Date.now()}`,
-          posterSrc: `/static/swap/ready_to_post/thumbnail_a.jpg?t=${Date.now()}`,
+          videoSrc: `/static/ready_to_post/${filename}?t=${Date.now()}`,
+          posterSrc: `/static/ready_to_post/thumbnail_a.jpg?t=${Date.now()}`,
           clipName: filename,
           filePath: `swap/ready_to_post/${filename}`,
         }));
+        setScreenState("ready");
+      } else {
+        setScreenState("empty");
       }
     } catch {
-      // Keep initial reel
+      setScreenState("empty");
     }
   }, []);
 

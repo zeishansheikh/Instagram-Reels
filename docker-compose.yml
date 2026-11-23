@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  reelforge:
+    build: .
+    container_name: reelforge-app
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+      - "3001:3001"
+    environment:
+      - PORT=8001
+      - NODE_ENV=production
+    env_file:
+      - .env
+    volumes:
+      - ./config:/app/config
+      - ./db:/app/db
+      - ./assets:/app/assets
+      - ./swap:/app/swap
+      - ./output:/app/output

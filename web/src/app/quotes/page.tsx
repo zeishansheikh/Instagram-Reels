@@ -51,79 +51,7 @@ interface StudioQuote {
   editedAt?: string;
 }
 
-const INITIAL_QUOTES: StudioQuote[] = [
-  {
-    id: "q-001",
-    lines: [
-      "toote huye dil ke tukde sambhalte nahi,",
-      "aur log puchte hain tum badal kyu gaye.",
-    ],
-    text: "toote huye dil ke tukde sambhalte nahi,\naur log puchte hain tum badal kyu gaye.",
-    theme: "loss",
-    mood: "yaadein",
-    lang: "roman-urdu",
-    hashtags: ["#sad", "#dard", "#tanhai"],
-    status: "kept",
-    isDuplicate: false,
-  },
-  {
-    id: "q-002",
-    lines: [
-      "sab kehte hain akela rehna buri baat hai,",
-      "par bheed mein bhi to main akela hi tha.",
-    ],
-    text: "sab kehte hain akela rehna buri baat hai,\npar bheed mein bhi to main akela hi tha.",
-    theme: "tanhai",
-    mood: "solitude",
-    lang: "roman-urdu",
-    hashtags: ["#urdupoetry", "#tanhai", "#sadreel"],
-    status: "pending",
-    isDuplicate: false,
-  },
-  {
-    id: "q-003",
-    lines: [
-      "sab kehte hain waqt sab theek kar deta hai,",
-      "mera waqt to bas yaadein de gaya.",
-    ],
-    text: "sab kehte hain waqt sab theek kar deta hai,\nmera waqt to bas yaadein de gaya.",
-    theme: "waqt",
-    mood: "time",
-    lang: "roman-urdu",
-    hashtags: ["#waqt", "#yaadein", "#sad"],
-    status: "pending",
-    isDuplicate: true,
-    duplicateWarning: "Similar line used 2 days ago in reel_2026-11-19_a (89% similarity score).",
-  },
-  {
-    id: "q-004",
-    lines: [
-      "kuch baatein dil mein hi achi lagti hain,",
-      "zuban par aate hi rishtey tod deti hain.",
-    ],
-    text: "kuch baatein dil mein hi achi lagti hain,\nzuban par aate hi rishtey tod deti hain.",
-    theme: "dard",
-    mood: "silence",
-    lang: "roman-urdu",
-    hashtags: ["#dard", "#khamoshi", "#poetry"],
-    status: "pending",
-    isDuplicate: false,
-  },
-  {
-    id: "q-005",
-    lines: [
-      "raat gehri ho to yaadein cheekhti hain,",
-      "din ke ujalon mein hum muskura kar thak jaate hain.",
-    ],
-    text: "raat gehri ho to yaadein cheekhti hain,\ndin ke ujalon mein hum muskura kar thak jaate hain.",
-    theme: "hope-in-sadness",
-    mood: "night",
-    lang: "roman-urdu",
-    hashtags: ["#raat", "#yaadein", "#deep"],
-    status: "rejected",
-    isDuplicate: false,
-  },
-];
+const INITIAL_QUOTES: StudioQuote[] = [];
 
 const PREVIEW_CLIPS = [
   {
@@ -170,7 +98,7 @@ function QuoteStudioContent() {
   const { addToast } = useToast();
 
   const [quotes, setQuotes] = React.useState<StudioQuote[]>(INITIAL_QUOTES);
-  const [selectedQuoteId, setSelectedQuoteId] = React.useState<string>(INITIAL_QUOTES[0].id);
+  const [selectedQuoteId, setSelectedQuoteId] = React.useState<string>("");
 
   // Editing state
   const [editingId, setEditingId] = React.useState<string | null>(null);
@@ -189,7 +117,7 @@ function QuoteStudioContent() {
   const [isMuted, setIsMuted] = React.useState(true);
   const videoRef = React.useRef<HTMLVideoElement>(null);
 
-  const activeQuote = quotes.find((q) => q.id === selectedQuoteId) || quotes[0];
+  const activeQuote = quotes.find((q) => q.id === selectedQuoteId) || quotes[0] || null;
   const activeClip = PREVIEW_CLIPS.find((c) => c.id === selectedClipId) || PREVIEW_CLIPS[0];
 
   // Generation Handler
@@ -444,8 +372,32 @@ function QuoteStudioContent() {
               </div>
             </div>
 
-            <div className="space-y-3">
-              {quotes.map((quote) => {
+            {quotes.length === 0 ? (
+              <Card className="p-12 text-center bg-surface">
+                <div className="max-w-md mx-auto space-y-3">
+                  <div className="w-10 h-10 rounded-full bg-moss-subtle text-moss mx-auto flex items-center justify-center">
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <h3 className="font-serif text-lg text-ink-primary">
+                    Quotes Studio Empty
+                  </h3>
+                  <p className="font-sans text-xs text-ink-secondary leading-relaxed">
+                    No quotes generated yet. Click &apos;Generate Quotes&apos; to create fresh, emotional Roman Urdu lines using Gemini AI.
+                  </p>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    icon={<Sparkles className="w-3.5 h-3.5 text-white" />}
+                    onClick={handleGenerate}
+                    disabled={isGenerating}
+                  >
+                    Generate Quotes
+                  </Button>
+                </div>
+              </Card>
+            ) : (
+              <div className="space-y-3">
+                {quotes.map((quote) => {
                 const isSelected = quote.id === selectedQuoteId;
                 const isEditing = editingId === quote.id;
 
@@ -595,7 +547,8 @@ function QuoteStudioContent() {
                   </Card>
                 );
               })}
-            </div>
+              </div>
+            )}
           </div>
 
           {/* -------------------------------------------------------------------
@@ -696,7 +649,7 @@ function QuoteStudioContent() {
                           "0 2px 4px rgba(0, 0, 0, 0.95), 0 0 2px rgba(0, 0, 0, 0.8)",
                       }}
                     >
-                      {activeQuote.text}
+                      {activeQuote ? activeQuote.text : "Generate quotes to preview typography"}
                     </p>
                   </div>
 

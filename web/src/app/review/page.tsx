@@ -56,69 +56,6 @@ interface WaitingReel {
   status: "pending_review" | "approved" | "discarded";
 }
 
-const INITIAL_WAITING_REELS: WaitingReel[] = [
-  {
-    id: "reel-001",
-    slot: "Slot A",
-    scheduledTime: "Today, 18:00 UTC",
-    clipName: "WhatsApp_Video_2026-11-20_at_6.36.16_AM.mp4",
-    style: "d3_roman_urdu",
-    theme: "Loss & Yaadein",
-    song: "Dil Ki Khamoshi - alonesinghkdm",
-    bpm: 80.7,
-    quote: "toote huye dil ke tukde sambhalte nahi,\naur log puchte hain tum badal kyu gaye.",
-    caption:
-      "toote huye dil ke tukde sambhalte nahi,\naur log puchte hain tum badal kyu gaye.\n\n#sad #dard #tanhai",
-    hashtags: ["#sad", "#dard", "#tanhai"],
-    videoSrc: "/static/swap/ready_to_post/reel_2026-11-21_a.mp4",
-    posterSrc: "/static/swap/ready_to_post/thumbnail_a.jpg",
-    duration: 5.42,
-    contrastScore: 0.22,
-    luma: 0.19,
-    status: "pending_review",
-  },
-  {
-    id: "reel-002",
-    slot: "Slot B",
-    scheduledTime: "Tomorrow, 08:30 PKT",
-    clipName: "WhatsApp_Video_2026-11-20_at_6.36.18_AM.mp4",
-    style: "d3_roman_urdu",
-    theme: "Tanhai",
-    song: "Tanhai Beats - sad_lofi_urdu",
-    bpm: 78.4,
-    quote: "sab kehte hain akela rehna buri baat hai,\npar bheed mein bhi to main akela hi tha.",
-    caption:
-      "sab kehte hain akela rehna buri baat hai,\npar bheed mein bhi to main akela hi tha.\n\n#urdupoetry #tanhai #sadreel",
-    hashtags: ["#urdupoetry", "#tanhai", "#sadreel"],
-    videoSrc: "/static/swap/ready_to_post/reel_2026-11-21_a.mp4",
-    posterSrc: "/static/swap/ready_to_post/thumbnail_a.jpg",
-    duration: 6.1,
-    contrastScore: 0.26,
-    luma: 0.21,
-    status: "pending_review",
-  },
-  {
-    id: "reel-003",
-    slot: "Slot A (Next)",
-    scheduledTime: "Tomorrow, 16:00 PKT",
-    clipName: "WhatsApp_Video_2026-11-20_at_6.36.21_AM.mp4",
-    style: "d3_roman_urdu",
-    theme: "Waqt",
-    song: "Khamosh Dhun - slow_ambient",
-    bpm: 72.0,
-    quote: "sab kehte hain waqt sab theek kar deta hai,\nmera waqt to bas yaadein de gaya.",
-    caption:
-      "sab kehte hain waqt sab theek kar deta hai,\nmera waqt to bas yaadein de gaya.\n\n#waqt #yaadein #sad",
-    hashtags: ["#waqt", "#yaadein", "#sad"],
-    videoSrc: "/static/swap/ready_to_post/reel_2026-11-21_a.mp4",
-    posterSrc: "/static/swap/ready_to_post/thumbnail_a.jpg",
-    duration: 5.8,
-    contrastScore: 0.24,
-    luma: 0.18,
-    status: "pending_review",
-  },
-];
-
 export default function ReviewPage() {
   return (
     <ToastProvider>
@@ -132,8 +69,51 @@ export default function ReviewPage() {
 function ReviewContent() {
   const { addToast } = useToast();
 
-  const [reels, setReels] = React.useState<WaitingReel[]>(INITIAL_WAITING_REELS);
+  const [reels, setReels] = React.useState<WaitingReel[]>([]);
   const [selectedIndex, setSelectedIndex] = React.useState<number>(0);
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  const fetchStagedReels = React.useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const res = await fetch("/d3/status");
+      if (!res.ok) return;
+      const data = await res.json();
+      const list: WaitingReel[] = [];
+      const manifestA = data.slots?.slot_a?.manifest;
+      if (manifestA && manifestA.video_path) {
+        const fn = manifestA.video_path.split("/").pop() || "reel.mp4";
+        list.push({
+          id: manifestA.slot ? `slot_${manifestA.slot}` : "slot_a",
+          slot: "Slot A",
+          scheduledTime: "Today, 18:00 UTC",
+          clipName: fn,
+          style: "d3_roman_urdu",
+          theme: manifestA.theme || "Loss & Yaadein",
+          song: manifestA.song || "Sad Lo-Fi Ambient",
+          bpm: 78.0,
+          quote: manifestA.quote || "",
+          caption: manifestA.caption || "",
+          hashtags: manifestA.hashtags || ["#sad", "#yaadein"],
+          videoSrc: `/static/ready_to_post/${fn}`,
+          posterSrc: "/static/ready_to_post/thumbnail_a.jpg",
+          duration: 10.0,
+          contrastScore: 0.23,
+          luma: 0.20,
+          status: "pending_review",
+        });
+      }
+      setReels(list);
+    } catch {
+      setReels([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    fetchStagedReels();
+  }, [fetchStagedReels]);
 
   // Active editable form fields
   const activeReel = reels[selectedIndex] || reels[0];
@@ -356,9 +336,10 @@ function ReviewContent() {
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() => setReels(INITIAL_WAITING_REELS)}
+                icon={<RefreshCw className="w-3.5 h-3.5 text-moss" />}
+                onClick={() => fetchStagedReels()}
               >
-                Reset Demo Queue
+                Refresh Queue
               </Button>
             </div>
           </Card>
