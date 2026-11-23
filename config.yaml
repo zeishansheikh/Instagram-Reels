@@ -1,5 +1,5 @@
 app:
-  name: Reel Forge
+  name: Instora
   version: 0.1.0
 gemini:
   model: gemini-3.5-flash-lite
@@ -14,7 +14,7 @@ paths:
   cache_dir: cache
   output_dir: output
   styles_dir: styles
-  db_path: db/reelforge.db
+  db_path: db/instora.db
 defaults:
   theme: reflective
   lang: en

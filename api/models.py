@@ -1,4 +1,4 @@
-"""Pydantic request and response models for the Reel Forge Studio API."""
+"""Pydantic request and response models for the Instora Studio API."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 
 class HealthResponse(BaseModel):
     status: str = "ok"
-    app_name: str = "Reel Forge"
+    app_name: str = "Instora"
     version: str = "0.1.0"
     database_connected: bool
     ffmpeg_available: bool

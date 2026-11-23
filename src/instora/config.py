@@ -1,4 +1,4 @@
-"""Configuration loader and environment validation for Reel Forge."""
+"""Configuration loader and environment validation for Instora."""
 
 from __future__ import annotations
 
@@ -17,9 +17,9 @@ load_dotenv()
 
 
 class AppMetaConfig(BaseModel):
-    """Metadata for Reel Forge application."""
+    """Metadata for Instora application."""
 
-    name: str = "Reel Forge"
+    name: str = "Instora"
     version: str = "0.1.0"
 
 
@@ -43,7 +43,7 @@ class PathsConfig(BaseModel):
     cache_dir: Path = Path("cache")
     output_dir: Path = Path("output")
     styles_dir: Path = Path("styles")
-    db_path: Path = Path("db/reelforge.db")
+    db_path: Path = Path("db/instora.db")
 
 
 class BackgroundConfig(BaseModel):

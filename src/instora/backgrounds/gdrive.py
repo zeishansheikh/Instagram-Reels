@@ -17,14 +17,14 @@ from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseDownload
 from loguru import logger
 
-from reelforge.backgrounds.base import BackgroundProvider
-from reelforge.config import load_config
-from reelforge.db import (
+from instora.backgrounds.base import BackgroundProvider
+from instora.config import load_config
+from instora.db import (
     get_recently_used_clip_paths,
     init_db,
     record_clip_usage,
 )
-from reelforge.render.ffmpeg_cmd import probe_video
+from instora.render.ffmpeg_cmd import probe_video
 
 SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
 VALID_EXTENSIONS = {".mp4", ".mov", ".mkv", ".webm"}
@@ -76,7 +76,7 @@ def authenticate_gdrive(
                     f"'{credentials_file}' is missing.\n"
                     "Please download your OAuth Client ID JSON (Desktop Application) from the\n"
                     "Google Cloud Console, save it as 'credentials.json' in the project root,\n"
-                    "and run 'reelforge gdrive-login'."
+                    "and run 'instora gdrive-login'."
                 )
 
             flow = InstalledAppFlow.from_client_secrets_file(str(creds_path), SCOPES)
@@ -110,7 +110,7 @@ class GDriveBackgroundProvider(BackgroundProvider):
         credentials_file: Path | str = "credentials.json",
         token_file: Path | str = "token.json",
         cache_dir: Path | str = "cache/gdrive",
-        db_path: Path | str = "db/reelforge.db",
+        db_path: Path | str = "db/instora.db",
         reuse_cooldown: Optional[int] = None,
         service: Optional[Resource] = None,
     ) -> None:

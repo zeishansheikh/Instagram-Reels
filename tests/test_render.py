@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from reelforge.render.ffmpeg_cmd import calculate_duration, probe_video
-from reelforge.render.pipeline import render_preview
+from instora.render.ffmpeg_cmd import calculate_duration, probe_video
+from instora.render.pipeline import render_preview
 
 
 @pytest.fixture

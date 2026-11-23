@@ -7,7 +7,7 @@ import shutil
 import sqlite3
 from pathlib import Path
 from fastapi import APIRouter
-from reelforge.config import load_config
+from instora.config import load_config
 from api.jobs import job_manager
 from api.models import HealthResponse
 

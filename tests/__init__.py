@@ -1,2 +1,2 @@
-"""Tests package for Reel Forge."""
+"""Tests package for Instora."""
 

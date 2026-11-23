@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from reelforge.publish.graph_api import InstagramPublishError, InstagramPublisher
-from reelforge.publish.service import publish_date_reels
-from reelforge.publish.storage import (
+from instora.publish.graph_api import InstagramPublishError, InstagramPublisher
+from instora.publish.service import publish_date_reels
+from instora.publish.storage import (
     MockStorage,
     R2Storage,
     StorageProvider,

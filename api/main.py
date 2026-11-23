@@ -1,4 +1,4 @@
-"""FastAPI application entrypoint for Reel Forge Studio."""
+"""FastAPI application entrypoint for Instora Studio."""
 
 from __future__ import annotations
 
@@ -10,8 +10,8 @@ from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from api.routes import clips, d3_pipeline, health, jobs, publish, quotes, reels, schedule, settings
-from reelforge.config import load_config
-from reelforge.db import init_db
+from instora.config import load_config
+from instora.db import init_db
 
 # Ensure database and necessary directories exist on startup
 cfg = load_config()
@@ -20,9 +20,9 @@ Path(cfg.paths.output_dir).mkdir(parents=True, exist_ok=True)
 Path(cfg.paths.backgrounds_dir).mkdir(parents=True, exist_ok=True)
 
 app = FastAPI(
-    title="Reel Forge Studio API",
+    title="Instora Studio API",
     description="""
-### Reel Forge Studio API
+### Instora Studio API
 Automated Calm Nature Quote Instagram Reels Engine & Publishing Backend.
 
 * **Reels**: List, filter, inspect, stream video, extract thumbnails, and review (keep / discard / regenerate).

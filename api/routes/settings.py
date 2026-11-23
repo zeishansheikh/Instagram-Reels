@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field
 
 from api.auth import verify_api_key
 from api.models import SettingsResponse, SettingsUpdateRequest
-from reelforge.config import load_config
+from instora.config import load_config
 
 router = APIRouter(prefix="/settings", tags=["Settings & Configuration"])
 

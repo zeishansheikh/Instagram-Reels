@@ -11,14 +11,14 @@ from typing import Any, Optional
 import httpx
 from loguru import logger
 
-from reelforge.backgrounds.base import BackgroundProvider
-from reelforge.config import load_config
-from reelforge.db import (
+from instora.backgrounds.base import BackgroundProvider
+from instora.config import load_config
+from instora.db import (
     get_recently_used_clip_paths,
     init_db,
     record_clip_usage,
 )
-from reelforge.render.ffmpeg_cmd import probe_video
+from instora.render.ffmpeg_cmd import probe_video
 
 PEXELS_API_URL = "https://api.pexels.com/videos/search"
 
@@ -52,7 +52,7 @@ class PexelsBackgroundProvider(BackgroundProvider):
         self,
         api_key: Optional[str] = None,
         cache_dir: Path | str = "cache/pexels",
-        db_path: Path | str = "db/reelforge.db",
+        db_path: Path | str = "db/instora.db",
         reuse_cooldown: Optional[int] = None,
         http_client: Optional[httpx.Client] = None,
     ) -> None:

@@ -46,7 +46,7 @@ export function CommandBar({
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-moss" />
             <span className="font-sans font-semibold text-sm text-ink-primary tracking-tight">
-              Reel Forge
+              Instora
             </span>
           </div>
 

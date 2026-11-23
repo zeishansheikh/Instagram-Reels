@@ -9,7 +9,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, Query
 from api.auth import verify_api_key
 from api.models import ClipModel
-from reelforge.config import load_config
+from instora.config import load_config
 
 router = APIRouter(prefix="/clips", tags=["Clips & Footage"])
 

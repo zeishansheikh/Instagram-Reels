@@ -63,7 +63,7 @@ export const DEFAULT_THEME_ID = "moss";
 export function getStoredTheme(): string {
   if (typeof window === "undefined") return DEFAULT_THEME_ID;
   try {
-    return localStorage.getItem("reelforge_theme") || DEFAULT_THEME_ID;
+    return localStorage.getItem("instora_theme") || localStorage.getItem("reelforge_theme") || DEFAULT_THEME_ID;
   } catch {
     return DEFAULT_THEME_ID;
   }
@@ -72,9 +72,9 @@ export function getStoredTheme(): string {
 export function setStoredTheme(themeId: string): void {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem("reelforge_theme", themeId);
+    localStorage.setItem("instora_theme", themeId);
     document.documentElement.setAttribute("data-theme", themeId);
-    window.dispatchEvent(new CustomEvent("reelforge:theme-changed", { detail: themeId }));
+    window.dispatchEvent(new CustomEvent("instora:theme-changed", { detail: themeId }));
   } catch {
     // ignore local storage errors
   }

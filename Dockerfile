@@ -1,4 +1,4 @@
-# Multi-stage Production Dockerfile for Reel Forge
+# Multi-stage Production Dockerfile for Instora
 FROM ubuntu:22.04 AS base
 
 ENV DEBIAN_FRONTEND=noninteractive

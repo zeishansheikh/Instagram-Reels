@@ -131,8 +131,8 @@ function SettingsContent() {
       const custom = e as CustomEvent<string>;
       if (custom.detail) setActiveTheme(custom.detail);
     };
-    window.addEventListener("reelforge:theme-changed", handleThemeChange);
-    return () => window.removeEventListener("reelforge:theme-changed", handleThemeChange);
+    window.addEventListener("instora:theme-changed", handleThemeChange);
+    return () => window.removeEventListener("instora:theme-changed", handleThemeChange);
   }, []);
 
   // Connection Test States
@@ -168,7 +168,7 @@ function SettingsContent() {
   const [force60fps, setForce60fps] = React.useState(true);
 
   // Notifications state
-  const [alertEmail, setAlertEmail] = React.useState("alerts@reelforge.internal");
+  const [alertEmail, setAlertEmail] = React.useState("alerts@instora.internal");
   const [webhookUrl, setWebhookUrl] = React.useState("https://hooks.slack.com/services/T00/B00/X00");
   const [notifPublishSuccess, setNotifPublishSuccess] = React.useState(true);
   const [notifGateFailure, setNotifGateFailure] = React.useState(true);
@@ -697,7 +697,7 @@ function SettingsContent() {
                           </span>
                         </div>
                         <span className="font-mono text-[10px] text-ink-muted">
-                          Bucket: reelforge-media · Region: us-east-1
+                          Bucket: instora-media · Region: us-east-1
                         </span>
                       </div>
                     </div>

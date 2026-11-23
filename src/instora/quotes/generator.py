@@ -13,10 +13,10 @@ from google.genai import types
 from loguru import logger
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
-from reelforge.config import load_config
-from reelforge.db import get_all_stored_quotes, get_recent_quotes, init_db, insert_quote
-from reelforge.quotes.dedupe import compute_text_hash, is_duplicate
-from reelforge.quotes.prompts import ALLOWED_MOODS, build_quote_prompt
+from instora.config import load_config
+from instora.db import get_all_stored_quotes, get_recent_quotes, init_db, insert_quote
+from instora.quotes.dedupe import compute_text_hash, is_duplicate
+from instora.quotes.prompts import ALLOWED_MOODS, build_quote_prompt
 
 
 @dataclass
@@ -110,7 +110,7 @@ def generate_quotes(
     theme: str = "hope",
     lang: str = "en",
     count: int = 10,
-    db_path: Path | str = "db/reelforge.db",
+    db_path: Path | str = "db/instora.db",
     max_retries: int = 3,
     client: Optional[genai.Client] = None,
 ) -> list[Quote]:

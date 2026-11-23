@@ -1,8 +1,8 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Reel Forge Studio API",
-    "description": "\n### Reel Forge Studio API\nAutomated Calm Nature Quote Instagram Reels Engine & Publishing Backend.\n\n* **Reels**: List, filter, inspect, stream video, extract thumbnails, and review (keep / discard / regenerate).\n* **Generation**: Bulk AI quote generation, deduplication, background footage selection, and rendering with background job polling.\n* **Footage & Quotes**: Browse background clips with usage tracking and inspect generated quote pools.\n* **Publishing**: Upload to cloud storage (Supabase / R2) and publish to Instagram Reels via Meta Graph API.\n* **Settings & Schedule**: Runtime configuration update and queue management.\n    ",
+    "title": "Instora Studio API",
+    "description": "\n### Instora Studio API\nAutomated Calm Nature Quote Instagram Reels Engine & Publishing Backend.\n\n* **Reels**: List, filter, inspect, stream video, extract thumbnails, and review (keep / discard / regenerate).\n* **Generation**: Bulk AI quote generation, deduplication, background footage selection, and rendering with background job polling.\n* **Footage & Quotes**: Browse background clips with usage tracking and inspect generated quote pools.\n* **Publishing**: Upload to cloud storage (Supabase / R2) and publish to Instagram Reels via Meta Graph API.\n* **Settings & Schedule**: Runtime configuration update and queue management.\n    ",
     "version": "0.1.0"
   },
   "paths": {
@@ -1998,7 +1998,7 @@
           "app_name": {
             "type": "string",
             "title": "App Name",
-            "default": "Reel Forge"
+            "default": "Instora"
           },
           "version": {
             "type": "string",

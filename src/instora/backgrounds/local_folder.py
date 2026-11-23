@@ -9,16 +9,16 @@ from typing import Any, Optional
 
 from loguru import logger
 
-from reelforge.backgrounds.base import BackgroundProvider
-from reelforge.config import load_config
-from reelforge.db import (
+from instora.backgrounds.base import BackgroundProvider
+from instora.config import load_config
+from instora.db import (
     get_recently_used_clip_paths,
     get_used_segments,
     init_db,
     record_clip_usage,
     record_used_segment,
 )
-from reelforge.render.ffmpeg_cmd import probe_video
+from instora.render.ffmpeg_cmd import probe_video
 
 VALID_EXTENSIONS: set[str] = {".mp4", ".mov", ".mkv", ".webm"}
 
@@ -30,7 +30,7 @@ class LocalFolderBackgroundProvider(BackgroundProvider):
         self,
         folder: Path | str = "assets/backgrounds",
         single_video_path: Optional[Path | str] = None,
-        db_path: Path | str = "db/reelforge.db",
+        db_path: Path | str = "db/instora.db",
         reuse_cooldown: Optional[int] = None,
         cache_dir: Path | str = "cache/segments",
     ) -> None:

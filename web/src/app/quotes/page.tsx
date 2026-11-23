@@ -247,7 +247,7 @@ function QuoteStudioContent() {
     addToast({
       type: "info",
       title: "Quotes Saved to Database",
-      description: `Stored ${keptCount} validated quotes in db/reelforge.db.`,
+      description: `Stored ${keptCount} validated quotes in db/instora.db.`,
     });
   };
 

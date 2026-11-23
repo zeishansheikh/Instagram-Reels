@@ -10,8 +10,8 @@ from typing import List
 from fastapi import APIRouter, Depends
 from api.auth import verify_api_key
 from api.models import ScheduleItem, ScheduleResponse
-from reelforge.config import load_config
-from reelforge.db import is_reel_published
+from instora.config import load_config
+from instora.db import is_reel_published
 
 router = APIRouter(prefix="/schedule", tags=["Schedule & Queue"])
 

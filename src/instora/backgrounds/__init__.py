@@ -1,13 +1,13 @@
-"""Background video providers for Reel Forge."""
+"""Background video providers for Instora."""
 
 from __future__ import annotations
 
 from typing import Optional
 
-from reelforge.backgrounds.base import BackgroundProvider
-from reelforge.backgrounds.gdrive import GDriveBackgroundProvider
-from reelforge.backgrounds.local_folder import LocalFolderBackgroundProvider
-from reelforge.config import load_config
+from instora.backgrounds.base import BackgroundProvider
+from instora.backgrounds.gdrive import GDriveBackgroundProvider
+from instora.backgrounds.local_folder import LocalFolderBackgroundProvider
+from instora.config import load_config
 
 
 def get_background_provider(provider_name: Optional[str] = None) -> BackgroundProvider:
@@ -27,7 +27,7 @@ def get_background_provider(provider_name: Optional[str] = None) -> BackgroundPr
     elif chosen == "local_folder":
         return LocalFolderBackgroundProvider(folder=cfg.paths.backgrounds_dir)
     elif chosen == "pexels":
-        from reelforge.backgrounds.pexels import PexelsBackgroundProvider
+        from instora.backgrounds.pexels import PexelsBackgroundProvider
         pexels_key = getattr(cfg.defaults, "pexels_api_key", None)
         return PexelsBackgroundProvider(api_key=pexels_key or "", cache_dir=cfg.paths.cache_dir)
     else:

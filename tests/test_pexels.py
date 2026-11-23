@@ -9,13 +9,13 @@ from unittest.mock import MagicMock
 import httpx
 import pytest
 
-from reelforge.backgrounds.base import BackgroundProvider
-from reelforge.backgrounds.pexels import (
+from instora.backgrounds.base import BackgroundProvider
+from instora.backgrounds.pexels import (
     DEFAULT_KEYWORDS,
     MOOD_KEYWORDS_MAP,
     PexelsBackgroundProvider,
 )
-from reelforge.db import init_db
+from instora.db import init_db
 from tests.test_backgrounds import create_synthetic_video
 
 

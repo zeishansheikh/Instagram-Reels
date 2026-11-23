@@ -14,24 +14,24 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 from loguru import logger
 
-from reelforge.pipeline.audio_engine import apply_audio_swap, check_song_style_gate
-from reelforge.pipeline.backgrounds_pinterest import fetch_pinterest_clip, pick_next_category
-from reelforge.pipeline.gates import (
+from instora.pipeline.audio_engine import apply_audio_swap, check_song_style_gate
+from instora.pipeline.backgrounds_pinterest import fetch_pinterest_clip, pick_next_category
+from instora.pipeline.gates import (
     audio_volume_verify,
     brightness_and_saturation_gate,
     ffprobe_source_gate,
     verify_final_reel,
     watermark_and_quality_check,
 )
-from reelforge.pipeline.grade_adaptive import (
+from instora.pipeline.grade_adaptive import (
     build_adaptive_grade_filters,
     convert_to_60fps,
     detect_scene_tone,
 )
-from reelforge.pipeline.manifest import ReelManifest
-from reelforge.pipeline.placement_lock import build_d3_drawtext_filter, find_optimal_center_y
-from reelforge.pipeline.quotes_d3 import format_d3_caption, generate_d3_quote
-from reelforge.pipeline.workflow_state import WorkflowState
+from instora.pipeline.manifest import ReelManifest
+from instora.pipeline.placement_lock import build_d3_drawtext_filter, find_optimal_center_y
+from instora.pipeline.quotes_d3 import format_d3_caption, generate_d3_quote
+from instora.pipeline.workflow_state import WorkflowState
 
 
 def build_d3_reel(
@@ -83,7 +83,7 @@ def build_d3_reel(
 
     # Step 3: Fetch Song / Sad Beat (Autonomous YouTube Music integration)
     try:
-        from reelforge.pipeline.music_youtube import fetch_or_pick_lofi_music
+        from instora.pipeline.music_youtube import fetch_or_pick_lofi_music
         song_file, song_title = fetch_or_pick_lofi_music(state=state)
         logger.info(f"Step 3 [Music]: Selected track '{song_title}' ({song_file.name})")
     except Exception as exc:

@@ -1,4 +1,4 @@
-"""Integration tests for the Reel Forge FastAPI backend."""
+"""Integration tests for the Instora FastAPI backend."""
 
 from __future__ import annotations
 
@@ -70,8 +70,8 @@ def test_get_single_reel_and_not_found(client):
 def test_reel_actions_approve_and_discard(client, tmp_path):
     """Test POST /reels/{id}/approve and POST /reels/{id}/discard."""
     # Create a test reel in DB and disk
-    from reelforge.db import init_db, insert_quote, record_clip_usage, record_reel
-    from reelforge.config import load_config
+    from instora.db import init_db, insert_quote, record_clip_usage, record_reel
+    from instora.config import load_config
 
     cfg = load_config()
     conn = init_db(cfg.paths.db_path)
@@ -204,8 +204,8 @@ def test_publish_log(client):
 
 def test_post_publish_reel(client, tmp_path):
     """Test POST /publish/{id} triggers publish job."""
-    from reelforge.db import init_db, insert_quote, record_clip_usage, record_reel
-    from reelforge.config import load_config
+    from instora.db import init_db, insert_quote, record_clip_usage, record_reel
+    from instora.config import load_config
 
     cfg = load_config()
     conn = init_db(cfg.paths.db_path)

@@ -13,12 +13,12 @@ from typing import Any, Dict, List, Optional, Tuple
 import httpx
 from loguru import logger
 
-from reelforge.pipeline.gates import (
+from instora.pipeline.gates import (
     brightness_and_saturation_gate,
     ffprobe_source_gate,
     watermark_and_quality_check,
 )
-from reelforge.pipeline.workflow_state import WorkflowState
+from instora.pipeline.workflow_state import WorkflowState
 
 
 def get_pinterest_cookies() -> Dict[str, str]:

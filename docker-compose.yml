@@ -1,9 +1,9 @@
 version: '3.8'
 
 services:
-  reelforge:
+  instora:
     build: .
-    container_name: reelforge-app
+    container_name: instora-app
     restart: unless-stopped
     ports:
       - "8001:8001"

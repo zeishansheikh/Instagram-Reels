@@ -18,9 +18,9 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 from loguru import logger
 
-from reelforge.pipeline.gates import verify_final_reel
-from reelforge.pipeline.manifest import ReelManifest
-from reelforge.pipeline.workflow_state import WorkflowState
+from instora.pipeline.gates import verify_final_reel
+from instora.pipeline.manifest import ReelManifest
+from instora.pipeline.workflow_state import WorkflowState
 
 
 def get_karachi_today() -> str:
@@ -115,7 +115,7 @@ def post_d3_reel(
     hatch_cli = shutil.which("hatch_gws_cli") or "/opt/hatch/bin/hatch_gws_cli"
     if os.path.exists(hatch_cli):
         try:
-            subject = f"Reel Forge Post Live: Slot {slot_clean.upper()} ({manifest.date})"
+            subject = f"Instora Post Live: Slot {slot_clean.upper()} ({manifest.date})"
             body = f"Reel posted live to @enoent.7!\n\nLink: {live_link}\n\nCaption:\n{manifest.caption}"
             subprocess.run(
                 [hatch_cli, "gmail", "+send", "--to", "zeishanmaqsood143@gmail.com", "--subject", subject, "--body", body],

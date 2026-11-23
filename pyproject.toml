@@ -3,9 +3,9 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "reelforge"
+name = "instora"
 version = "0.1.0"
-description = "Automated quote & poetry reel generator for Instagram"
+description = "Instora: Automated quote & poetry reel generator for Instagram"
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [
@@ -28,7 +28,8 @@ dependencies = [
 ]
 
 [project.scripts]
-reelforge = "reelforge.cli:main"
+instora = "instora.cli:main"
+reelforge = "instora.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

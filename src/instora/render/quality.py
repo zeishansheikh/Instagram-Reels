@@ -10,7 +10,7 @@ from typing import Optional
 from PIL import Image
 from loguru import logger
 
-from reelforge.render.text_layout import layout_text, resolve_font_path
+from instora.render.text_layout import layout_text, resolve_font_path
 
 
 def check_safe_margins(

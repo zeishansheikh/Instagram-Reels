@@ -2,7 +2,7 @@
 
 Target command (runs by itself every day):
 ```
-reelforge run-daily      # pick clip from Drive, write quote, render, upload, publish, log
+instora run-daily      # pick clip from Drive, write quote, render, upload, publish, log
 ```
 
 ## 1. How auto-publish works (Instagram Graph API)
@@ -42,7 +42,7 @@ reelforge run-daily      # pick clip from Drive, write quote, render, upload, pu
 - Keep a human-review option: `review_mode: true` renders and queues, `review_mode: false` posts directly.
 
 ## 5. Scheduling
-- Simplest: Windows Task Scheduler (or cron) runs `reelforge run-daily` once a day at a fixed time. Laptop must be on.
+- Simplest: Windows Task Scheduler (or cron) runs `instora run-daily` once a day at a fixed time. Laptop must be on.
 - Later: small VPS, or GitHub Actions cron (store secrets in repo secrets; ffmpeg is available on ubuntu runners; Drive/Meta tokens need careful handling).
 - Start local. Move to a server only after 2 weeks of stable runs.
 
@@ -63,12 +63,12 @@ Implement publish/graph_api.py: create REELS container, poll status (timeout 10 
 publish, return media id and permalink. Handle API errors, rate limits, and expired tokens with clear messages.
 Add token refresh (publish/token.py) that refreshes the long-lived token when under 10 days left and saves it.
 Add publish_log table (reel_id, container_id, media_id, status, error, created_at).
-CLI: reelforge publish --reel PATH [--dry-run].
+CLI: instora publish --reel PATH [--dry-run].
 ```
 
 ### Prompt 9 — Daily runner
 ```
-Implement reelforge run-daily:
+Implement instora run-daily:
 1. Exit if STOP file exists or today's daily cap is reached.
 2. Pick theme from config rotation, generate quotes, take the best unused one.
 3. Pick a clip from the configured provider (gdrive), render with the chosen style, audio.mode from config.

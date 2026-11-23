@@ -1,4 +1,4 @@
-"""Background provider protocol interface for Reel Forge."""
+"""Background provider protocol interface for Instora."""
 
 from __future__ import annotations
 

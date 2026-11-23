@@ -85,8 +85,8 @@ export function AppShell({
       const custom = e as CustomEvent<string>;
       if (custom.detail) setCurrentTheme(custom.detail);
     };
-    window.addEventListener("reelforge:theme-changed", handleThemeChange);
-    return () => window.removeEventListener("reelforge:theme-changed", handleThemeChange);
+    window.addEventListener("instora:theme-changed", handleThemeChange);
+    return () => window.removeEventListener("instora:theme-changed", handleThemeChange);
   }, []);
 
   const activeThemeObj = THEMES.find((t) => t.id === currentTheme) || THEMES[0];
@@ -112,7 +112,7 @@ export function AppShell({
           <div className="h-14 px-4 border-b border-border flex items-center justify-between">
             <Link href="/" className="flex flex-col group py-1">
               <span className="font-serif text-sm font-semibold tracking-tight text-ink-primary leading-tight group-hover:text-moss transition-fast">
-                Reel Forge
+                Instora
               </span>
               <span className="font-mono text-xs uppercase tracking-wider text-ink-muted">
                 Editorial Platform

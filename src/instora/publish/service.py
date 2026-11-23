@@ -8,20 +8,20 @@ from typing import Any, Optional
 
 from loguru import logger
 
-from reelforge.db import (
+from instora.db import (
     init_db,
     is_reel_published,
     record_publish_log,
 )
-from reelforge.publish.graph_api import InstagramPublishError, InstagramPublisher
-from reelforge.publish.storage import MockStorage, StorageProvider, get_storage_provider
+from instora.publish.graph_api import InstagramPublishError, InstagramPublisher
+from instora.publish.storage import MockStorage, StorageProvider, get_storage_provider
 
 
 def publish_date_reels(
     date_str: str,
     output_base: Path | str = "output",
     dry_run: bool = False,
-    db_path: Path | str = "db/reelforge.db",
+    db_path: Path | str = "db/instora.db",
     storage_provider: Optional[StorageProvider] = None,
     publisher: Optional[InstagramPublisher] = None,
     single_reel_dir: Optional[Path | str] = None,

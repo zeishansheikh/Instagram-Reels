@@ -14,14 +14,14 @@ Done when: one reel looks 80% like the reference.
 ## Phase 2 — Gemini quotes (Day 1-2)
 - [ ] `quotes/generator.py` with JSON output + validation
 - [ ] SQLite dedupe
-- [ ] CLI: `reelforge quotes --count 10` prints quotes
+- [ ] CLI: `instora quotes --count 10` prints quotes
 
 ## Phase 3 — Backgrounds (Day 2)
 - [ ] `local_folder` provider with usage tracking
 - [ ] `pexels` provider with mood keyword mapping + caching
 
 ## Phase 4 — Full pipeline (Day 3)
-- [ ] `reelforge generate --count 10`
+- [ ] `instora generate --count 10`
 - [ ] Output folder with reel.mp4, caption.txt, meta.json
 - [ ] Error handling: one failed reel does not stop batch
 

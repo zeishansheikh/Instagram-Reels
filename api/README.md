@@ -1,6 +1,6 @@
-# Reel Forge Studio API
+# Instora Studio API
 
-FastAPI backend service exposing the automated Reel Forge generation, review, publishing, and footage management engines.
+FastAPI backend service exposing the automated Instora generation, review, publishing, and footage management engines.
 
 ---
 
@@ -8,9 +8,9 @@ FastAPI backend service exposing the automated Reel Forge generation, review, pu
 
 ### 1. Start the API Server
 
-Using the `reelforge` CLI:
+Using the `instora` CLI:
 ```bash
-reelforge api --port 8000 --reload
+instora api --port 8000 --reload
 ```
 
 Or directly using Uvicorn:
@@ -89,7 +89,7 @@ curl -X GET "http://localhost:8000/health"
 ```json
 {
   "status": "ok",
-  "app_name": "Reel Forge",
+  "app_name": "Instora",
   "version": "0.1.0",
   "database_connected": true,
   "ffmpeg_available": true,

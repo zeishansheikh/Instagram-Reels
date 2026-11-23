@@ -9,12 +9,12 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from reelforge.backgrounds.base import BackgroundProvider
-from reelforge.db import init_db
-from reelforge.packaging.caption import format_caption
-from reelforge.packaging.writer import get_next_reel_dir, package_reel
-from reelforge.quotes.generator import Quote
-from reelforge.render.pipeline import batch_generate_reels
+from instora.backgrounds.base import BackgroundProvider
+from instora.db import init_db
+from instora.packaging.caption import format_caption
+from instora.packaging.writer import get_next_reel_dir, package_reel
+from instora.quotes.generator import Quote
+from instora.render.pipeline import batch_generate_reels
 from tests.test_backgrounds import create_synthetic_video
 
 

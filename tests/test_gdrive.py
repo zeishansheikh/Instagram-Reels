@@ -10,8 +10,8 @@ import pytest
 from googleapiclient.errors import HttpError
 from httplib2 import Response
 
-from reelforge.backgrounds.base import BackgroundProvider
-from reelforge.backgrounds.gdrive import (
+from instora.backgrounds.base import BackgroundProvider
+from instora.backgrounds.gdrive import (
     GDriveBackgroundProvider,
     compute_file_md5,
 )
@@ -27,7 +27,7 @@ def test_gdrive_protocol_conformance() -> None:
 def test_compute_file_md5(tmp_path: Path) -> None:
     """Verify local file MD5 computation."""
     f = tmp_path / "test.txt"
-    f.write_text("reelforge_gdrive_test", encoding="utf-8")
+    f.write_text("instora_gdrive_test", encoding="utf-8")
     md5 = compute_file_md5(f)
     assert len(md5) == 32
     assert isinstance(md5, str)

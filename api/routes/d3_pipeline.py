@@ -18,10 +18,10 @@ from pydantic import BaseModel, Field
 from api.auth import verify_api_key
 from api.jobs import job_manager
 from api.models import JobResponse
-from reelforge.pipeline.builder import build_d3_reel
-from reelforge.pipeline.manifest import ReelManifest
-from reelforge.pipeline.poster import post_d3_reel
-from reelforge.pipeline.workflow_state import WorkflowState
+from instora.pipeline.builder import build_d3_reel
+from instora.pipeline.manifest import ReelManifest
+from instora.pipeline.poster import post_d3_reel
+from instora.pipeline.workflow_state import WorkflowState
 
 router = APIRouter(prefix="/d3", tags=["D3 Pipeline (@noori.shed)"])
 

@@ -21,10 +21,10 @@ from api.models import (
     ReelSummary,
     RegenerateRequest,
 )
-from reelforge.config import load_config
-from reelforge.db import get_publish_log, is_reel_published, update_reel_status
-from reelforge.render.pipeline import batch_generate_reels
-from reelforge.render.review import review_single_reel
+from instora.config import load_config
+from instora.db import get_publish_log, is_reel_published, update_reel_status
+from instora.render.pipeline import batch_generate_reels
+from instora.render.review import review_single_reel
 
 router = APIRouter(prefix="/reels", tags=["Reels"])
 

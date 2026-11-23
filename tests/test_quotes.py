@@ -9,31 +9,31 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from reelforge.db import (
+from instora.db import (
     get_all_stored_quotes,
     get_recent_quotes,
     init_db,
     insert_quote,
     is_quote_hash_exists,
 )
-from reelforge.quotes.dedupe import (
+from instora.quotes.dedupe import (
     calculate_similarity,
     compute_text_hash,
     is_duplicate,
     normalize_text,
 )
-from reelforge.quotes.generator import (
+from instora.quotes.generator import (
     Quote,
     QuoteItemSchema,
     generate_quotes,
     parse_and_validate_quotes_json,
 )
-from reelforge.quotes.prompts import ALLOWED_MOODS, LANGUAGE_MAP, build_quote_prompt
+from instora.quotes.prompts import ALLOWED_MOODS, LANGUAGE_MAP, build_quote_prompt
 
 
 def test_sqlite_db_tables(tmp_path: Path) -> None:
     """Verify SQLite database table schemas and basic operations."""
-    db_file = tmp_path / "test_reelforge.db"
+    db_file = tmp_path / "test_instora.db"
     conn = init_db(db_file)
 
     # Check table existence
@@ -142,7 +142,7 @@ def test_pydantic_quote_validation() -> None:
 
 def test_generate_quotes_mocked_gemini(tmp_path: Path) -> None:
     """Test full quote generation flow with mocked Gemini client."""
-    db_file = tmp_path / "mock_reelforge.db"
+    db_file = tmp_path / "mock_instora.db"
 
     mock_client = MagicMock()
     mock_response = MagicMock()

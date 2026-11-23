@@ -8,16 +8,16 @@ from unittest.mock import MagicMock
 import pytest
 import yaml
 
-from reelforge.backgrounds.base import BackgroundProvider
-from reelforge.db import init_db, insert_quote
-from reelforge.quotes.dedupe import compute_text_hash
-from reelforge.quotes.generator import Quote
-from reelforge.render.pipeline import (
+from instora.backgrounds.base import BackgroundProvider
+from instora.db import init_db, insert_quote
+from instora.quotes.dedupe import compute_text_hash
+from instora.quotes.generator import Quote
+from instora.render.pipeline import (
     batch_generate_reels,
     get_available_styles,
     load_style,
 )
-from reelforge.render.text_layout import resolve_font_path
+from instora.render.text_layout import resolve_font_path
 from tests.test_backgrounds import create_synthetic_video
 
 

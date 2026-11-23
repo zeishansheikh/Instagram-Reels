@@ -10,7 +10,7 @@ from typing import Optional, Protocol, runtime_checkable
 import httpx
 from loguru import logger
 
-from reelforge.config import load_config
+from instora.config import load_config
 
 
 @runtime_checkable
@@ -198,7 +198,7 @@ class MockStorage:
     def upload(self, file_path: Path) -> str:
         p = Path(file_path)
         fake_id = f"mock_{uuid.uuid4().hex[:12]}{p.suffix}"
-        url = f"https://mock-storage.reelforge.internal/{fake_id}"
+        url = f"https://mock-storage.instora.internal/{fake_id}"
         self.uploaded_files[url] = p
         logger.info(f"[MockStorage] Generated mock public URL: {url}")
         return url

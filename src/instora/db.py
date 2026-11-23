@@ -1,4 +1,4 @@
-"""SQLite state management, deduplication, and clip tracking database for Reel Forge."""
+"""SQLite state management, deduplication, and clip tracking database for Instora."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Optional
 
 
-def init_db(db_path: Path | str = "db/reelforge.db") -> sqlite3.Connection:
+def init_db(db_path: Path | str = "db/instora.db") -> sqlite3.Connection:
     """Initialize SQLite database with quotes, clips, reels, and clip segments schemas.
 
     Args:

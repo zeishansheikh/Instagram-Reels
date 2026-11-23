@@ -45,7 +45,7 @@ class JobManager:
     def __init__(self, max_workers: int = 4):
         self._jobs: Dict[str, Job] = {}
         self._lock = threading.Lock()
-        self._executor = ThreadPoolExecutor(max_workers=max_workers, thread_name_prefix="reelforge_worker")
+        self._executor = ThreadPoolExecutor(max_workers=max_workers, thread_name_prefix="instora_worker")
 
     def create_job(
         self,

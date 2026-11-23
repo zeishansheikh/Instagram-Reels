@@ -21,12 +21,12 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 from loguru import logger
 
-from reelforge.pipeline.gates import (
+from instora.pipeline.gates import (
     brightness_and_saturation_gate,
     ffprobe_source_gate,
     watermark_and_quality_check,
 )
-from reelforge.pipeline.workflow_state import WorkflowState
+from instora.pipeline.workflow_state import WorkflowState
 
 NATURE_CATEGORIES = [
     "mountain river",
@@ -80,7 +80,7 @@ def fetch_pinterest_clip(
 
     # 2. Directly fetch a fresh nature clip from Pinterest using authenticated cookies
     try:
-        from reelforge.pipeline.pinterest_client import fetch_fresh_pinterest_video
+        from instora.pipeline.pinterest_client import fetch_fresh_pinterest_video
         fresh = fetch_fresh_pinterest_video(category=category, output_dir=bg_dir, state=workflow_state)
         if fresh:
             cand, pin_id = fresh

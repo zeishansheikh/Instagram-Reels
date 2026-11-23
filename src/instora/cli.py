@@ -1,4 +1,4 @@
-"""CLI entrypoint for Reel Forge."""
+"""CLI entrypoint for Instora."""
 
 from __future__ import annotations
 
@@ -7,15 +7,15 @@ from typing import Optional
 import typer
 from typing_extensions import Annotated
 
-from reelforge.config import check_environment, load_config
-from reelforge.quotes.generator import generate_quotes
-from reelforge.render.pipeline import batch_generate_reels, render_preview
+from instora.config import check_environment, load_config
+from instora.quotes.generator import generate_quotes
+from instora.render.pipeline import batch_generate_reels, render_preview
 from rich.console import Console
 from rich.table import Table
 
 app = typer.Typer(
-    name="reelforge",
-    help="Reel Forge: Automated Instagram Quote & Poetry Reel Generator.",
+    name="instora",
+    help="Instora: Automated Instagram Quote & Poetry Reel Generator.",
     add_completion=False,
 )
 console = Console()
@@ -23,7 +23,7 @@ console = Console()
 
 @app.callback()
 def main_callback() -> None:
-    """Reel Forge CLI: Bulk generator for aesthetic Instagram reels."""
+    """Instora CLI: Bulk generator for aesthetic Instagram reels."""
     pass
 
 
@@ -46,7 +46,7 @@ def gdrive_login(
     ] = Path("token.json"),
 ) -> None:
     """Run Google Drive OAuth desktop login flow to authorize read-only access."""
-    from reelforge.backgrounds.gdrive import authenticate_gdrive
+    from instora.backgrounds.gdrive import authenticate_gdrive
 
     typer.echo("🔑 Initiating Google Drive OAuth authentication flow...")
     try:
@@ -231,7 +231,7 @@ def review(
     ] = "styles/degraaf.yaml",
 ) -> None:
     """Interactively review generated reels: keep, discard, or regenerate."""
-    from reelforge.render.review import review_all_reels
+    from instora.render.review import review_all_reels
 
     if style.lower() != "random" and not Path(style).exists():
         typer.echo(f"❌ Style file not found at '{style}'.", err=True)
@@ -260,7 +260,7 @@ def publish(
     ] = Path("output"),
 ) -> None:
     """Publish generated reels to Instagram via Meta Graph API."""
-    from reelforge.publish import publish_date_reels
+    from instora.publish import publish_date_reels
 
     typer.echo(f"🚀 Initiating publication for date: {date}{' (DRY-RUN)' if dry_run else ''}...")
 
@@ -318,10 +318,10 @@ def serve_api(
     port: Annotated[int, typer.Option("--port", "-p", help="Port to listen on")] = 8000,
     reload: Annotated[bool, typer.Option("--reload", help="Enable auto-reload on code changes")] = False,
 ) -> None:
-    """Start the Reel Forge FastAPI backend server."""
+    """Start the Instora FastAPI backend server."""
     import uvicorn
 
-    typer.echo(f"⚡ Starting Reel Forge API server at http://{host}:{port} (docs: http://{host}:{port}/docs)...")
+    typer.echo(f"⚡ Starting Instora API server at http://{host}:{port} (docs: http://{host}:{port}/docs)...")
     uvicorn.run("api.main:app", host=host, port=port, reload=reload)
 
 
@@ -345,7 +345,7 @@ def pipeline_build(
     dry_run: Annotated[bool, typer.Option("--dry-run", help="Simulate build without heavy encodes")] = False,
 ) -> None:
     """Execute the full 15-step D3 build pipeline for Slot A or Slot B."""
-    from reelforge.pipeline.builder import build_d3_reel
+    from instora.pipeline.builder import build_d3_reel
 
     typer.echo(f"🎬 Starting D3 Build Pipeline for Slot '{slot.upper()}'...")
     res = build_d3_reel(
@@ -376,7 +376,7 @@ def pipeline_post(
     dry_run: Annotated[bool, typer.Option("--dry-run", help="Validate manifest & video without network post")] = False,
 ) -> None:
     """Post today's staged reel to Buffer channel 'noori.shed' (@enoent.7)."""
-    from reelforge.pipeline.poster import post_d3_reel
+    from instora.pipeline.poster import post_d3_reel
 
     typer.echo(f"🚀 Initiating D3 post job for Slot '{slot.upper()}'{' (DRY-RUN)' if dry_run else ''}...")
     res = post_d3_reel(slot=slot, target_date=date, dry_run=dry_run)
@@ -394,8 +394,8 @@ def pipeline_post(
 @pipeline_app.command("status")
 def pipeline_status() -> None:
     """Display workflow state, used counts, and readiness of staged manifests."""
-    from reelforge.pipeline.workflow_state import WorkflowState
-    from reelforge.pipeline.manifest import ReelManifest
+    from instora.pipeline.workflow_state import WorkflowState
+    from instora.pipeline.manifest import ReelManifest
 
     state = WorkflowState.load()
     console.print("\n[bold]=== D3 Workflow State (workflow_state.json) ===[/bold]")
@@ -423,7 +423,7 @@ def pipeline_verify(
     video: Annotated[Path, typer.Argument(help="Video file to test with Section 5 verification gates", exists=True)],
 ) -> None:
     """Verify video meets Section 5 spec (1080x1920, 60fps, 15M, AAC, audio audible)."""
-    from reelforge.pipeline.gates import verify_final_reel
+    from instora.pipeline.gates import verify_final_reel
 
     typer.echo(f"🔍 Running Section 5 Verification on: {video}")
     passed, logs = verify_final_reel(video)
@@ -455,7 +455,7 @@ def fetch_pin(
     output_dir: str = typer.Option("assets/backgrounds", help="Output directory"),
 ) -> None:
     """Download a vertical HD video directly from a Pinterest Pin using saved cookies."""
-    from reelforge.pipeline.pinterest_client import extract_video_url_from_pin, download_video
+    from instora.pipeline.pinterest_client import extract_video_url_from_pin, download_video
     video_info = extract_video_url_from_pin(pin)
     if not video_info:
         typer.secho(f"Could not find video for pin '{pin}'.", fg=typer.colors.RED)

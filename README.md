@@ -1,6 +1,6 @@
-# Reel Forge — Automated Instagram Quote Reel Generator 🎥✨
+# Instora — Automated Instagram Quote Reel Generator 🎥✨
 
-**Reel Forge** is an automated, AI-driven CLI pipeline that generates high-aesthetic, short-form Instagram reels (1080x1920, 9:16 vertical video) in bulk. It pairs reflective, emotionally resonant quotes generated via Google's Gemini AI with calm, cinematic nature backgrounds, applying professional color grading, overlays, typography animations, and auto-generated captions ready for publishing.
+**Instora** is an automated, AI-driven CLI pipeline that generates high-aesthetic, short-form Instagram reels (1080x1920, 9:16 vertical video) in bulk. It pairs reflective, emotionally resonant quotes generated via Google's Gemini AI with calm, cinematic nature backgrounds, applying professional color grading, overlays, typography animations, and auto-generated captions ready for publishing.
 
 ---
 
@@ -30,7 +30,7 @@
 
 ```mermaid
 flowchart TD
-    CLI["CLI Command (reelforge generate)"] --> QuoteGen["Gemini AI Quote Generator"]
+    CLI["CLI Command (instora generate)"] --> QuoteGen["Gemini AI Quote Generator"]
     QuoteGen --> DedupeCheck{"SQLite Dedupe Check"}
     DedupeCheck -- New Quote --> BGProvider["Background Provider (Pexels / Local)"]
     DedupeCheck -- Duplicate --> QuoteGen
@@ -54,8 +54,8 @@ Instagram-Reels/
 ├── TASKS.md                  # Milestone-driven implementation phases
 ├── .env.example              # Template for API keys
 ├── .gitignore                # Production gitignore (excludes media, DB, venvs)
-└── src/                      # Source code (Reel Forge package)
-    └── reelforge/
+└── src/                      # Source code (Instora package)
+    └── instora/
         ├── cli.py            # Typer CLI entrypoint
         ├── config.py         # Pydantic configuration loader
         ├── db.py             # SQLite persistence & tracking
@@ -127,7 +127,7 @@ GDRIVE_FOLDER_ID=your_gdrive_folder_id_here
 
 ## ☁️ Google Drive Background Provider Setup
 
-Reel Forge can automatically scan, stream, and cache footage directly from a Google Drive folder.
+Instora can automatically scan, stream, and cache footage directly from a Google Drive folder.
 
 ### Option A: Direct OAuth Integration
 1. Go to [Google Cloud Console](https://console.cloud.google.com/).
@@ -143,7 +143,7 @@ Reel Forge can automatically scan, stream, and cache footage directly from a Goo
    ```
 8. Run the authentication flow once:
    ```bash
-   reelforge gdrive-login
+   instora gdrive-login
    ```
    This saves an authorized token locally to `token.json` (git-ignored).
 9. In `config.yaml`, switch provider:
@@ -159,7 +159,7 @@ Reel Forge can automatically scan, stream, and cache footage directly from a Goo
 
 ## 🎨 Style Presets & Rotation
 
-Reel Forge ships with 3 carefully tuned visual presets keeping a consistent calm, light-first nature aesthetic:
+Instora ships with 3 carefully tuned visual presets keeping a consistent calm, light-first nature aesthetic:
 
 | Preset | Font | Size | Overlay Darkness | Grain / Vignette | Aesthetic Vibe |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -172,10 +172,10 @@ Pass `--style random` during batch generation to automatically rotate across all
 
 ```bash
 # Rotate styles automatically across 10 reels
-reelforge generate --count 10 --theme hope --lang en --style random
+instora generate --count 10 --theme hope --lang en --style random
 
 # Or specify a fixed preset
-reelforge generate --count 5 --theme nature --style styles/serif_quiet.yaml
+instora generate --count 5 --theme nature --style styles/serif_quiet.yaml
 ```
 
 ---
@@ -184,16 +184,16 @@ reelforge generate --count 5 --theme nature --style styles/serif_quiet.yaml
 
 ```bash
 # Generate a batch of 10 reels with nature/reflective theme
-reelforge generate --count 10 --theme nature --lang en
+instora generate --count 10 --theme nature --lang en
 
 # Generate reels with Roman Urdu / Urdu quotes
-reelforge generate --count 5 --theme reflective --lang ur
+instora generate --count 5 --theme reflective --lang ur
 
 # Preview a single reel with custom quote
-reelforge preview --quote "Still waters reflect the heavens."
+instora preview --quote "Still waters reflect the heavens."
 
 # Clean up cached media and temporary assets
-reelforge clean
+instora clean
 ```
 
 ---

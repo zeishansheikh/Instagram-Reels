@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 from loguru import logger
 
-from reelforge.pipeline.workflow_state import WorkflowState
+from instora.pipeline.workflow_state import WorkflowState
 
 LOFI_MUSIC_ROTATIONS = [
     "sad lofi instrumental beat urdu hindi aesthetic",

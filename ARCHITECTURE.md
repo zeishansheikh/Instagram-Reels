@@ -20,8 +20,8 @@ reel-forge/
     fonts/
   cache/                  # downloaded clips
   output/                 # finished reels
-  db/reelforge.db
-  src/reelforge/
+  db/instora.db
+  src/instora/
     cli.py
     config.py
     db.py

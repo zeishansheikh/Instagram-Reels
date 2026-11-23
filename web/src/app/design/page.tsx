@@ -118,7 +118,7 @@ function DesignSystemView() {
             </Link>
           </div>
           <h1 className="font-sans text-2xl sm:text-3xl font-semibold tracking-tight text-ink-primary">
-            Reel Forge Component Catalog
+            Instora Component Catalog
           </h1>
           <p className="font-sans text-sm text-ink-secondary max-w-3xl leading-relaxed">
             Light-theme system inspired by classical Swiss editorial craftsmanship and modern precision pro software
@@ -676,7 +676,7 @@ function DesignSystemView() {
               </span>
               <QuoteBlock
                 size="xl"
-                author="Reel Forge Curation · Winter Light"
+                author="Instora Curation · Winter Light"
                 theme="hope"
               >
                 Frost coats the glass tonight, but underneath the sleeping soil, a small seed remembers how to reach for spring.

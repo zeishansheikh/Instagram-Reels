@@ -1,4 +1,4 @@
-# PRD: Reel Forge — Automated Quote Reel Generator
+# PRD: Instora — Automated Quote Reel Generator
 
 ## 1. Overview
 A Python tool that automatically produces Instagram-style quote/poetry reels (sad lines, deep quotes, moody backgrounds) in bulk. Quotes are written by Gemini, backgrounds come from a pluggable source, video is rendered with FFmpeg, and finished reels land in an output folder ready to post. The user adds the trending song manually inside Instagram at upload time.
@@ -55,16 +55,16 @@ For each reel create folder `output/YYYY-MM-DD/reel_001/` containing:
 - `meta.json` (quote, clip id, style, timestamps)
 
 ### FR6 Auto-publish (in scope, see AUTOPUBLISH.md)
-- `reelforge run-daily` picks a Drive clip, writes a quote, renders, uploads to public storage, publishes via Instagram Graph API, logs, notifies on failure.
+- `instora run-daily` picks a Drive clip, writes a quote, renders, uploads to public storage, publishes via Instagram Graph API, logs, notifies on failure.
 - Requires Professional IG account, Meta developer app, long-lived token with auto-refresh.
 - Full-auto mode bakes royalty-free ambient music into the video (library songs cannot be attached via API). Manual mode (no music + add song in-app) remains available.
 - Safety: dry-run, daily cap, STOP kill switch, idempotent publish log, failure notifications.
 
 ### FR7 CLI
 ```
-reelforge generate --count 10 --theme sad --lang en
-reelforge preview --quote "text"       # render one test reel
-reelforge clean                         # clear cache
+instora generate --count 10 --theme sad --lang en
+instora preview --quote "text"       # render one test reel
+instora clean                         # clear cache
 ```
 
 ## 6. Non-Functional Requirements

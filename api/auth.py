@@ -1,4 +1,4 @@
-"""API key authentication dependency for Reel Forge API."""
+"""API key authentication dependency for Instora API."""
 
 from __future__ import annotations
 

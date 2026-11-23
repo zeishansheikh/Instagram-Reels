@@ -9,8 +9,8 @@ from typing import Any, Optional
 import httpx
 from loguru import logger
 
-from reelforge.config import load_config
-from reelforge.publish.storage import StorageProvider, get_storage_provider
+from instora.config import load_config
+from instora.publish.storage import StorageProvider, get_storage_provider
 
 
 class InstagramPublishError(Exception):

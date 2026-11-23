@@ -11,9 +11,9 @@ from loguru import logger
 from api.auth import verify_api_key
 from api.jobs import job_manager
 from api.models import JobResponse, PublishLogItem, PublishRequest
-from reelforge.config import load_config
-from reelforge.db import get_publish_log, update_reel_status
-from reelforge.publish import publish_date_reels
+from instora.config import load_config
+from instora.db import get_publish_log, update_reel_status
+from instora.publish import publish_date_reels
 
 router = APIRouter(tags=["Publishing"])
 

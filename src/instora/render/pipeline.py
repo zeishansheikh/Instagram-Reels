@@ -1,4 +1,4 @@
-"""Video rendering pipeline orchestrator for Reel Forge."""
+"""Video rendering pipeline orchestrator for Instora."""
 
 from __future__ import annotations
 
@@ -14,9 +14,9 @@ import yaml
 from google import genai
 from loguru import logger
 
-from reelforge.backgrounds import BackgroundProvider, get_background_provider
-from reelforge.config import load_config
-from reelforge.db import (
+from instora.backgrounds import BackgroundProvider, get_background_provider
+from instora.config import load_config
+from instora.db import (
     get_clip_id_by_path,
     init_db,
     is_quote_rendered,
@@ -24,17 +24,17 @@ from reelforge.db import (
     record_clip_usage,
     record_reel,
 )
-from reelforge.packaging.caption import format_caption
-from reelforge.packaging.writer import package_reel
-from reelforge.quotes.generator import Quote, generate_quotes
-from reelforge.render.ffmpeg_cmd import build_ffmpeg_command, calculate_duration
-from reelforge.render.quality import (
+from instora.packaging.caption import format_caption
+from instora.packaging.writer import package_reel
+from instora.quotes.generator import Quote, generate_quotes
+from instora.render.ffmpeg_cmd import build_ffmpeg_command, calculate_duration
+from instora.render.quality import (
     calculate_text_bounding_box,
     check_safe_margins,
     is_contrast_sufficient,
     sample_background_luminance,
 )
-from reelforge.render.text_layout import layout_text, resolve_font_path
+from instora.render.text_layout import layout_text, resolve_font_path
 
 
 def get_available_styles(styles_dir: Path | str = "styles") -> list[Path]:
@@ -145,7 +145,7 @@ def batch_generate_reels(
     output_base_dir: Path | str = "output",
     client: Optional[genai.Client] = None,
     background_provider: Optional[BackgroundProvider] = None,
-    db_path: Path | str = "db/reelforge.db",
+    db_path: Path | str = "db/instora.db",
     quotes: Optional[list[Quote]] = None,
 ) -> list[dict[str, Any]]:
     """Execute end-to-end batch generation pipeline for finished quote reels.

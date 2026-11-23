@@ -19,7 +19,7 @@ from loguru import logger
 from google import genai
 from pydantic import BaseModel, Field
 
-from reelforge.pipeline.workflow_state import WorkflowState
+from instora.pipeline.workflow_state import WorkflowState
 
 D3_THEMES = ["loss", "yaadein", "waqt", "tanhai", "dard", "hope-in-sadness"]
 
@@ -139,7 +139,7 @@ def generate_d3_quote(
     api_key = os.getenv("GEMINI_API_KEY")
     if api_key:
         try:
-            from reelforge.config import load_config
+            from instora.config import load_config
             cfg = load_config()
             target_model = os.getenv("GEMINI_MODEL") or cfg.gemini.model or "gemini-3.8-flash"
 

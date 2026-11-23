@@ -23,28 +23,28 @@ import pytest
 from fastapi.testclient import TestClient
 
 from api.main import app
-from reelforge.pipeline.builder import build_d3_reel
-from reelforge.pipeline.gates import (
+from instora.pipeline.builder import build_d3_reel
+from instora.pipeline.gates import (
     audio_volume_verify,
     brightness_and_saturation_gate,
     ffprobe_source_gate,
     verify_final_reel,
     watermark_and_quality_check,
 )
-from reelforge.pipeline.grade_adaptive import detect_scene_tone
-from reelforge.pipeline.manifest import ReelManifest
-from reelforge.pipeline.placement_lock import (
+from instora.pipeline.grade_adaptive import detect_scene_tone
+from instora.pipeline.manifest import ReelManifest
+from instora.pipeline.placement_lock import (
     build_d3_drawtext_filter,
     find_optimal_center_y,
     resolve_d3_font,
 )
-from reelforge.pipeline.poster import post_d3_reel
-from reelforge.pipeline.quotes_d3 import (
+from instora.pipeline.poster import post_d3_reel
+from instora.pipeline.quotes_d3 import (
     clean_d3_line,
     format_d3_caption,
     generate_d3_quote,
 )
-from reelforge.pipeline.workflow_state import WorkflowState
+from instora.pipeline.workflow_state import WorkflowState
 
 
 @pytest.fixture
@@ -208,7 +208,7 @@ def test_generate_d3_quote_no_repeat():
 def test_build_d3_reel_e2e(tmp_path, dummy_video):
     swap_dir = tmp_path / "swap"
 
-    with patch("reelforge.pipeline.builder.fetch_pinterest_clip", return_value=(dummy_video, "pin_test_999")):
+    with patch("instora.pipeline.builder.fetch_pinterest_clip", return_value=(dummy_video, "pin_test_999")):
         res = build_d3_reel(
             slot="a",
             target_date="2026-11-21",

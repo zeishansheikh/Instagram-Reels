@@ -7,9 +7,9 @@ from pathlib import Path
 
 import pytest
 
-from reelforge.backgrounds.base import BackgroundProvider
-from reelforge.backgrounds.local_folder import LocalFolderBackgroundProvider
-from reelforge.db import get_recently_used_clip_paths, get_used_segments, init_db
+from instora.backgrounds.base import BackgroundProvider
+from instora.backgrounds.local_folder import LocalFolderBackgroundProvider
+from instora.db import get_recently_used_clip_paths, get_used_segments, init_db
 
 
 def create_synthetic_video(path: Path, width: int, height: int, duration: float) -> Path:

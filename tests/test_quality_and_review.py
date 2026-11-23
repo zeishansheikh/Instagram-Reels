@@ -8,17 +8,17 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from reelforge.backgrounds.base import BackgroundProvider
-from reelforge.db import init_db
-from reelforge.packaging.writer import package_reel
-from reelforge.render.pipeline import batch_generate_reels
-from reelforge.render.quality import (
+from instora.backgrounds.base import BackgroundProvider
+from instora.db import init_db
+from instora.packaging.writer import package_reel
+from instora.render.pipeline import batch_generate_reels
+from instora.render.quality import (
     calculate_text_bounding_box,
     check_safe_margins,
     is_contrast_sufficient,
     sample_background_luminance,
 )
-from reelforge.render.review import (
+from instora.render.review import (
     find_reviewable_reels,
     review_all_reels,
     review_single_reel,

@@ -13,10 +13,10 @@ from typing import Callable, Optional
 import typer
 from loguru import logger
 
-from reelforge.backgrounds import get_background_provider
-from reelforge.db import init_db, update_reel_status
-from reelforge.quotes.generator import Quote
-from reelforge.render.pipeline import load_style, render_reel
+from instora.backgrounds import get_background_provider
+from instora.db import init_db, update_reel_status
+from instora.quotes.generator import Quote
+from instora.render.pipeline import load_style, render_reel
 
 
 def find_reviewable_reels(output_base: Path | str = "output") -> list[Path]:
@@ -63,7 +63,7 @@ def review_single_reel(
     reel_folder: Path,
     action: str,
     output_base: Path = Path("output"),
-    db_path: Path | str = "db/reelforge.db",
+    db_path: Path | str = "db/instora.db",
     style_path: Path | str = "styles/degraaf.yaml",
 ) -> str:
     """Execute a review decision on a single reel folder: keep, discard, or regenerate.

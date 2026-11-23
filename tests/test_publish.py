@@ -9,11 +9,11 @@ from unittest.mock import MagicMock
 import httpx
 import pytest
 
-from reelforge.db import init_db, is_reel_published
-from reelforge.packaging.writer import package_reel
-from reelforge.publish.graph_api import InstagramPublishError, InstagramPublisher
-from reelforge.publish.service import publish_date_reels
-from reelforge.publish.storage import (
+from instora.db import init_db, is_reel_published
+from instora.packaging.writer import package_reel
+from instora.publish.graph_api import InstagramPublishError, InstagramPublisher
+from instora.publish.service import publish_date_reels
+from instora.publish.storage import (
     MockStorage,
     R2Storage,
     StorageProvider,
@@ -32,7 +32,7 @@ def test_storage_protocol_and_mock(tmp_path: Path) -> None:
     dummy_file.write_bytes(b"sample_bytes")
 
     public_url = storage.upload(dummy_file)
-    assert public_url.startswith("https://mock-storage.reelforge.internal/")
+    assert public_url.startswith("https://mock-storage.instora.internal/")
     assert public_url in storage.uploaded_files
 
     storage.delete(public_url)

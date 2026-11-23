@@ -9,8 +9,8 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-from reelforge.render.grade import build_background_filters
-from reelforge.render.text_layout import layout_text, resolve_font_path
+from instora.render.grade import build_background_filters
+from instora.render.text_layout import layout_text, resolve_font_path
 
 
 def probe_video(video_path: Path | str) -> dict[str, Any]:
