@@ -28,7 +28,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-sans font-medium select-none transition-fast outline-none focus-visible:ring-2 focus-visible:ring-moss/40 focus-visible:ring-offset-1 disabled:opacity-40 disabled:pointer-events-none active:bg-subtle";
+      "inline-flex items-center justify-center whitespace-nowrap font-sans font-medium select-none transition-fast outline-none focus-visible:ring-2 focus-visible:ring-moss/40 focus-visible:ring-offset-1 disabled:opacity-40 disabled:pointer-events-none active:bg-subtle";
 
     const variantStyles = {
       primary: "bg-moss text-white hover:bg-moss-hover border border-moss/90",
