@@ -62,8 +62,19 @@ def fetch_pinterest_clip(
     dest_dir = Path(output_dir)
     dest_dir.mkdir(parents=True, exist_ok=True)
 
-    # 1. First inspect local background assets in assets/backgrounds
+    # 1. Directly fetch a fresh nature clip from Pinterest using authenticated cookies
     bg_dir = Path("assets/backgrounds")
+    try:
+        from reelforge.pipeline.pinterest_client import fetch_fresh_pinterest_video
+        fresh = fetch_fresh_pinterest_video(category=category, output_dir=bg_dir, state=workflow_state)
+        if fresh:
+            cand, pin_id = fresh
+            logger.info(f"Successfully fetched fresh Pinterest video '{cand.name}' for category '{category}'")
+            return cand, pin_id
+    except Exception as exc:
+        logger.warning(f"Direct Pinterest fetcher error: {exc}")
+
+    # 2. Inspect local background assets in assets/backgrounds as fallback
     if bg_dir.exists():
         candidates = sorted(list(bg_dir.glob("*.mp4")) + list(bg_dir.glob("*.mov")))
         for cand in candidates:
@@ -78,17 +89,6 @@ def fetch_pinterest_clip(
                         if wm_ok:
                             logger.info(f"Selected verified local clip '{cand.name}' for pin '{pin_id}'")
                             return cand, pin_id
-
-    # 2. Directly fetch a fresh nature clip from Pinterest using authenticated cookies
-    try:
-        from reelforge.pipeline.pinterest_client import fetch_fresh_pinterest_video
-        fresh = fetch_fresh_pinterest_video(category=category, output_dir=bg_dir, state=workflow_state)
-        if fresh:
-            cand, pin_id = fresh
-            logger.info(f"Successfully fetched fresh Pinterest video '{cand.name}' for category '{category}'")
-            return cand, pin_id
-    except Exception as exc:
-        logger.warning(f"Direct Pinterest fetcher error: {exc}")
 
     # 3. Check if PodFetch downloaded nature pins are available
     podfetch_dir = Path.home() / "Downloads" / "PodFetch" / "downloads"
