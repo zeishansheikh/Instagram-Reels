@@ -44,7 +44,11 @@ export function CommandBar({
         {/* Brand / Logo + Status */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-moss" />
+            <img
+              src="/logo-mark.png"
+              alt="Instora Logo"
+              className="w-4 h-4 object-contain shrink-0"
+            />
             <span className="font-sans font-semibold text-sm text-ink-primary tracking-tight">
               Instora
             </span>

@@ -109,14 +109,21 @@ export function AppShell({
       >
         <div className="flex flex-col h-full">
           {/* Sidebar Header / Brand */}
-          <div className="h-14 px-4 border-b border-border flex items-center justify-between">
-            <Link href="/" className="flex flex-col group py-1">
-              <span className="font-serif text-sm font-semibold tracking-tight text-ink-primary leading-tight group-hover:text-moss transition-fast">
-                Instora
-              </span>
-              <span className="font-mono text-xs uppercase tracking-wider text-ink-muted">
-                Editorial Platform
-              </span>
+          <div className="h-14 px-3.5 border-b border-border flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-2.5 group py-1">
+              <img
+                src="/logo-mark.png"
+                alt="Instora Logo"
+                className="w-7 h-7 object-contain shrink-0"
+              />
+              <div className="flex flex-col">
+                <span className="font-serif text-sm font-semibold tracking-tight text-ink-primary leading-tight group-hover:text-moss transition-fast">
+                  Instora
+                </span>
+                <span className="font-mono text-[10px] uppercase tracking-wider text-ink-muted">
+                  Editorial Platform
+                </span>
+              </div>
             </Link>
 
             <button
