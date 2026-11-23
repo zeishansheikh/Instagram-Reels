@@ -449,6 +449,24 @@ def clean() -> None:
     typer.echo("Cleaning temporary cache directory... (Not yet implemented)")
 
 
+@app.command("fetch-pin")
+def fetch_pin(
+    pin: str = typer.Argument(..., help="Pinterest Pin ID or full URL"),
+    output_dir: str = typer.Option("assets/backgrounds", help="Output directory"),
+) -> None:
+    """Download a vertical HD video directly from a Pinterest Pin using saved cookies."""
+    from reelforge.pipeline.pinterest_client import extract_video_url_from_pin, download_video
+    video_info = extract_video_url_from_pin(pin)
+    if not video_info:
+        typer.secho(f"Could not find video for pin '{pin}'.", fg=typer.colors.RED)
+        raise typer.Exit(1)
+    pin_id, url = video_info
+    dest = Path(output_dir) / f"pinterest_{pin_id}.mp4"
+    typer.secho(f"Found video URL: {url}", fg=typer.colors.CYAN)
+    downloaded = download_video(url, dest)
+    typer.secho(f"Successfully downloaded to: {downloaded}", fg=typer.colors.GREEN)
+
+
 def main() -> None:
     """Main application entrypoint."""
     app()

@@ -37,6 +37,8 @@ venv.bak/
 credentials.json
 token.json
 client_secrets.json
+config/pinterest_cookies.*
+config/*.json
 
 # Media Assets & Generated Content
 cache/
