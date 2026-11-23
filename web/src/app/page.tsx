@@ -193,10 +193,21 @@ function TodayScreenContent() {
         return;
       }
 
+      let errorCount = 0;
       const timer = setInterval(async () => {
         try {
           const jobRes = await fetch(`/jobs/${jobId}`);
-          if (!jobRes.ok) return;
+          if (!jobRes.ok) {
+            errorCount++;
+            if (jobRes.status === 404 || errorCount >= 5) {
+              clearInterval(timer);
+              setIsBuilding(false);
+              await loadLatestStagedReel();
+              return;
+            }
+            return;
+          }
+          errorCount = 0;
           const job = await jobRes.json();
           if (job.status === "running") {
             setBuildMessage(job.message || "Encoding 1080p60 video & burning text...");
@@ -219,7 +230,11 @@ function TodayScreenContent() {
             });
           }
         } catch {
-          // continue polling
+          errorCount++;
+          if (errorCount >= 5) {
+            clearInterval(timer);
+            setIsBuilding(false);
+          }
         }
       }, 2000);
     } catch (err: any) {
