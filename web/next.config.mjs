@@ -14,6 +14,10 @@ const nextConfig = {
     const backend = process.env.BACKEND_URL || "http://127.0.0.1:8001";
     return [
       {
+        source: "/settings-api/:path*",
+        destination: `${backend}/settings/:path*`,
+      },
+      {
         source: "/static/:path*",
         destination: `${backend}/static/:path*`,
       },

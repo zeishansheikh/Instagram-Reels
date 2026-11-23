@@ -235,3 +235,4 @@ def fetch_fresh_pinterest_video(
         return clip_path, pin_id
 
     return None
+

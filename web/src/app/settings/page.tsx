@@ -22,6 +22,10 @@ import {
   AlertCircle,
   ExternalLink,
   Lock,
+  Music,
+  Video,
+  FileCode,
+  Trash2,
 } from "lucide-react";
 
 import {
@@ -37,6 +41,8 @@ import {
   useToast,
   TooltipProvider,
   QuoteBlock,
+  Modal,
+  ModalContent,
 } from "@/components";
 import { cn } from "@/lib/utils";
 import { THEMES, getStoredTheme, setStoredTheme } from "@/lib/themes";
@@ -211,6 +217,162 @@ function SettingsContent() {
       title: "Settings Saved",
       description: "Updated config.yaml runtime automation parameters.",
     });
+  };
+
+  // Platform Session Cookies State
+  interface CookieProviderStatus {
+    provider: string;
+    configured: boolean;
+    count: number;
+    last_modified: string | null;
+    has_txt?: boolean;
+    error?: string;
+  }
+
+  interface CookiesData {
+    pinterest?: CookieProviderStatus;
+    youtube?: CookieProviderStatus;
+  }
+
+  const [cookiesState, setCookiesState] = React.useState<CookiesData>({});
+  const [cookieModalOpen, setCookieModalOpen] = React.useState(false);
+  const [cookieModalProvider, setCookieModalProvider] = React.useState<"pinterest" | "youtube">("pinterest");
+  const [cookieJsonInput, setCookieJsonInput] = React.useState("");
+  const [cookieSaving, setCookieSaving] = React.useState(false);
+  const [testingCookie, setTestingCookie] = React.useState<string | null>(null);
+
+  const fetchCookiesStatus = React.useCallback(async () => {
+    try {
+      const res = await fetch("/settings-api/cookies");
+      if (res.ok) {
+        const data = await res.json();
+        setCookiesState(data);
+      }
+    } catch (err) {
+      console.error("Failed to load cookies status:", err);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    fetchCookiesStatus();
+  }, [fetchCookiesStatus]);
+
+  const handleSaveCookies = async () => {
+    if (!cookieJsonInput.trim()) {
+      addToast({
+        type: "error",
+        title: "Missing Cookies",
+        description: "Please paste a valid JSON array of cookies.",
+      });
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(cookieJsonInput.trim());
+      if (!Array.isArray(parsed)) {
+        throw new Error("Input must be a JSON array of cookie objects.");
+      }
+    } catch (e: any) {
+      addToast({
+        type: "error",
+        title: "Invalid JSON Format",
+        description: e.message || "Ensure you pasted a valid JSON array.",
+      });
+      return;
+    }
+
+    setCookieSaving(true);
+    try {
+      const res = await fetch(`/settings-api/cookies/${cookieModalProvider}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cookies_json: cookieJsonInput.trim() }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.detail || "Failed to save cookies");
+      }
+
+      addToast({
+        type: "success",
+        title: "Cookies Saved",
+        description: data.message || `Successfully saved ${cookieModalProvider} cookies.`,
+      });
+      setCookieModalOpen(false);
+      setCookieJsonInput("");
+      await fetchCookiesStatus();
+    } catch (err: any) {
+      addToast({
+        type: "error",
+        title: "Save Failed",
+        description: err.message || "Failed to update cookies.",
+      });
+    } finally {
+      setCookieSaving(false);
+    }
+  };
+
+  const handleTestCookies = async (provider: "pinterest" | "youtube") => {
+    setTestingCookie(provider);
+    const provName = provider === "pinterest" ? "Pinterest" : "YouTube Music";
+    addToast({
+      type: "info",
+      title: `Testing ${provName}`,
+      description: "Pinging live endpoint with saved session cookies...",
+    });
+
+    try {
+      const res = await fetch(`/settings-api/cookies/${provider}/test`, {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.detail || "Connection test failed");
+      }
+
+      addToast({
+        type: data.status === "warning" ? "warning" : "success",
+        title: `${provName} Verified`,
+        description: data.message || `Status 200 OK. Session active.`,
+      });
+    } catch (err: any) {
+      addToast({
+        type: "error",
+        title: `${provName} Test Failed`,
+        description: err.message || "Unable to authenticate with saved cookies.",
+      });
+    } finally {
+      setTestingCookie(null);
+    }
+  };
+
+  const handleClearCookies = async (provider: "pinterest" | "youtube") => {
+    const provName = provider === "pinterest" ? "Pinterest" : "YouTube Music";
+    if (!window.confirm(`Are you sure you want to clear saved cookies for ${provName}?`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/settings-api/cookies/${provider}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Failed to clear cookies");
+
+      addToast({
+        type: "info",
+        title: "Cookies Cleared",
+        description: data.message || `${provName} cookies removed.`,
+      });
+      await fetchCookiesStatus();
+    } catch (err: any) {
+      addToast({
+        type: "error",
+        title: "Clear Failed",
+        description: err.message || "Failed to remove cookies.",
+      });
+    }
   };
 
   return (
@@ -538,6 +700,197 @@ function SettingsContent() {
                     />
                   </div>
                 </Card>
+
+                {/* 5. Autonomous Session Cookies & Media Fetching */}
+                <div className="pt-4 border-t border-border space-y-4">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-sans text-sm font-semibold text-ink-primary">
+                        Platform Session Cookies (Production Ingestion)
+                      </h3>
+                      <Badge variant="moss" className="text-[10px] font-mono">
+                        Autonomous
+                      </Badge>
+                    </div>
+                    <p className="font-sans text-xs text-ink-muted mt-0.5">
+                      Configure authenticated browser cookies to automatically fetch 1080p vertical footage from Pinterest and 320kbps background soundtracks from YouTube Music. Stored strictly in local config.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Pinterest Cookies Card */}
+                    <Card className="p-4 bg-surface border-border flex flex-col justify-between space-y-4">
+                      <div className="space-y-3">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded-sm bg-rose-500/10 text-rose-600 border border-rose-500/20 flex items-center justify-center">
+                              <Video className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <h4 className="font-sans text-xs font-semibold text-ink-primary">
+                                Pinterest Video Engine
+                              </h4>
+                              <span className="font-mono text-[10px] text-ink-muted">
+                                9:16 Vertical HD Footage
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 font-mono text-[10px]">
+                            <StatusDot status={cookiesState.pinterest?.configured ? "success" : "warning"} />
+                            <span className={cookiesState.pinterest?.configured ? "text-status-success font-medium" : "text-amber-500 font-medium"}>
+                              {cookiesState.pinterest?.configured ? "Active" : "Not Set"}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="p-2.5 rounded-sm bg-subtle border border-border/70 space-y-1.5 text-xs font-mono">
+                          <div className="flex justify-between text-ink-muted text-[11px]">
+                            <span>Loaded Cookies:</span>
+                            <span className="text-ink-primary font-medium">{cookiesState.pinterest?.count ?? 0} keys</span>
+                          </div>
+                          <div className="flex justify-between text-ink-muted text-[11px]">
+                            <span>Last Updated:</span>
+                            <span className="text-ink-secondary">{cookiesState.pinterest?.last_modified || "Never"}</span>
+                          </div>
+                          <div className="flex justify-between text-ink-muted text-[11px]">
+                            <span>Storage Files:</span>
+                            <span className="text-moss">pinterest_cookies.json / .txt</span>
+                          </div>
+                        </div>
+
+                        <p className="text-[11px] text-ink-muted leading-relaxed font-sans">
+                          Directly pulls 720p/1080p nature clips from v1.pinimg.com CDN. Auto-formatted to Netscape cookies.txt.
+                        </p>
+                      </div>
+
+                      <div className="pt-2 border-t border-border/50 flex items-center justify-between gap-2">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="text-xs flex-1"
+                          onClick={() => {
+                            setCookieModalProvider("pinterest");
+                            setCookieJsonInput("");
+                            setCookieModalOpen(true);
+                          }}
+                        >
+                          <FileCode className="w-3.5 h-3.5 mr-1 text-moss" />
+                          Update JSON
+                        </Button>
+
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="text-xs"
+                          disabled={!cookiesState.pinterest?.configured || testingCookie === "pinterest"}
+                          onClick={() => handleTestCookies("pinterest")}
+                        >
+                          <RefreshCw className={cn("w-3 h-3 mr-1 text-ink-muted", testingCookie === "pinterest" && "animate-spin text-moss")} />
+                          {testingCookie === "pinterest" ? "Pinging..." : "Test"}
+                        </Button>
+
+                        {cookiesState.pinterest?.configured && (
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            className="text-xs px-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+                            onClick={() => handleClearCookies("pinterest")}
+                            title="Clear Pinterest cookies"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        )}
+                      </div>
+                    </Card>
+
+                    {/* YouTube Music Cookies Card */}
+                    <Card className="p-4 bg-surface border-border flex flex-col justify-between space-y-4">
+                      <div className="space-y-3">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded-sm bg-red-500/10 text-red-600 border border-red-500/20 flex items-center justify-center">
+                              <Music className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <h4 className="font-sans text-xs font-semibold text-ink-primary">
+                                YouTube Music Audio Engine
+                              </h4>
+                              <span className="font-mono text-[10px] text-ink-muted">
+                                320kbps Sad Lo-Fi / Ambient
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 font-mono text-[10px]">
+                            <StatusDot status={cookiesState.youtube?.configured ? "success" : "warning"} />
+                            <span className={cookiesState.youtube?.configured ? "text-status-success font-medium" : "text-amber-500 font-medium"}>
+                              {cookiesState.youtube?.configured ? "Active" : "Not Set"}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="p-2.5 rounded-sm bg-subtle border border-border/70 space-y-1.5 text-xs font-mono">
+                          <div className="flex justify-between text-ink-muted text-[11px]">
+                            <span>Loaded Cookies:</span>
+                            <span className="text-ink-primary font-medium">{cookiesState.youtube?.count ?? 0} keys</span>
+                          </div>
+                          <div className="flex justify-between text-ink-muted text-[11px]">
+                            <span>Last Updated:</span>
+                            <span className="text-ink-secondary">{cookiesState.youtube?.last_modified || "Never"}</span>
+                          </div>
+                          <div className="flex justify-between text-ink-muted text-[11px]">
+                            <span>Engine:</span>
+                            <span className="text-moss">yt-dlp session + LUFS normalization</span>
+                          </div>
+                        </div>
+
+                        <p className="text-[11px] text-ink-muted leading-relaxed font-sans">
+                          Auto-extracts atmospheric tracks via session cookies. Seamless loop & audio normalization at -16 LUFS.
+                        </p>
+                      </div>
+
+                      <div className="pt-2 border-t border-border/50 flex items-center justify-between gap-2">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="text-xs flex-1"
+                          onClick={() => {
+                            setCookieModalProvider("youtube");
+                            setCookieJsonInput("");
+                            setCookieModalOpen(true);
+                          }}
+                        >
+                          <FileCode className="w-3.5 h-3.5 mr-1 text-moss" />
+                          Update JSON
+                        </Button>
+
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="text-xs"
+                          disabled={!cookiesState.youtube?.configured || testingCookie === "youtube"}
+                          onClick={() => handleTestCookies("youtube")}
+                        >
+                          <RefreshCw className={cn("w-3 h-3 mr-1 text-ink-muted", testingCookie === "youtube" && "animate-spin text-moss")} />
+                          {testingCookie === "youtube" ? "Pinging..." : "Test"}
+                        </Button>
+
+                        {cookiesState.youtube?.configured && (
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            className="text-xs px-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+                            onClick={() => handleClearCookies("youtube")}
+                            title="Clear YouTube Music cookies"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        )}
+                      </div>
+                    </Card>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -1003,6 +1356,67 @@ function SettingsContent() {
           </main>
         </div>
       </div>
+
+      {/* ===================================================================
+          COOKIE CONFIGURATION MODAL DIALOG
+          =================================================================== */}
+      <Modal open={cookieModalOpen} onOpenChange={setCookieModalOpen}>
+        <ModalContent
+          title={`Configure ${cookieModalProvider === "pinterest" ? "Pinterest" : "YouTube Music"} Cookies`}
+          description={`Paste the exported JSON cookie array for ${cookieModalProvider === "pinterest" ? "pinterest.com" : "music.youtube.com"}.`}
+          className="max-w-xl"
+        >
+          <div className="space-y-4">
+            <div className="p-3 bg-subtle rounded-sm border border-border text-xs text-ink-secondary space-y-1">
+              <div className="font-semibold text-ink-primary flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-moss" />
+                <span>Privacy & Local Security Guarantee</span>
+              </div>
+              <p className="text-[11px] text-ink-muted">
+                Cookies are saved directly into your local <code className="font-mono text-ink-primary bg-surface px-1 rounded">config/</code> directory and converted to Netscape format for high-speed automated pipelines. They are strictly protected by .gitignore and never transmitted externally or committed to git.
+              </p>
+            </div>
+
+            <div className="space-y-1.5">
+              <label htmlFor="cookie-json-textarea" className="block text-xs font-mono uppercase tracking-wider text-ink-muted">
+                Cookie Array JSON
+              </label>
+              <Textarea
+                id="cookie-json-textarea"
+                rows={9}
+                placeholder={`[\n  {\n    "domain": ".${cookieModalProvider === "pinterest" ? "pinterest.com" : "youtube.com"}",\n    "name": "${cookieModalProvider === "pinterest" ? "_pinterest_sess" : "__Secure-3PSID"}",\n    "value": "...",\n    "path": "/",\n    "secure": true\n  }\n]`}
+                value={cookieJsonInput}
+                onChange={(e) => setCookieJsonInput(e.target.value)}
+                className="font-mono text-xs leading-relaxed resize-y"
+              />
+            </div>
+
+            <div className="flex items-center justify-between pt-2 border-t border-border">
+              <div className="text-[11px] text-ink-muted font-sans">
+                Supports extensions: <i>Export cookie-json</i> or <i>EditThisCookie</i>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setCookieModalOpen(false)}
+                  disabled={cookieSaving}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handleSaveCookies}
+                  disabled={cookieSaving || !cookieJsonInput.trim()}
+                >
+                  {cookieSaving ? "Saving & Validating..." : "Save Cookies"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </ModalContent>
+      </Modal>
     </AppShell>
   );
 }

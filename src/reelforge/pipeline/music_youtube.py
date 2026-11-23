@@ -108,3 +108,4 @@ def fetch_or_pick_lofi_music(
         return chosen, chosen.stem
 
     raise FileNotFoundError("No background audio tracks found and could not download from YouTube Music.")
+
