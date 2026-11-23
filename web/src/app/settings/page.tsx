@@ -176,8 +176,36 @@ function SettingsContent() {
   const [notifDailyDigest, setNotifDailyDigest] = React.useState(false);
 
   // Connection Test Trigger
-  const handleTestConnection = (service: string, serviceName: string) => {
+  const handleTestConnection = async (service: string, serviceName: string) => {
     setTestingId(service);
+    if (service === "instagram") {
+      addToast({
+        type: "info",
+        title: "Testing Buffer / Instagram API",
+        description: "Pinging Buffer GraphQL endpoint and checking channel permissions...",
+      });
+      try {
+        const res = await fetch("/settings-api/buffer/test", { method: "POST" });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Connection test failed");
+
+        addToast({
+          type: "success",
+          title: "Buffer & Instagram Verified",
+          description: data.message || "Channel noori.shed (@enoent.7) active.",
+        });
+      } catch (err: any) {
+        addToast({
+          type: "error",
+          title: "Buffer Connection Failed",
+          description: err.message || "Unable to reach Buffer API.",
+        });
+      } finally {
+        setTestingId(null);
+      }
+      return;
+    }
+
     addToast({
       type: "info",
       title: `Testing ${serviceName}`,

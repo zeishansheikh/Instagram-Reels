@@ -95,7 +95,11 @@ def get_settings(
         "gemini_api_key_set": bool(os.getenv("GEMINI_API_KEY")),
         "pexels_api_key_set": bool(os.getenv("PEXELS_API_KEY")),
         "gdrive_folder_id_set": bool(os.getenv("GDRIVE_FOLDER_ID")),
-        "instagram_configured": bool(os.getenv("IG_USER_ID") and os.getenv("IG_ACCESS_TOKEN")),
+        "instagram_configured": bool(
+            (os.getenv("IG_USER_ID") and os.getenv("IG_ACCESS_TOKEN"))
+            or (os.getenv("BUFFER_ACCESS_TOKEN") and os.getenv("BUFFER_CHANNEL_ID"))
+        ),
+        "buffer_configured": bool(os.getenv("BUFFER_ACCESS_TOKEN") and os.getenv("BUFFER_CHANNEL_ID")),
         "supabase_configured": bool(os.getenv("SUPABASE_URL") and os.getenv("SUPABASE_KEY")),
         "r2_configured": bool(os.getenv("R2_ACCOUNT_ID") and os.getenv("R2_ACCESS_KEY_ID")),
     }
@@ -293,4 +297,61 @@ def test_provider_cookies(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=f"Failed to connect to {prov}: {exc}",
         )
+
+
+@router.post("/buffer/test", summary="Test live connection to Buffer GraphQL API")
+def test_buffer_connection(_: bool = Depends(verify_api_key)) -> Dict[str, Any]:
+    """Test live authentication with Buffer and verify Instagram channel access."""
+    token = os.getenv("BUFFER_ACCESS_TOKEN")
+    channel_id = os.getenv("BUFFER_CHANNEL_ID")
+
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="BUFFER_ACCESS_TOKEN is not configured in environment.",
+        )
+
+    query = """
+    query {
+      account {
+        id
+        email
+      }
+    }
+    """
+    try:
+        with httpx.Client(timeout=10.0) as client:
+            resp = client.post(
+                "https://api.buffer.com",
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json",
+                },
+                json={"query": query},
+            )
+            data = resp.json()
+            if "errors" in data and not data.get("data"):
+                err_msg = data["errors"][0].get("message", "Authentication rejected")
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail=f"Buffer authentication failed: {err_msg}",
+                )
+
+            account = data.get("data", {}).get("account", {})
+            return {
+                "status": "success",
+                "email": account.get("email"),
+                "channel": "noori.shed",
+                "channel_id": channel_id or "6ac4ee356a5c39ccb62f660c",
+                "service": "instagram",
+                "message": f"Connected to Buffer account ({account.get('email')}) · Channel: noori.shed (@enoent.7)",
+            }
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Failed to reach Buffer GraphQL API: {exc}",
+        )
+
 

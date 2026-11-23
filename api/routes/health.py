@@ -37,10 +37,15 @@ def get_health() -> HealthResponse:
     gemini_key = os.getenv("GEMINI_API_KEY") or cfg.gemini.api_key
     gemini_ok = bool(gemini_key and len(gemini_key.strip()) > 8)
 
-    # 4. Instagram check
+    # 4. Instagram / Buffer check
     ig_user = os.getenv("IG_USER_ID") or cfg.instagram.user_id
     ig_token = os.getenv("IG_ACCESS_TOKEN") or cfg.instagram.access_token
-    ig_ok = bool(ig_user and ig_token and "your_" not in ig_user.lower())
+    buffer_token = os.getenv("BUFFER_ACCESS_TOKEN")
+    buffer_channel = os.getenv("BUFFER_CHANNEL_ID")
+    ig_ok = bool(
+        (ig_user and ig_token and "your_" not in str(ig_user).lower())
+        or (buffer_token and buffer_channel)
+    )
 
     # 5. Active jobs
     active_jobs = len([j for j in job_manager.list_jobs(limit=100) if j.status in ("queued", "running")])
