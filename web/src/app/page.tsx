@@ -18,6 +18,7 @@ import {
   ArrowRight,
   TrendingUp,
   Key,
+  Download,
 } from "lucide-react";
 
 import {
@@ -289,6 +290,43 @@ function TodayScreenContent() {
         title: "Publish Failed",
         description: err.message || "Failed to dispatch post.",
       });
+    }
+  };
+
+  const handleDownload = async () => {
+    const cleanSrc = currentReel.videoSrc.split("?")[0];
+    const filename = cleanSrc.split("/").pop() || "reel.mp4";
+
+    addToast({
+      type: "info",
+      title: "Downloading Video",
+      description: `Fetching ${filename} for download...`,
+    });
+
+    try {
+      const response = await fetch(currentReel.videoSrc);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      addToast({
+        type: "success",
+        title: "Download Complete",
+        description: `Saved ${filename} to your device.`,
+      });
+    } catch {
+      const link = document.createElement("a");
+      link.href = currentReel.videoSrc;
+      link.download = filename;
+      link.target = "_blank";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
   };
 
@@ -571,6 +609,15 @@ function TodayScreenContent() {
                         onClick={handleRegenerate}
                       >
                         Regenerate
+                      </Button>
+
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        icon={<Download className="w-3.5 h-3.5" />}
+                        onClick={handleDownload}
+                      >
+                        Download
                       </Button>
 
                       <Button
