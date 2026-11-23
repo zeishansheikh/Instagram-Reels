@@ -19,6 +19,7 @@ import {
   Maximize2,
   Sliders,
   AlertCircle,
+  Download,
 } from "lucide-react";
 
 import {
@@ -221,6 +222,38 @@ function ReviewContent() {
         description: "New background clip matched and verified at 60fps.",
       });
     }, 1200);
+  }, [activeReel, addToast]);
+
+  // Handle Download Video to client device
+  const handleDownload = React.useCallback(async () => {
+    if (!activeReel?.videoSrc) return;
+    const cleanSrc = activeReel.videoSrc.split("?")[0];
+    const filename = cleanSrc.split("/").pop() || "reel.mp4";
+
+    addToast({
+      type: "info",
+      title: "Downloading Video",
+      description: `Fetching ${filename} for local download...`,
+    });
+
+    try {
+      const response = await fetch(activeReel.videoSrc);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err: any) {
+      addToast({
+        type: "error",
+        title: "Download Failed",
+        description: err.message || "Failed to download video file.",
+      });
+    }
   }, [activeReel, addToast]);
 
   // Handle Keyboard Navigation (J / K)
@@ -618,6 +651,15 @@ function ReviewContent() {
                         <kbd className="ml-1 px-1 py-0.5 rounded bg-subtle text-[10px] font-mono text-ink-muted border border-border">
                           R
                         </kbd>
+                      </Button>
+
+                      <Button
+                        size="md"
+                        variant="secondary"
+                        icon={<Download className="w-3.5 h-3.5" />}
+                        onClick={handleDownload}
+                      >
+                        <span>Download</span>
                       </Button>
 
                       <Button

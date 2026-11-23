@@ -794,21 +794,20 @@ function SettingsContent() {
                       </div>
 
                       <div className="pt-3 border-t border-border flex items-center justify-between gap-2">
-                        <div>
-                          {cookiesState.pinterest?.configured && (
-                            <IconButton
-                              size="sm"
-                              variant="ghost"
-                              label="Clear Pinterest cookies"
-                              className="text-ink-muted hover:text-rose-600 hover:bg-rose-500/10"
-                              onClick={() => handleClearCookies("pinterest")}
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </IconButton>
-                          )}
-                        </div>
-
                         <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            icon={<FileCode className="w-3.5 h-3.5 text-moss" />}
+                            onClick={() => {
+                              setCookieModalProvider("pinterest");
+                              setCookieJsonInput("");
+                              setCookieModalOpen(true);
+                            }}
+                          >
+                            Update JSON
+                          </Button>
+
                           <Button
                             size="sm"
                             variant="secondary"
@@ -825,19 +824,20 @@ function SettingsContent() {
                           >
                             {testingCookie === "pinterest" ? "Pinging..." : "Test"}
                           </Button>
+                        </div>
 
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            icon={<FileCode className="w-3.5 h-3.5 text-moss" />}
-                            onClick={() => {
-                              setCookieModalProvider("pinterest");
-                              setCookieJsonInput("");
-                              setCookieModalOpen(true);
-                            }}
-                          >
-                            Update JSON
-                          </Button>
+                        <div>
+                          {cookiesState.pinterest?.configured && (
+                            <IconButton
+                              size="sm"
+                              variant="ghost"
+                              label="Clear Pinterest cookies"
+                              className="text-ink-muted hover:text-rose-600 hover:bg-rose-500/10"
+                              onClick={() => handleClearCookies("pinterest")}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </IconButton>
+                          )}
                         </div>
                       </div>
                     </Card>
@@ -889,21 +889,20 @@ function SettingsContent() {
                       </div>
 
                       <div className="pt-3 border-t border-border flex items-center justify-between gap-2">
-                        <div>
-                          {cookiesState.youtube?.configured && (
-                            <IconButton
-                              size="sm"
-                              variant="ghost"
-                              label="Clear YouTube Music cookies"
-                              className="text-ink-muted hover:text-rose-600 hover:bg-rose-500/10"
-                              onClick={() => handleClearCookies("youtube")}
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </IconButton>
-                          )}
-                        </div>
-
                         <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            icon={<FileCode className="w-3.5 h-3.5 text-moss" />}
+                            onClick={() => {
+                              setCookieModalProvider("youtube");
+                              setCookieJsonInput("");
+                              setCookieModalOpen(true);
+                            }}
+                          >
+                            Update JSON
+                          </Button>
+
                           <Button
                             size="sm"
                             variant="secondary"
@@ -920,19 +919,20 @@ function SettingsContent() {
                           >
                             {testingCookie === "youtube" ? "Pinging..." : "Test"}
                           </Button>
+                        </div>
 
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            icon={<FileCode className="w-3.5 h-3.5 text-moss" />}
-                            onClick={() => {
-                              setCookieModalProvider("youtube");
-                              setCookieJsonInput("");
-                              setCookieModalOpen(true);
-                            }}
-                          >
-                            Update JSON
-                          </Button>
+                        <div>
+                          {cookiesState.youtube?.configured && (
+                            <IconButton
+                              size="sm"
+                              variant="ghost"
+                              label="Clear YouTube Music cookies"
+                              className="text-ink-muted hover:text-rose-600 hover:bg-rose-500/10"
+                              onClick={() => handleClearCookies("youtube")}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </IconButton>
+                          )}
                         </div>
                       </div>
                     </Card>
