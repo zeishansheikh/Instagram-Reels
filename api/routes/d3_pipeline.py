@@ -102,12 +102,13 @@ def trigger_d3_build(
     """Execute the full D3 15-step pipeline: fetch footage, audio swap, D3 Roman Urdu lines, 1080p60 encode, and staging."""
     def _worker(progress_callback=None):
         if progress_callback:
-            progress_callback(0.1, f"Starting D3 build for slot {req.slot.upper()}...")
+            progress_callback(0.05, f"Initializing D3 build for slot {req.slot.upper()}...")
         res = build_d3_reel(
             slot=req.slot,
             target_date=req.date,
             theme_override=req.theme,
             category_override=req.category,
+            progress_callback=progress_callback,
         )
         if progress_callback:
             progress_callback(1.0, f"D3 build for slot {req.slot.upper()} finished with status: {res.get('status')}")

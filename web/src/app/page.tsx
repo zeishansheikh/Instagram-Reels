@@ -104,6 +104,7 @@ function TodayScreenContent() {
   const [reelStatus, setReelStatus] = React.useState<"ready" | "queued" | "rendering" | "published" | "discarded">("queued");
   const [isBuilding, setIsBuilding] = React.useState(false);
   const [buildMessage, setBuildMessage] = React.useState("");
+  const [buildProgress, setBuildProgress] = React.useState(0);
 
   // Staged reel state
   const [currentReel, setCurrentReel] = React.useState({
@@ -170,6 +171,7 @@ function TodayScreenContent() {
   const handleStartBuild = async () => {
     setIsGenerateModalOpen(false);
     setIsBuilding(true);
+    setBuildProgress(8);
     setBuildMessage("Contacting autonomous D3 pipeline...");
     addToast({
       type: "info",
@@ -189,6 +191,7 @@ function TodayScreenContent() {
       const jobId = data.job_id;
 
       if (!jobId) {
+        setBuildProgress(100);
         await loadLatestStagedReel();
         setIsBuilding(false);
         addToast({
@@ -217,15 +220,23 @@ function TodayScreenContent() {
           const job = await jobRes.json();
           if (job.status === "running") {
             setBuildMessage(job.message || "Encoding 1080p60 video & burning text...");
+            if (typeof job.progress === "number") {
+              const pct = job.progress <= 1.0 ? Math.round(job.progress * 100) : Math.round(job.progress);
+              setBuildProgress((prev) => Math.max(prev, Math.max(8, Math.min(99, pct))));
+            }
           } else if (job.status === "completed") {
             clearInterval(timer);
-            setIsBuilding(false);
-            await loadLatestStagedReel();
-            addToast({
-              type: "success",
-              title: "Reel Generated Successfully!",
-              description: "New reel staged in swap/ready_to_post/",
-            });
+            setBuildProgress(100);
+            setBuildMessage("Reel successfully staged and verified!");
+            setTimeout(async () => {
+              setIsBuilding(false);
+              await loadLatestStagedReel();
+              addToast({
+                type: "success",
+                title: "Reel Generated Successfully!",
+                description: "New reel staged in swap/ready_to_post/",
+              });
+            }, 600);
           } else if (job.status === "failed") {
             clearInterval(timer);
             setIsBuilding(false);
@@ -414,21 +425,54 @@ function TodayScreenContent() {
 
         {/* B. EMPTY STATE */}
         {screenState === "empty" && (
-          <div className="p-12 md:p-16 rounded-md bg-surface border border-border text-center max-w-2xl mx-auto">
-            <EmptyState
-              title="No Reel Staged for Today"
-              description="The publishing queue is empty. Generate fresh nature quotes and render your next aesthetic reel with 1080p60 quality gates."
-              action={
-                <Button
-                  size="md"
-                  variant="primary"
-                  icon={<Sparkles className="w-4 h-4" />}
-                  onClick={() => setIsGenerateModalOpen(true)}
-                >
-                  Generate Reel for Slot A
-                </Button>
-              }
-            />
+          <div className="space-y-4 max-w-2xl mx-auto">
+            {isBuilding && (
+              <div className="p-4 rounded-md bg-surface border border-moss/40 shadow-sm space-y-2.5 transition-all text-left">
+                <div className="flex items-center justify-between gap-3 text-xs font-mono">
+                  <span className="flex items-center gap-2 text-ink-primary font-medium truncate">
+                    <RefreshCw className="w-3.5 h-3.5 text-moss animate-spin shrink-0" />
+                    <span className="truncate">{buildMessage || "Processing reel pipeline..."}</span>
+                  </span>
+                  <span className="shrink-0 font-mono font-bold text-xs text-moss bg-moss-subtle border border-moss/30 px-2.5 py-0.5 rounded-xs tabular-nums">
+                    {buildProgress}%
+                  </span>
+                </div>
+
+                <div className="w-full bg-subtle rounded-full h-2.5 overflow-hidden border border-border/80 relative">
+                  <div
+                    className="bg-moss h-full rounded-full transition-all duration-300 ease-out relative overflow-hidden"
+                    style={{ width: `${Math.max(5, Math.min(100, buildProgress))}%` }}
+                  >
+                    <div className="absolute inset-0 bg-white/20 animate-pulse" />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between text-[11px] font-mono text-ink-muted">
+                  <span>Formula D3 · 1080×1920 @ 60fps</span>
+                  <span className="text-moss font-medium">
+                    {buildProgress >= 100 ? "Verified & Ready" : "Processing pipeline..."}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            <div className="p-12 md:p-16 rounded-md bg-surface border border-border text-center">
+              <EmptyState
+                title="No Reel Staged for Today"
+                description="The publishing queue is empty. Generate fresh nature quotes and render your next aesthetic reel with 1080p60 quality gates."
+                action={
+                  <Button
+                    size="md"
+                    variant="primary"
+                    icon={<Sparkles className="w-4 h-4" />}
+                    disabled={isBuilding}
+                    onClick={() => setIsGenerateModalOpen(true)}
+                  >
+                    {isBuilding ? "Pipeline Running..." : "Generate Reel for Slot A"}
+                  </Button>
+                }
+              />
+            </div>
           </div>
         )}
 
@@ -508,14 +552,36 @@ function TodayScreenContent() {
                 </span>
               </div>
 
-              {/* Build in progress banner */}
+              {/* Build in progress banner with Live Percentage and Animated Bar */}
               {isBuilding && (
-                <div className="p-3.5 rounded-md bg-moss-subtle border border-moss/30 flex items-center justify-between text-xs font-mono text-moss animate-pulse">
-                  <span className="flex items-center gap-2">
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    {buildMessage}
-                  </span>
-                  <span className="text-[11px] text-ink-muted">Processing...</span>
+                <div className="p-4 rounded-md bg-surface border border-moss/40 shadow-sm space-y-2.5 transition-all">
+                  <div className="flex items-center justify-between gap-3 text-xs font-mono">
+                    <span className="flex items-center gap-2 text-ink-primary font-medium truncate">
+                      <RefreshCw className="w-3.5 h-3.5 text-moss animate-spin shrink-0" />
+                      <span className="truncate">{buildMessage || "Processing reel pipeline..."}</span>
+                    </span>
+                    <span className="shrink-0 font-mono font-bold text-xs text-moss bg-moss-subtle border border-moss/30 px-2.5 py-0.5 rounded-xs tabular-nums">
+                      {buildProgress}%
+                    </span>
+                  </div>
+
+                  {/* Progress Bar Track */}
+                  <div className="w-full bg-subtle rounded-full h-2.5 overflow-hidden border border-border/80 relative">
+                    <div
+                      className="bg-moss h-full rounded-full transition-all duration-300 ease-out relative overflow-hidden"
+                      style={{ width: `${Math.max(5, Math.min(100, buildProgress))}%` }}
+                    >
+                      <div className="absolute inset-0 bg-white/20 animate-pulse" />
+                    </div>
+                  </div>
+
+                  {/* Status subline */}
+                  <div className="flex items-center justify-between text-[11px] font-mono text-ink-muted">
+                    <span>Formula D3 · 1080×1920 @ 60fps</span>
+                    <span className="text-moss font-medium">
+                      {buildProgress >= 100 ? "Verified & Ready" : "Processing pipeline..."}
+                    </span>
+                  </div>
                 </div>
               )}
 

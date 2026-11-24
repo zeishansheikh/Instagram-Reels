@@ -11,7 +11,7 @@ import shutil
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 from loguru import logger
 
 from instora.pipeline.audio_engine import apply_audio_swap, check_song_style_gate
@@ -41,6 +41,7 @@ def build_d3_reel(
     category_override: Optional[str] = None,
     swap_dir: Path | str = "swap",
     dry_run: bool = False,
+    progress_callback: Optional[Callable[[float, str], None]] = None,
 ) -> Dict[str, Any]:
     """Execute the complete 15-step D3 build pipeline.
 
@@ -51,10 +52,19 @@ def build_d3_reel(
         category_override: Optional background footage category override.
         swap_dir: Working and staging directory (never /tmp).
         dry_run: Validate all steps without final heavy encoding.
+        progress_callback: Optional (progress: float, message: str) reporter.
 
     Returns:
         Dict with status, slot, manifest_path, final_video_path, quote, song, etc.
     """
+    def report(prog: float, msg: str):
+        logger.info(f"[{int(prog*100)}%] {msg}")
+        if progress_callback:
+            try:
+                progress_callback(prog, msg)
+            except Exception as e:
+                logger.warning(f"progress_callback error: {e}")
+
     swap_p = Path(swap_dir)
     swap_p.mkdir(parents=True, exist_ok=True)
     ready_dir = swap_p / "ready_to_post"
@@ -66,13 +76,16 @@ def build_d3_reel(
         slot_clean = "a"
 
     logger.info(f"=== Starting D3 Build Pipeline for Slot {slot_clean.upper()} ({date_str}) ===")
+    report(0.08, f"Step 1/15: Reading workflow state & category...")
 
     # Step 1: Read Workflow State
     state = WorkflowState.load()
     category = category_override or pick_next_category(state.last_category)
     logger.info(f"Step 1 [State]: category='{category}', last_song='{state.last_song}'")
+    report(0.15, f"Step 1/15: Target category selected: '{category}'")
 
     # Step 2: Fetch Video (Pinterest ONLY)
+    report(0.20, f"Step 2/15: Fetching HD vertical nature footage from Pinterest...")
     try:
         raw_clip, pin_id = fetch_pinterest_clip(category=category, output_dir=swap_p, state=state)
         logger.info(f"Step 2 [Video]: Fetched pin {pin_id} at {raw_clip}")
@@ -82,6 +95,7 @@ def build_d3_reel(
         return {"status": "failed", "step": 2, "error": err}
 
     # Step 3: Fetch Song / Sad Beat (Autonomous YouTube Music integration)
+    report(0.35, "Step 3/15: Sourcing 320kbps background soundtrack via YouTube Music...")
     try:
         from instora.pipeline.music_youtube import fetch_or_pick_lofi_music
         song_file, song_title = fetch_or_pick_lofi_music(state=state)
@@ -93,6 +107,7 @@ def build_d3_reel(
         song_file = music_files[0] if music_files else None
 
     # Step 4: Quality Gate ffprobe check
+    report(0.48, "Step 5/15: Running ffprobe quality gates (resolution, codec, aspect ratio)...")
     gate_ok, gate_msg, meta = ffprobe_source_gate(raw_clip)
     if not gate_ok:
         err = f"Step 5 [Quality Gate] FAILED: {gate_msg}"
@@ -123,6 +138,7 @@ def build_d3_reel(
     target_duration = min(10.0, max(5.0, float(meta.get("duration") or 8.0)))
     scene_tone = detect_scene_tone(raw_clip)
     logger.info(f"Step 9 [Quality Prep]: scene_tone='{scene_tone}', target_duration={target_duration:.2f}s")
+    report(0.60, f"Step 9/15: Converting footage to 60fps base video ({target_duration:.1f}s)...")
 
     base_60fps_path = swap_p / f"base_60fps_{slot_clean}.mp4"
     try:
@@ -138,6 +154,7 @@ def build_d3_reel(
         return {"status": "failed", "step": 9, "error": err}
 
     # Step 10: Audio Swap (vocal-aware, short fades)
+    report(0.70, "Step 10/15: Synchronizing vocal-aware audio swap & fades...")
     audio_base_path = swap_p / f"base_audio_{slot_clean}.mp4"
     if song_file and song_file.exists():
         try:
@@ -182,12 +199,14 @@ def build_d3_reel(
             subprocess.run(cmd_ambient, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     # Step 11: Write fresh lines (Roman Urdu D3), middle-centre text burn, master encode (CRF 16)
+    report(0.78, "Step 11/15: Generating Formula D3 Roman Urdu quote & styling...")
     lines, theme, hashtags = generate_d3_quote(theme=theme_override, slot=slot_clean, state=state)
     quote_text = " / ".join(lines)
     caption_text = format_d3_caption(lines=lines, hashtags=hashtags)
     logger.info(f"Step 11 [Lines Generated]: \"{quote_text}\"")
 
     # Build filters: adaptive grade + middle-centre drawtext
+    report(0.82, "Step 11/15: Applying adaptive color grade & middle-centre typography...")
     grade_filters = build_adaptive_grade_filters(scene_tone=scene_tone)
     drawtext_filter = build_d3_drawtext_filter(lines=lines, video_path=audio_base_path, font_size=30)
     full_vf = ",".join(grade_filters + [drawtext_filter])
@@ -204,6 +223,7 @@ def build_d3_reel(
         str(master_path),
     ]
 
+    report(0.86, "Step 11/15: Rendering CRF-18 master video...")
     try:
         subprocess.run(cmd_master, capture_output=True, text=True, check=True)
         logger.info(f"Step 11 [Master Generated]: {master_path}")
@@ -214,10 +234,12 @@ def build_d3_reel(
 
     # Step 12: Double-Check Verification Checklist (§5)
     # Check that text is visible and audio is intact
+    report(0.89, "Step 12/15: Verifying audio volume compliance (-16 LUFS)...")
     aud_check_ok, aud_check_msg, _ = audio_volume_verify(master_path)
     logger.info(f"Step 12 [Audio Verify]: {aud_check_msg}")
 
     # Step 13: Instagram Final Encode (15M / 20M / 40M, 60fps, +faststart)
+    report(0.92, "Step 13/15: Encoding final 1080p60 Instagram master (+faststart)...")
     final_staged_path = ready_dir / f"reel_{date_str}_{slot_clean}.mp4"
     cmd_ig_encode = [
         "ffmpeg", "-y",
@@ -244,6 +266,7 @@ def build_d3_reel(
         return {"status": "failed", "step": 13, "error": err}
 
     # Step 14: Manifest Generation and State Update
+    report(0.96, "Step 14/15: Generating manifest and extracting high-res thumbnail...")
     manifest = ReelManifest(
         date=date_str,
         slot=slot_clean,
@@ -280,8 +303,10 @@ def build_d3_reel(
     subprocess.run(cmd_thumb, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     # Step 15: Verification Report
+    report(0.98, "Step 15/15: Running quality gate verification report...")
     verif_ok, verif_logs = verify_final_reel(final_staged_path)
     logger.info(f"Step 15 [Verification]: {verif_logs}")
+    report(1.00, "Step 15/15: Reel successfully staged and verified!")
 
     return {
         "status": "success",
