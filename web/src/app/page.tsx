@@ -19,6 +19,9 @@ import {
   TrendingUp,
   Key,
   Download,
+  Plus,
+  Minus,
+  Type,
 } from "lucide-react";
 
 import {
@@ -41,6 +44,7 @@ import {
   EmptyState,
   QuoteBlock,
   HeroPlayer,
+  Textarea,
 } from "@/components";
 
 type ScreenState = "ready" | "loading" | "empty" | "error";
@@ -105,6 +109,12 @@ function TodayScreenContent() {
   const [isBuilding, setIsBuilding] = React.useState(false);
   const [buildMessage, setBuildMessage] = React.useState("");
   const [buildProgress, setBuildProgress] = React.useState(0);
+
+  // Configuration options for reel build
+  const [aspectRatio, setAspectRatio] = React.useState<"9:16" | "1:1" | "16:9">("9:16");
+  const [quality, setQuality] = React.useState<"1080p60" | "1080p30" | "720p60" | "4k60">("1080p60");
+  const [duration, setDuration] = React.useState<number>(8);
+  const [customQuote, setCustomQuote] = React.useState<string>("");
 
   // Staged reel state
   const [currentReel, setCurrentReel] = React.useState({
@@ -176,14 +186,21 @@ function TodayScreenContent() {
     addToast({
       type: "info",
       title: "D3 Pipeline Started",
-      description: "Generating 1080p60 Roman Urdu reel in background...",
+      description: `Generating ${quality} (${aspectRatio}, ${duration}s) reel in background...`,
     });
 
     try {
       const res = await fetch("/d3/build", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slot: "a", run_in_background: true }),
+        body: JSON.stringify({
+          slot: "a",
+          run_in_background: true,
+          aspect_ratio: aspectRatio,
+          quality: quality,
+          duration: duration,
+          custom_quote: customQuote.trim() || undefined,
+        }),
       });
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -865,16 +882,183 @@ function TodayScreenContent() {
 
       {/* GENERATE BATCH DIALOG */}
       <Dialog open={isGenerateModalOpen} onOpenChange={setIsGenerateModalOpen}>
-        <DialogContent title="Generate Reel" description="Trigger the autonomous D3 production pipeline.">
-          <div className="space-y-4 py-2 text-xs font-sans text-ink-secondary">
-            <p>
-              This will discover a fresh Pinterest nature video, generate Roman Urdu sad lines with Gemini Flash,
-              apply the middle-centre placement lock, adaptive grade, 60fps lanczos upscale, and stage the reel deliverable.
-            </p>
+        <DialogContent
+          title="Generate Reel"
+          description="Configure your reel format, duration, quality and custom poetry."
+          className="max-w-xl max-h-[90vh] overflow-y-auto"
+        >
+          <div className="space-y-4 py-2 font-sans text-xs">
+            {/* 1. Video Ratio */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-ink-primary font-sans flex items-center gap-1.5">
+                <Layers className="w-3.5 h-3.5 text-moss" />
+                Video Aspect Ratio
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { id: "9:16", label: "9:16 Vertical", desc: "Reels / TikTok", sub: "1080×1920" },
+                  { id: "1:1", label: "1:1 Square", desc: "Feed Post", sub: "1080×1080" },
+                  { id: "16:9", label: "16:9 Horizontal", desc: "Landscape", sub: "1920×1080" },
+                ].map((r) => (
+                  <button
+                    key={r.id}
+                    type="button"
+                    onClick={() => setAspectRatio(r.id as any)}
+                    className={`p-2.5 rounded-sm border text-left transition-fast flex flex-col justify-between ${
+                      aspectRatio === r.id
+                        ? "bg-moss/10 border-moss text-ink-primary ring-1 ring-moss/30"
+                        : "bg-surface border-border text-ink-secondary hover:border-moss/40 hover:bg-subtle"
+                    }`}
+                  >
+                    <span className="font-mono text-xs font-bold text-ink-primary">{r.label}</span>
+                    <span className="text-[10px] text-ink-muted mt-0.5">{r.desc} · {r.sub}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
 
+            {/* 2. Quality Preset */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-ink-primary font-sans flex items-center gap-1.5">
+                <Film className="w-3.5 h-3.5 text-moss" />
+                Video Quality & Framerate
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {[
+                  { id: "1080p60", label: "1080p 60fps", desc: "Ultra Crisp" },
+                  { id: "1080p30", label: "1080p 30fps", desc: "Standard HD" },
+                  { id: "720p60", label: "720p 60fps", desc: "Fast Render" },
+                  { id: "4k60", label: "4K 60fps", desc: "Cinematic UHD" },
+                ].map((q) => (
+                  <button
+                    key={q.id}
+                    type="button"
+                    onClick={() => setQuality(q.id as any)}
+                    className={`p-2 rounded-sm border text-left transition-fast flex flex-col justify-between ${
+                      quality === q.id
+                        ? "bg-moss/10 border-moss text-ink-primary ring-1 ring-moss/30"
+                        : "bg-surface border-border text-ink-secondary hover:border-moss/40 hover:bg-subtle"
+                    }`}
+                  >
+                    <span className="font-mono text-xs font-semibold text-ink-primary">{q.label}</span>
+                    <span className="text-[10px] text-ink-muted mt-0.5">{q.desc}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 3. Duration Controls */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-ink-primary font-sans flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-moss" />
+                  Duration (7s to 1 min)
+                </label>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-xs font-bold text-moss bg-moss/15 px-2.5 py-0.5 rounded border border-moss/30">
+                    {duration} seconds {duration === 60 ? "(1 min)" : ""}
+                  </span>
+                </div>
+              </div>
+
+              {/* Stepper with - and + and Slider */}
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setDuration((d) => Math.max(7, d - 1))}
+                  disabled={duration <= 7}
+                  className="w-8 h-8 rounded-sm border border-border bg-subtle hover:bg-surface text-ink-primary flex items-center justify-center font-mono font-bold transition-fast disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                  title="Decrease 1 second"
+                >
+                  <Minus className="w-3.5 h-3.5" />
+                </button>
+
+                <div className="flex-1 px-1">
+                  <input
+                    type="range"
+                    min={7}
+                    max={60}
+                    step={1}
+                    value={duration}
+                    onChange={(e) => setDuration(Number(e.target.value))}
+                    className="w-full accent-moss cursor-pointer h-1.5 bg-subtle rounded-lg appearance-none"
+                  />
+                  <div className="flex justify-between text-[10px] font-mono text-ink-muted mt-1">
+                    <span>7s (Min)</span>
+                    <span>15s</span>
+                    <span>30s</span>
+                    <span>60s (1 min)</span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setDuration((d) => Math.min(60, d + 1))}
+                  disabled={duration >= 60}
+                  className="w-8 h-8 rounded-sm border border-border bg-subtle hover:bg-surface text-ink-primary flex items-center justify-center font-mono font-bold transition-fast disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                  title="Increase 1 second"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {/* Quick Preset Buttons */}
+              <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                <span className="text-[11px] text-ink-muted font-sans mr-1">Quick Presets:</span>
+                {[7, 8, 10, 15, 20, 30, 45, 60].map((sec) => (
+                  <button
+                    key={sec}
+                    type="button"
+                    onClick={() => setDuration(sec)}
+                    className={`px-2 py-0.5 rounded text-xs font-mono transition-fast border ${
+                      duration === sec
+                        ? "bg-moss text-white border-moss font-bold"
+                        : "bg-surface text-ink-secondary border-border hover:border-moss/40 hover:bg-subtle"
+                    }`}
+                  >
+                    {sec === 60 ? "1m" : `${sec}s`}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 4. Custom Quote / Poetry */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-ink-primary font-sans flex items-center gap-1.5">
+                  <Type className="w-3.5 h-3.5 text-moss" />
+                  Custom Quote / Poetry <span className="text-ink-muted font-normal">(Optional)</span>
+                </label>
+                {customQuote.trim() && (
+                  <button
+                    type="button"
+                    onClick={() => setCustomQuote("")}
+                    className="text-[10px] text-ink-muted hover:text-status-error font-mono underline"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              <Textarea
+                rows={3}
+                value={customQuote}
+                onChange={(e) => setCustomQuote(e.target.value)}
+                placeholder="Apni marzi ki poetry / quote yahan likhein (e.g. sab kuch wahi hai bas / woh jo har waqt sath tha / woh nahi hai ab)...&#10;Khali chhor dein to AI Gemini authentic Roman Urdu lines auto-generate karega."
+                className="font-mono text-xs leading-relaxed"
+              />
+              <p className="text-[11px] text-ink-muted font-sans">
+                Multi-line poetry ke liye Enter dabayein ya &apos;/&apos; lagayein. Ye lines reel k center mein Noto Serif SemiBold typography mein burn hon gi.
+              </p>
+            </div>
+
+            {/* 5. Production Summary */}
             <div className="p-3 rounded-sm bg-subtle border border-border font-mono text-[11px] space-y-1">
-              <p><span className="text-ink-muted">Slot:</span> Slot A (08:30 PKT) / Slot B (16:00 PKT)</p>
-              <p><span className="text-ink-muted">Destination:</span> swap/ready_to_post/reel_YYYY-MM-DD_a.mp4</p>
+              <div className="flex items-center justify-between text-ink-secondary">
+                <span><span className="text-ink-muted">Format:</span> {aspectRatio} · {quality} · {duration}s</span>
+                <span className="text-moss font-semibold">Configured</span>
+              </div>
+              <p><span className="text-ink-muted">Source:</span> Fresh Pinterest nature video (auto-trimmed to {duration}s)</p>
+              <p><span className="text-ink-muted">Soundtrack:</span> Autonomous lo-fi sad beat (-16 LUFS vocal sync)</p>
               <p><span className="text-ink-muted">Channel:</span> @enoent.7 via Buffer &apos;noori.shed&apos;</p>
             </div>
           </div>

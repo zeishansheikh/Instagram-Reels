@@ -39,6 +39,10 @@ def build_d3_reel(
     target_date: Optional[str] = None,
     theme_override: Optional[str] = None,
     category_override: Optional[str] = None,
+    duration_override: Optional[float] = None,
+    custom_quote: Optional[str] = None,
+    aspect_ratio: str = "9:16",
+    quality: str = "1080p60",
     swap_dir: Path | str = "swap",
     dry_run: bool = False,
     progress_callback: Optional[Callable[[float, str], None]] = None,
@@ -134,15 +138,17 @@ def build_d3_reel(
     # Step 8: Real-footage check
     logger.info("Step 8 [Real-Footage]: Verified natural scenery without synthetic AI artifacts.")
 
-    # Step 9: Quality Prep (Adaptive grade, lanczos upscale, 60fps base, auto-trim)
+    # Step 9: Quality Prep & Dynamic Resolution / Duration Trimming
     raw_duration = float(meta.get("duration") or 8.0)
-    target_duration = 8.0  # Standard reel duration for Roman Urdu 2-3 line quotes
+    if duration_override and duration_override >= 5.0:
+        target_duration = min(60.0, max(5.0, float(duration_override)))
+    else:
+        target_duration = 8.0
 
-    # Auto-trimming logic: if video is longer than target (e.g. 10s, 20s, 30s+)
-    if raw_duration > target_duration + 3.0:
-        # For clips >= 11s, skip the initial 1.5 - 2.0s to avoid static/fade intro
-        start_trim = min(2.0, max(0.0, (raw_duration - target_duration) / 4.0))
-        logger.info(f"Video duration is {raw_duration:.1f}s (> 10s). Auto-trimming to {target_duration:.1f}s (start offset: {start_trim:.1f}s).")
+    # Auto-trimming logic: if video is longer than target
+    if raw_duration > target_duration + 2.0:
+        start_trim = min(2.5, max(0.0, (raw_duration - target_duration) / 3.0))
+        logger.info(f"Video duration is {raw_duration:.1f}s. Auto-trimming to {target_duration:.1f}s (start offset: {start_trim:.1f}s).")
     elif raw_duration > target_duration:
         start_trim = 0.0
         logger.info(f"Video duration is {raw_duration:.1f}s. Auto-trimming to {target_duration:.1f}s.")
@@ -151,9 +157,33 @@ def build_d3_reel(
         target_duration = max(5.0, raw_duration)
         logger.info(f"Video duration is {raw_duration:.1f}s. Using full duration.")
 
+    # Target Dimensions from aspect ratio
+    DIMENSIONS = {
+        "9:16": (1080, 1920),
+        "1:1": (1080, 1080),
+        "16:9": (1920, 1080),
+    }
+    target_w, target_h = DIMENSIONS.get(aspect_ratio, (1080, 1920))
+
+    # FPS and Bitrate from quality
+    FPS_BITRATE = {
+        "1080p60": (60, "15M", "20M", "40M"),
+        "1080p30": (30, "10M", "14M", "25M"),
+        "720p60": (60, "6M", "8M", "15M"),
+        "4k60": (60, "30M", "40M", "60M"),
+    }
+    target_fps, target_bitrate, max_rate, buf_size = FPS_BITRATE.get(quality, (60, "15M", "20M", "40M"))
+    if quality == "720p60":
+        target_w, target_h = (720, 1280) if aspect_ratio == "9:16" else ((720, 720) if aspect_ratio == "1:1" else (1280, 720))
+    elif quality == "4k60":
+        target_w, target_h = (2160, 3840) if aspect_ratio == "9:16" else ((2160, 2160) if aspect_ratio == "1:1" else (3840, 2160))
+
     scene_tone = detect_scene_tone(raw_clip)
-    logger.info(f"Step 9 [Quality Prep]: scene_tone='{scene_tone}', target_duration={target_duration:.2f}s, start_trim={start_trim:.2f}s")
-    report(0.60, f"Step 9/15: Converting footage to 1080x1920 60fps base video (trimmed to {target_duration:.1f}s)...")
+    logger.info(
+        f"Step 9 [Quality Prep]: format={target_w}x{target_h}@{target_fps}fps, "
+        f"scene_tone='{scene_tone}', target_duration={target_duration:.2f}s, start_trim={start_trim:.2f}s"
+    )
+    report(0.60, f"Step 9/15: Converting footage to {target_w}x{target_h} @ {target_fps}fps (trimmed to {target_duration:.1f}s)...")
 
     base_60fps_path = swap_p / f"base_60fps_{slot_clean}.mp4"
     try:
@@ -163,6 +193,9 @@ def build_d3_reel(
             native_fps=float(meta.get("fps") or 30.0),
             start_time=start_trim,
             duration=target_duration,
+            target_width=target_w,
+            target_height=target_h,
+            target_fps=target_fps,
         )
     except Exception as exc:
         err = f"Step 9 [60fps Prep] FAILED: {exc}"
@@ -214,9 +247,18 @@ def build_d3_reel(
             ]
             subprocess.run(cmd_ambient, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-    # Step 11: Write fresh lines (Roman Urdu D3), middle-centre text burn, master encode (CRF 16)
-    report(0.78, "Step 11/15: Generating Formula D3 Roman Urdu quote & styling...")
-    lines, theme, hashtags = generate_d3_quote(theme=theme_override, slot=slot_clean, state=state)
+    # Step 11: Write fresh lines (Custom quote or Roman Urdu D3), middle-centre text burn, master encode (CRF 16)
+    report(0.78, "Step 11/15: Preparing Roman Urdu quote & typography styling...")
+    if custom_quote and custom_quote.strip():
+        import re
+        clean_lines = [l.strip() for l in re.split(r"[\n/]+", custom_quote.strip()) if l.strip()]
+        lines = clean_lines if clean_lines else [custom_quote.strip()]
+        theme = theme_override or "custom"
+        hashtags = ["#instora", "#reels", "#quotes", "#urdu", "#aesthetic"]
+        logger.info(f"Step 11 [User Custom Quote Used]: {lines}")
+    else:
+        lines, theme, hashtags = generate_d3_quote(theme=theme_override, slot=slot_clean, state=state)
+
     quote_text = " / ".join(lines)
     caption_text = format_d3_caption(lines=lines, hashtags=hashtags)
     logger.info(f"Step 11 [Lines Generated]: \"{quote_text}\"")
@@ -254,19 +296,19 @@ def build_d3_reel(
     aud_check_ok, aud_check_msg, _ = audio_volume_verify(master_path)
     logger.info(f"Step 12 [Audio Verify]: {aud_check_msg}")
 
-    # Step 13: Instagram Final Encode (15M / 20M / 40M, 60fps, +faststart)
-    report(0.92, "Step 13/15: Encoding final 1080p60 Instagram master (+faststart)...")
+    # Step 13: Final Encode (target bitrate, target_fps, +faststart)
+    report(0.92, f"Step 13/15: Encoding final {target_w}x{target_h} @ {target_fps}fps Instagram master (+faststart)...")
     final_staged_path = ready_dir / f"reel_{date_str}_{slot_clean}.mp4"
     cmd_ig_encode = [
         "ffmpeg", "-y",
         "-i", str(master_path),
         "-c:v", "libx264",
         "-preset", "veryfast",
-        "-b:v", "15M",
-        "-maxrate", "20M",
-        "-bufsize", "40M",
+        "-b:v", target_bitrate,
+        "-maxrate", max_rate,
+        "-bufsize", buf_size,
         "-pix_fmt", "yuv420p",
-        "-r", "60",
+        "-r", str(target_fps),
         "-c:a", "aac",
         "-b:a", "128k",
         "-movflags", "+faststart",
@@ -320,7 +362,12 @@ def build_d3_reel(
 
     # Step 15: Verification Report
     report(0.98, "Step 15/15: Running quality gate verification report...")
-    verif_ok, verif_logs = verify_final_reel(final_staged_path)
+    verif_ok, verif_logs = verify_final_reel(
+        final_staged_path,
+        expected_width=target_w,
+        expected_height=target_h,
+        expected_fps=float(target_fps),
+    )
     logger.info(f"Step 15 [Verification]: {verif_logs}")
     report(1.00, "Step 15/15: Reel successfully staged and verified!")
 

@@ -32,6 +32,10 @@ class D3BuildRequest(BaseModel):
     theme: Optional[str] = Field(default=None, description="Theme override (loss, yaadein, waqt, tanhai, dard)")
     category: Optional[str] = Field(default=None, description="Nature footage category override")
     run_in_background: bool = Field(default=True, description="Run build in background thread")
+    aspect_ratio: str = Field(default="9:16", description="Video aspect ratio: '9:16', '1:1', or '16:9'")
+    quality: str = Field(default="1080p60", description="Quality preset: '1080p60', '1080p30', '720p60', or '4k60'")
+    duration: Optional[float] = Field(default=8.0, description="Target duration in seconds (7.0 - 60.0)")
+    custom_quote: Optional[str] = Field(default=None, description="User-supplied custom quote lines")
 
 
 class D3PostRequest(BaseModel):
@@ -108,6 +112,10 @@ def trigger_d3_build(
             target_date=req.date,
             theme_override=req.theme,
             category_override=req.category,
+            duration_override=req.duration,
+            custom_quote=req.custom_quote,
+            aspect_ratio=req.aspect_ratio,
+            quality=req.quality,
             progress_callback=progress_callback,
         )
         if progress_callback:

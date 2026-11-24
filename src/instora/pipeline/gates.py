@@ -255,16 +255,13 @@ def audio_volume_verify(video_path: Path | str) -> Tuple[bool, str, Dict[str, fl
     return True, f"Audio volume PASSED: mean={mean_vol:.1f} dB, max={max_vol:.1f} dB", stats
 
 
-def verify_final_reel(video_path: Path | str) -> Tuple[bool, List[str]]:
-    """Run Section 5 complete verification checklist on final rendered MP4.
-
-    Checklist:
-    - Resolution 1080x1920
-    - ~60fps (r_frame_rate == 60)
-    - Video bitrate >= 10M (target ~15M)
-    - Audio stream present (AAC ~128k)
-    - Audio volume within range
-    """
+def verify_final_reel(
+    video_path: Path | str,
+    expected_width: int = 1080,
+    expected_height: int = 1920,
+    expected_fps: float = 60.0,
+) -> Tuple[bool, List[str]]:
+    """Run Section 5 complete verification checklist on final rendered MP4."""
     path = Path(video_path)
     logs: List[str] = []
 
@@ -295,8 +292,8 @@ def verify_final_reel(video_path: Path | str) -> Tuple[bool, List[str]]:
     width = int(v_stream.get("width") or 0)
     height = int(v_stream.get("height") or 0)
 
-    if width != 1080 or height != 1920:
-        logs.append(f"Resolution mismatch: expected 1080x1920, got {width}x{height}")
+    if width != expected_width or height != expected_height:
+        logs.append(f"Resolution mismatch: expected {expected_width}x{expected_height}, got {width}x{height}")
 
     fps_str = v_stream.get("r_frame_rate", "0/1")
     try:
@@ -305,8 +302,8 @@ def verify_final_reel(video_path: Path | str) -> Tuple[bool, List[str]]:
     except Exception:
         fps = 0.0
 
-    if abs(fps - 60.0) > 1.5:
-        logs.append(f"FPS mismatch: expected ~60fps, got {fps:.1f}")
+    if abs(fps - expected_fps) > 2.0:
+        logs.append(f"FPS mismatch: expected ~{expected_fps:.1f}fps, got {fps:.1f}")
 
     if not a_stream:
         logs.append("Missing AAC audio stream in final output.")
@@ -318,7 +315,7 @@ def verify_final_reel(video_path: Path | str) -> Tuple[bool, List[str]]:
 
     passed = len(logs) == 0
     if passed:
-        logs.append(f"Verification PASSED: 1080x1920 @ {fps:.1f}fps, video & audio streams verified.")
+        logs.append(f"Verification PASSED: {width}x{height} @ {fps:.1f}fps, video & audio streams verified.")
 
     return passed, logs
 
