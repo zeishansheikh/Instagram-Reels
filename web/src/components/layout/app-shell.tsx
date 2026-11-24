@@ -4,7 +4,8 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Calendar,
+  LayoutGrid,
+  Clock,
   Film,
   Video,
   BookOpen,
@@ -45,7 +46,7 @@ export interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: "Today", href: "/", icon: Calendar },
+  { label: "Workspace", href: "/", icon: LayoutGrid },
   { label: "Review", href: "/review", icon: CheckSquare },
   { label: "Library", href: "/library", icon: Video },
   { label: "Reels", href: "/#reels", icon: Film },
@@ -66,7 +67,7 @@ export interface AppShellProps {
 
 export function AppShell({
   children,
-  title = "Today",
+  title = "Workspace",
   subtitle,
   onGenerateClick,
   onSearchClick,
@@ -74,6 +75,29 @@ export function AppShell({
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [currentTheme, setCurrentTheme] = React.useState<string>(DEFAULT_THEME_ID);
+  const [liveDateTime, setLiveDateTime] = React.useState<string>("");
+
+  React.useEffect(() => {
+    const updateClock = () => {
+      const now = new Date();
+      const datePart = now.toLocaleDateString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+      const timePart = now.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+      });
+      setLiveDateTime(`${datePart} · ${timePart}`);
+    };
+    updateClock();
+    const interval = setInterval(updateClock, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Synchronize active theme from storage & custom events
   React.useEffect(() => {
@@ -246,8 +270,19 @@ export function AppShell({
             </div>
           </div>
 
-          {/* Right: Search / Cmd+K, Action, Account Menu */}
+          {/* Right: Live Date/Time Clock, Search / Cmd+K, Action, Account Menu */}
           <div className="flex items-center gap-2.5">
+            {/* Live Ticking Date & Time Widget */}
+            {liveDateTime && (
+              <div
+                className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-sm bg-subtle border border-border font-mono text-[11px] text-ink-secondary tabular-nums select-none"
+                title="Live Local System Time"
+              >
+                <Clock className="w-3.5 h-3.5 text-moss shrink-0" />
+                <span>{liveDateTime}</span>
+              </div>
+            )}
+
             {/* Quick Search Button (Cmd+K trigger) */}
             <button
               onClick={onSearchClick}

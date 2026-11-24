@@ -254,7 +254,7 @@ def build_d3_reel(
         clean_lines = [l.strip() for l in re.split(r"[\n/]+", custom_quote.strip()) if l.strip()]
         lines = clean_lines if clean_lines else [custom_quote.strip()]
         theme = theme_override or "custom"
-        hashtags = ["#instora", "#reels", "#quotes", "#urdu", "#aesthetic"]
+        hashtags = ["#instora", "#urduquotes", "#aesthetic"]
         logger.info(f"Step 11 [User Custom Quote Used]: {lines}")
     else:
         lines, theme, hashtags = generate_d3_quote(theme=theme_override, slot=slot_clean, state=state)
@@ -265,8 +265,14 @@ def build_d3_reel(
 
     # Build filters: adaptive grade + middle-centre drawtext
     report(0.82, "Step 11/15: Applying adaptive color grade & middle-centre typography...")
-    grade_filters = build_adaptive_grade_filters(scene_tone=scene_tone)
-    drawtext_filter = build_d3_drawtext_filter(lines=lines, video_path=audio_base_path, font_size=30)
+    grade_filters = build_adaptive_grade_filters(scene_tone=scene_tone, target_w=target_w, target_h=target_h)
+    drawtext_filter = build_d3_drawtext_filter(
+        lines=lines,
+        video_path=audio_base_path,
+        font_size=30,
+        font_file="PlayfairDisplay-Bold.ttf",
+        target_h=target_h,
+    )
     full_vf = ",".join(grade_filters + [drawtext_filter])
 
     master_path = swap_p / f"master_{date_str}_{slot_clean}.mp4"
@@ -333,6 +339,20 @@ def build_d3_reel(
         hashtags=hashtags,
         song=song_title,
         quote=quote_text,
+        base_video_path=str(base_60fps_path.resolve()),
+        font_file="PlayfairDisplay-Bold.ttf",
+        font_size=30,
+        text_color="#FFFFFF",
+        y_percent=50,
+        color_preset="auto",
+        brightness=0.0,
+        contrast=1.05,
+        saturation=1.12,
+        song_file=song_file.name if song_file else None,
+        song_start=0.0,
+        duration=target_duration,
+        aspect_ratio=aspect_ratio,
+        quality=quality,
     )
     manifest_path = manifest.save(ready_dir)
 
@@ -385,5 +405,213 @@ def build_d3_reel(
         "pin_id": pin_id,
         "verified": verif_ok,
         "verification_logs": verif_logs,
+    }
+
+
+def restyle_d3_reel(
+    slot: str = "a",
+    quote: Optional[str] = None,
+    font_file: Optional[str] = None,
+    font_size: int = 30,
+    text_color: str = "#FFFFFF",
+    y_percent: int = 50,
+    shadow_opacity: float = 0.9,
+    color_preset: str = "auto",
+    brightness: float = 0.0,
+    contrast: float = 1.05,
+    saturation: float = 1.12,
+    song_file: Optional[str] = None,
+    song_start: Optional[float] = None,
+    swap_dir: Path | str = "swap",
+    progress_callback: Optional[Callable[[float, str], None]] = None,
+) -> Dict[str, Any]:
+    """Fast-rerender an existing staged reel using CapCut-style live editor adjustments.
+
+    Uses the clean base_60fps_<slot>.mp4 so the background doesn't re-burn old text.
+    Applies updated song + trim window, color grade, quote, font, size, color, and position.
+    """
+    import re
+    import json as _json
+
+    def report(prog: float, msg: str):
+        logger.info(f"[Restyle {int(prog*100)}%] {msg}")
+        if progress_callback:
+            try:
+                progress_callback(prog, msg)
+            except Exception:
+                pass
+
+    slot_clean = slot.lower().strip()
+    if slot_clean not in ("a", "b"):
+        slot_clean = "a"
+
+    swap_p = Path(swap_dir)
+    ready_dir = swap_p / "ready_to_post"
+    ready_dir.mkdir(parents=True, exist_ok=True)
+
+    report(0.10, "Loading staged reel manifest & clean video base...")
+    manifest = ReelManifest.load(slot_clean, ready_dir)
+    if not manifest:
+        return {"status": "failed", "error": f"No staged reel manifest found for slot '{slot_clean}'."}
+
+    # Locate clean base video
+    base_candidates = [
+        Path(manifest.base_video_path) if manifest.base_video_path else None,
+        swap_p / f"base_60fps_{slot_clean}.mp4",
+        Path(manifest.video_path),
+    ]
+    base_video = next((p for p in base_candidates if p and p.exists()), None)
+    if not base_video:
+        return {"status": "failed", "error": "Base video file missing. Please regenerate reel first."}
+
+    # Probe base video resolution & duration
+    probe_cmd = [
+        "ffprobe", "-v", "error",
+        "-select_streams", "v:0",
+        "-show_entries", "stream=width,height,r_frame_rate:format=duration",
+        "-of", "json", str(base_video),
+    ]
+    proc = subprocess.run(probe_cmd, capture_output=True, text=True, check=True)
+    pdata = _json.loads(proc.stdout)
+    v_stream = (pdata.get("streams") or [{}])[0]
+    target_w = int(v_stream.get("width") or 1080)
+    target_h = int(v_stream.get("height") or 1920)
+    target_duration = float(pdata.get("format", {}).get("duration") or manifest.duration or 8.0)
+
+    fps_str = v_stream.get("r_frame_rate", "60/1")
+    try:
+        num, den = fps_str.split("/")
+        target_fps = int(round(float(num) / float(den))) if float(den) > 0 else 60
+    except Exception:
+        target_fps = 60
+
+    # 1. Resolve Audio & Song Trim
+    report(0.30, "Applying selected music track & trim offset...")
+    audio_base_path = swap_p / f"restyle_audio_{slot_clean}.mp4"
+    chosen_song_name = song_file or manifest.song_file
+    chosen_song_path: Optional[Path] = None
+    if chosen_song_name:
+        cand = Path("assets/music") / chosen_song_name
+        if cand.exists():
+            chosen_song_path = cand
+    if not chosen_song_path and Path("assets/music").exists():
+        tracks = sorted(list(Path("assets/music").glob("*.mp3")) + list(Path("assets/music").glob("*.m4a")))
+        if tracks:
+            chosen_song_path = tracks[0]
+
+    song_start_val = float(song_start) if song_start is not None else float(manifest.song_start or 0.0)
+    song_title = chosen_song_path.stem if chosen_song_path else manifest.song
+
+    if chosen_song_path and chosen_song_path.exists():
+        apply_audio_swap(
+            video_path=base_video,
+            audio_path=chosen_song_path,
+            output_video=audio_base_path,
+            target_duration=target_duration,
+            start_offset=max(0.0, song_start_val),
+        )
+    else:
+        audio_base_path = base_video
+
+    # 2. Apply Color Grading & Typography
+    report(0.55, "Applying color grade, custom font & typography...")
+    raw_quote = quote if (quote is not None and quote.strip()) else manifest.quote
+    clean_lines = [l.strip() for l in re.split(r"[\n/]+", raw_quote.strip()) if l.strip()]
+    lines = clean_lines if clean_lines else [raw_quote.strip()]
+    quote_text = " / ".join(lines)
+    caption_text = format_d3_caption(lines=lines, hashtags=manifest.hashtags)
+
+    eff_font_file = font_file if font_file is not None else manifest.font_file
+    eff_font_size = int(font_size or manifest.font_size or 30)
+    eff_color = text_color or manifest.text_color or "#FFFFFF"
+    eff_y = int(y_percent if y_percent is not None else (manifest.y_percent or 50))
+    eff_preset = color_preset or manifest.color_preset or "auto"
+
+    scene_tone = detect_scene_tone(base_video)
+    grade_filters = build_adaptive_grade_filters(
+        scene_tone=scene_tone,
+        target_w=target_w,
+        target_h=target_h,
+        color_preset=eff_preset,
+        brightness=float(brightness),
+        contrast=float(contrast),
+        saturation=float(saturation),
+    )
+    drawtext_filter = build_d3_drawtext_filter(
+        lines=lines,
+        video_path=audio_base_path,
+        font_size=eff_font_size,
+        font_file=eff_font_file,
+        text_color=eff_color,
+        shadow_opacity=shadow_opacity,
+        y_percent=eff_y,
+        target_h=target_h,
+    )
+    full_vf = ",".join(grade_filters + [drawtext_filter])
+
+    master_path = swap_p / f"restyle_master_{slot_clean}.mp4"
+    cmd_master = [
+        "ffmpeg", "-y",
+        "-i", str(audio_base_path),
+        "-vf", full_vf,
+        "-c:v", "libx264",
+        "-preset", "veryfast",
+        "-crf", "18",
+        "-c:a", "copy",
+        str(master_path),
+    ]
+    subprocess.run(cmd_master, capture_output=True, text=True, check=True)
+
+    # 3. Final Instagram Encode +faststart
+    report(0.82, "Encoding final edited reel (+faststart)...")
+    final_staged_path = Path(manifest.video_path)
+    cmd_ig = [
+        "ffmpeg", "-y",
+        "-i", str(master_path),
+        "-c:v", "libx264",
+        "-preset", "veryfast",
+        "-b:v", "15M" if target_h >= 1920 else "10M",
+        "-maxrate", "20M",
+        "-bufsize", "40M",
+        "-pix_fmt", "yuv420p",
+        "-r", str(target_fps),
+        "-c:a", "aac",
+        "-b:a", "128k",
+        "-movflags", "+faststart",
+        str(final_staged_path),
+    ]
+    subprocess.run(cmd_ig, capture_output=True, text=True, check=True)
+
+    # Refresh thumbnail
+    thumb_path = ready_dir / f"thumbnail_{slot_clean}.jpg"
+    subprocess.run(
+        ["ffmpeg", "-y", "-ss", "00:00:01", "-i", str(final_staged_path), "-vframes", "1", "-q:v", "2", str(thumb_path)],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+
+    # Update & Save Manifest
+    manifest.quote = quote_text
+    manifest.caption = caption_text
+    manifest.song = song_title
+    manifest.base_video_path = str(base_video.resolve())
+    manifest.font_file = eff_font_file
+    manifest.font_size = eff_font_size
+    manifest.text_color = eff_color
+    manifest.y_percent = eff_y
+    manifest.color_preset = eff_preset
+    manifest.brightness = float(brightness)
+    manifest.contrast = float(contrast)
+    manifest.saturation = float(saturation)
+    manifest.song_file = chosen_song_path.name if chosen_song_path else None
+    manifest.song_start = song_start_val
+    manifest.save(ready_dir)
+
+    report(1.0, "Reel updates applied and rendered!")
+    return {
+        "status": "success",
+        "slot": slot_clean,
+        "video_path": str(final_staged_path),
+        "manifest": manifest.model_dump(),
     }
 

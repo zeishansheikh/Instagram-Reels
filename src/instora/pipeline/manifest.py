@@ -24,6 +24,21 @@ class ReelManifest(BaseModel):
     song: str
     quote: str
     drive_backup: Optional[Dict[str, Any]] = None
+    # Editor / restyle metadata
+    base_video_path: Optional[str] = None
+    font_file: Optional[str] = None
+    font_size: Optional[int] = 30
+    text_color: Optional[str] = "#FFFFFF"
+    y_percent: Optional[int] = 50
+    color_preset: Optional[str] = "auto"
+    brightness: Optional[float] = 0.0
+    contrast: Optional[float] = 1.05
+    saturation: Optional[float] = 1.12
+    song_file: Optional[str] = None
+    song_start: Optional[float] = 0.0
+    duration: Optional[float] = 8.0
+    aspect_ratio: Optional[str] = "9:16"
+    quality: Optional[str] = "1080p60"
 
     def save(self, destination_dir: Path | str) -> Path:
         """Write manifest file manifest_<slot>.json to destination dir."""

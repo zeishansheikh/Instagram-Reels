@@ -45,6 +45,10 @@ import {
   QuoteBlock,
   HeroPlayer,
   Textarea,
+  CapCutEditor,
+  EditorFont,
+  EditorSong,
+  ReelEditorState,
 } from "@/components";
 
 type ScreenState = "ready" | "loading" | "empty" | "error";
@@ -116,6 +120,43 @@ function TodayScreenContent() {
   const [duration, setDuration] = React.useState<number>(8);
   const [customQuote, setCustomQuote] = React.useState<string>("");
 
+  // CapCut-Style Studio Live Editor states
+  const [editorFonts, setEditorFonts] = React.useState<EditorFont[]>([]);
+  const [editorSongs, setEditorSongs] = React.useState<EditorSong[]>([]);
+  const [isEditorDirty, setIsEditorDirty] = React.useState<boolean>(false);
+  const [isRestyling, setIsRestyling] = React.useState<boolean>(false);
+  const [showLiveOverlay, setShowLiveOverlay] = React.useState<boolean>(false);
+  const [liveDaySubtitle, setLiveDaySubtitle] = React.useState<string>("");
+  const defaultEditorState: ReelEditorState = {
+    quote: "",
+    fontFile: "PlayfairDisplay-Bold.ttf",
+    fontSize: 30,
+    textColor: "#FFFFFF",
+    yPercent: 50,
+    shadowOpacity: 0.9,
+    colorPreset: "auto",
+    brightness: 0.0,
+    contrast: 1.05,
+    saturation: 1.12,
+    songFile: "",
+    songStart: 0.0,
+  };
+  const [editorState, setEditorState] = React.useState<ReelEditorState>(defaultEditorState);
+  const [savedEditorState, setSavedEditorState] = React.useState<ReelEditorState>(defaultEditorState);
+  const [baseVideoUrl, setBaseVideoUrl] = React.useState<string>("");
+
+  React.useEffect(() => {
+    const now = new Date();
+    setLiveDaySubtitle(
+      now.toLocaleDateString("en-US", {
+        weekday: "long",
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      })
+    );
+  }, []);
+
   // Staged reel state
   const [currentReel, setCurrentReel] = React.useState({
     id: "reel_staged",
@@ -151,6 +192,7 @@ function TodayScreenContent() {
       const manifestA = data.slots?.slot_a?.manifest;
       if (manifestA && manifestA.video_path) {
         const filename = manifestA.video_path.split("/").pop() || "reel.mp4";
+        const ts = Date.now();
         setCurrentReel((prev) => ({
           ...prev,
           id: filename.replace(".mp4", ""),
@@ -159,11 +201,39 @@ function TodayScreenContent() {
           caption: manifestA.caption || prev.caption,
           hashtags: manifestA.hashtags || prev.hashtags,
           song: manifestA.song || prev.song,
-          videoSrc: `/static/ready_to_post/${filename}?t=${Date.now()}`,
-          posterSrc: `/static/ready_to_post/thumbnail_a.jpg?t=${Date.now()}`,
+          duration: manifestA.duration || 8,
+          resolution: manifestA.aspect_ratio === "1:1" ? "1080 × 1080" : manifestA.aspect_ratio === "16:9" ? "1920 × 1080" : "1080 × 1920 @ 60fps",
+          videoSrc: `/static/ready_to_post/${filename}?t=${ts}`,
+          posterSrc: `/static/ready_to_post/thumbnail_a.jpg?t=${ts}`,
           clipName: filename,
           filePath: `swap/ready_to_post/${filename}`,
         }));
+
+        if (manifestA.base_video_path) {
+          const baseName = manifestA.base_video_path.split("/").pop() || "base_60fps_a.mp4";
+          setBaseVideoUrl(`/static/swap/${baseName}?t=${ts}`);
+        } else {
+          setBaseVideoUrl(`/static/swap/base_60fps_a.mp4?t=${ts}`);
+        }
+
+        const loadedEd: ReelEditorState = {
+          quote: manifestA.quote || "",
+          fontFile: manifestA.font_file || "PlayfairDisplay-Bold.ttf",
+          fontSize: manifestA.font_size || 30,
+          textColor: manifestA.text_color || "#FFFFFF",
+          yPercent: manifestA.y_percent ?? 50,
+          shadowOpacity: 0.9,
+          colorPreset: manifestA.color_preset || "auto",
+          brightness: manifestA.brightness ?? 0.0,
+          contrast: manifestA.contrast ?? 1.05,
+          saturation: manifestA.saturation ?? 1.12,
+          songFile: manifestA.song_file || "",
+          songStart: manifestA.song_start ?? 0.0,
+        };
+        setEditorState(loadedEd);
+        setSavedEditorState(loadedEd);
+        setIsEditorDirty(false);
+        setShowLiveOverlay(false);
         setScreenState("ready");
       } else {
         setScreenState("empty");
@@ -173,9 +243,130 @@ function TodayScreenContent() {
     }
   }, []);
 
+  // Load fonts from /d3/editor-assets & register @font-face rules
   React.useEffect(() => {
     loadLatestStagedReel();
+    fetch("/d3/editor-assets")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!data) return;
+        if (Array.isArray(data.fonts)) {
+          setEditorFonts(data.fonts);
+          const styleId = "instora-dynamic-fonts";
+          let styleEl = document.getElementById(styleId) as HTMLStyleElement | null;
+          if (!styleEl) {
+            styleEl = document.createElement("style");
+            styleEl.id = styleId;
+            document.head.appendChild(styleEl);
+          }
+          const rules = data.fonts
+            .map(
+              (f: EditorFont) =>
+                `@font-face { font-family: "InstoraFont_${f.file.replace(/[^a-zA-Z0-9]/g, "_")}"; src: url("${f.url}") format("truetype"); font-display: swap; }`
+            )
+            .join("\n");
+          styleEl.textContent = rules;
+        }
+        if (Array.isArray(data.songs)) {
+          setEditorSongs(data.songs);
+        }
+      })
+      .catch(() => {});
   }, [loadLatestStagedReel]);
+
+  const handleEditorChange = (next: Partial<ReelEditorState>, markLiveDirty = true) => {
+    setEditorState((prev) => ({ ...prev, ...next }));
+    if (markLiveDirty) {
+      setIsEditorDirty(true);
+      setShowLiveOverlay(true);
+    }
+  };
+
+  const handleApplyRestyle = async () => {
+    setIsRestyling(true);
+    setIsBuilding(true);
+    setBuildProgress(15);
+    setBuildMessage("Applying studio fonts, colors & audio trim...");
+    addToast({
+      type: "info",
+      title: "Rendering Studio Edits",
+      description: "Re-rendering reel with your selected font, colors, and trimmed audio...",
+    });
+
+    try {
+      const res = await fetch("/d3/restyle", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          slot: "a",
+          quote: editorState.quote,
+          font_file: editorState.fontFile,
+          font_size: editorState.fontSize,
+          text_color: editorState.textColor,
+          y_percent: editorState.yPercent,
+          shadow_opacity: editorState.shadowOpacity,
+          color_preset: editorState.colorPreset,
+          brightness: editorState.brightness,
+          contrast: editorState.contrast,
+          saturation: editorState.saturation,
+          song_file: editorState.songFile || undefined,
+          song_start: editorState.songStart,
+          run_in_background: true,
+        }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const jobId = data.job_id;
+      if (!jobId) {
+        await loadLatestStagedReel();
+        setIsRestyling(false);
+        setIsBuilding(false);
+        return;
+      }
+
+      const timer = setInterval(async () => {
+        try {
+          const jr = await fetch(`/jobs/${jobId}`);
+          if (!jr.ok) return;
+          const job = await jr.json();
+          if (typeof job.progress === "number") {
+            setBuildProgress(Math.round(job.progress * 100));
+          }
+          if (job.message) setBuildMessage(job.message);
+
+          if (job.status === "completed") {
+            clearInterval(timer);
+            setBuildProgress(100);
+            await loadLatestStagedReel();
+            setIsRestyling(false);
+            setIsBuilding(false);
+            addToast({
+              type: "success",
+              title: "Studio Edits Applied!",
+              description: "Reel re-rendered with your font, colors, and audio trim.",
+            });
+          } else if (job.status === "failed") {
+            clearInterval(timer);
+            setIsRestyling(false);
+            setIsBuilding(false);
+            addToast({
+              type: "error",
+              title: "Render Failed",
+              description: job.error || "Check logs.",
+            });
+          }
+        } catch {}
+      }, 1500);
+    } catch (e: any) {
+      setIsRestyling(false);
+      setIsBuilding(false);
+      addToast({
+        type: "error",
+        title: "Restyle Failed",
+        description: e.message || "Error contacting API.",
+      });
+    }
+  };
 
   // Handle Real D3 Pipeline Generation
   const handleStartBuild = async () => {
@@ -365,8 +556,8 @@ function TodayScreenContent() {
 
   return (
     <AppShell
-      title="Today"
-      subtitle="Friday, 21 Nov 2026"
+      title="Workspace"
+      subtitle={liveDaySubtitle || "Instora Studio"}
       onGenerateClick={() => setIsGenerateModalOpen(true)}
       onSearchClick={() =>
         addToast({
@@ -383,21 +574,21 @@ function TodayScreenContent() {
         <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4 border-b border-border pb-6">
           <div className="space-y-1">
             <div className="flex items-center gap-2 font-mono text-xs text-ink-muted uppercase tracking-wider">
-              <span className="text-moss font-medium">Dispatch #042</span>
+              <span className="text-moss font-medium">Instora Studio</span>
               <span>/</span>
               <span>Slot A & B Ready</span>
               <span>/</span>
               <span>Formula D3</span>
             </div>
             <h2 className="font-serif text-2xl sm:text-3xl font-normal text-ink-primary tracking-tight">
-              Daily Broadcast Overview
+              Creative Reels Workspace
             </h2>
           </div>
 
           <div className="flex items-center gap-3 text-xs font-mono text-ink-secondary">
             <span>Channel: <strong className="text-ink-primary font-medium">@enoent.7</strong></span>
             <span className="text-border-strong">|</span>
-            <span>Cadence: <strong className="text-ink-primary font-medium">2 reels today</strong></span>
+            <span>Cadence: <strong className="text-ink-primary font-medium">2 reels / day</strong></span>
           </div>
         </div>
 
@@ -475,7 +666,7 @@ function TodayScreenContent() {
 
             <div className="p-12 md:p-16 rounded-md bg-surface border border-border text-center">
               <EmptyState
-                title="No Reel Staged for Today"
+                title="No Reel Staged in Workspace"
                 description="The publishing queue is empty. Generate fresh nature quotes and render your next aesthetic reel with 1080p60 quality gates."
                 action={
                   <Button
@@ -548,28 +739,82 @@ function TodayScreenContent() {
         )}
 
         {/* =====================================================================
-            3. LIVE TODAY SCREEN: 12-COLUMN EDITORIAL GRID
+            3. LIVE WORKSPACE: CAPCUT-STYLE LEFT EDITOR + CENTER STUDIO PREVIEW
             ===================================================================== */}
         {screenState === "ready" && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             {/* -----------------------------------------------------------------
-                LEFT 7 COLS: "NEXT REEL" HERO SPREAD
+                LEFT 4 COLS: CAPCUT-STYLE STUDIO EDITOR (FONTS, COLORS, SONGS/TRIM)
                 ----------------------------------------------------------------- */}
-            <section className="lg:col-span-7 space-y-4">
-              {/* Section Header */}
-              <div className="flex items-center justify-between">
+            <aside className="lg:col-span-4 lg:sticky lg:top-20">
+              <CapCutEditor
+                editorState={editorState}
+                onChange={handleEditorChange}
+                fonts={editorFonts}
+                songs={editorSongs}
+                reelDuration={currentReel.duration || 8}
+                isDirty={isEditorDirty}
+                isRendering={isRestyling}
+                onApplyRender={handleApplyRestyle}
+                onReset={() => {
+                  setEditorState(savedEditorState);
+                  setIsEditorDirty(false);
+                  setShowLiveOverlay(false);
+                  addToast({
+                    type: "info",
+                    title: "Editor Reset",
+                    description: "Restored last rendered reel settings.",
+                  });
+                }}
+                onSongAdded={(newSong) =>
+                  setEditorSongs((prev) => [newSong, ...prev.filter((s) => s.filename !== newSong.filename)])
+                }
+              />
+            </aside>
+
+            {/* -----------------------------------------------------------------
+                RIGHT 8 COLS: LIVE REEL PREVIEW + METADATA + PIPELINE
+                ----------------------------------------------------------------- */}
+            <section className="lg:col-span-8 space-y-6">
+              {/* Section Header + Live Preview Toggle */}
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <h3 className="font-sans text-xs font-semibold uppercase tracking-wider text-ink-primary">
-                    Next reel
+                    Active Studio Reel
                   </h3>
                   <Badge variant="moss">{currentReel.slot}</Badge>
                 </div>
-                <span className="font-mono tabular-nums text-xs text-ink-muted">
-                  {currentReel.scheduledTime}
-                </span>
+
+                {/* Live Edit Overlay Toggle */}
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center rounded-sm border border-border bg-subtle p-0.5 text-[11px] font-mono">
+                    <button
+                      type="button"
+                      onClick={() => setShowLiveOverlay(false)}
+                      className={`px-2 py-0.5 rounded-xs transition-fast ${
+                        !showLiveOverlay
+                          ? "bg-surface text-ink-primary font-semibold border border-border"
+                          : "text-ink-muted hover:text-ink-primary"
+                      }`}
+                    >
+                      Rendered MP4
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowLiveOverlay(true)}
+                      className={`px-2 py-0.5 rounded-xs transition-fast ${
+                        showLiveOverlay
+                          ? "bg-surface text-moss font-semibold border border-border"
+                          : "text-ink-muted hover:text-ink-primary"
+                      }`}
+                    >
+                      Live Edit Overlay
+                    </button>
+                  </div>
+                </div>
               </div>
 
-              {/* Build in progress banner with Live Percentage and Animated Bar */}
+              {/* Build / Restyle Progress Bar */}
               {isBuilding && (
                 <div className="p-4 rounded-md bg-surface border border-moss/40 shadow-sm space-y-2.5 transition-all">
                   <div className="flex items-center justify-between gap-3 text-xs font-mono">
@@ -582,7 +827,6 @@ function TodayScreenContent() {
                     </span>
                   </div>
 
-                  {/* Progress Bar Track */}
                   <div className="w-full bg-subtle rounded-full h-2.5 overflow-hidden border border-border/80 relative">
                     <div
                       className="bg-moss h-full rounded-full transition-all duration-300 ease-out relative overflow-hidden"
@@ -592,11 +836,10 @@ function TodayScreenContent() {
                     </div>
                   </div>
 
-                  {/* Status subline */}
                   <div className="flex items-center justify-between text-[11px] font-mono text-ink-muted">
-                    <span>Formula D3 · 1080×1920 @ 60fps</span>
+                    <span>Instora Studio · {currentReel.resolution}</span>
                     <span className="text-moss font-medium">
-                      {buildProgress >= 100 ? "Verified & Ready" : "Processing pipeline..."}
+                      {buildProgress >= 100 ? "Verified & Ready" : "Rendering..."}
                     </span>
                   </div>
                 </div>
@@ -604,35 +847,76 @@ function TodayScreenContent() {
 
               {/* Main Reel Presentation Card */}
               <Card className="p-5 sm:p-6 bg-surface">
-                <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 items-start">
-                  {/* 9:16 Video Player (max-w-[360px]) */}
-                  <div className="sm:col-span-6 lg:col-span-5 flex flex-col items-start">
-                    <div className="w-full max-w-[360px]">
-                      <HeroPlayer
-                        videoSrc={currentReel.videoSrc}
-                        posterSrc={currentReel.posterSrc}
-                        duration={currentReel.duration}
-                        status={reelStatus}
-                      />
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+                  {/* Video Player / Live Canvas */}
+                  <div className="md:col-span-6 lg:col-span-5 flex flex-col items-start">
+                    <div className="w-full max-w-[340px]">
+                      {showLiveOverlay ? (
+                        <div className="relative aspect-[9/16] w-full rounded-md overflow-hidden bg-black border border-border shadow-sm group">
+                          <video
+                            src={baseVideoUrl || currentReel.videoSrc}
+                            poster={currentReel.posterSrc}
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            controls
+                            className="w-full h-full object-cover"
+                            style={{
+                              filter: `brightness(${1 + editorState.brightness}) contrast(${editorState.contrast}) saturate(${editorState.saturation})${
+                                editorState.colorPreset === "noir" ? " grayscale(0.95)" : ""
+                              }`,
+                            }}
+                          />
+                          {/* Real-time Live Text Overlay */}
+                          <div
+                            className="absolute left-4 right-4 pointer-events-none text-center flex flex-col items-center justify-center -translate-y-1/2 px-2"
+                            style={{
+                              top: `${editorState.yPercent}%`,
+                              fontFamily: `"InstoraFont_${editorState.fontFile.replace(/[^a-zA-Z0-9]/g, "_")}", serif`,
+                              fontSize: `${Math.max(11, Math.round(editorState.fontSize * 0.42))}px`,
+                              color: editorState.textColor,
+                              textShadow: `0 2px 4px rgba(0, 0, 0, ${editorState.shadowOpacity})`,
+                              lineHeight: 1.45,
+                            }}
+                          >
+                            {editorState.quote.split(/[\n/]+/).map((line, i) => (
+                              <div key={i} className="w-full break-words">
+                                {line.trim()}
+                              </div>
+                            ))}
+                          </div>
+                          <span className="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-moss/90 text-white font-mono text-[9px] uppercase tracking-wider">
+                            Live Preview
+                          </span>
+                        </div>
+                      ) : (
+                        <HeroPlayer
+                          videoSrc={currentReel.videoSrc}
+                          posterSrc={currentReel.posterSrc}
+                          duration={currentReel.duration}
+                          status={reelStatus}
+                        />
+                      )}
                     </div>
                     <span className="font-mono text-xs text-ink-muted mt-2 text-left block">
-                      Hover to preview · Click for audio
+                      {showLiveOverlay
+                        ? "Live previewing unsaved edits · Click Apply & Render"
+                        : "Hover to preview · Click for audio"}
                     </span>
                   </div>
 
-                  {/* Beside Player: Quote in Serif, Caption, Meta, Actions */}
-                  <div className="sm:col-span-6 lg:col-span-7 flex flex-col justify-between space-y-5">
-                    {/* Serif Quote with Optical Hanging Punctuation */}
+                  {/* Quote, Caption, Specs & Actions */}
+                  <div className="md:col-span-6 lg:col-span-7 flex flex-col justify-between space-y-5">
                     <div className="space-y-2">
                       <span className="font-mono text-xs uppercase tracking-wider text-moss font-medium">
-                        Quote (Formula D3 · Roman Urdu)
+                        Active Quote (Formula D3)
                       </span>
                       <QuoteBlock size="md" theme="loss">
-                        {currentReel.quote}
+                        {isEditorDirty ? editorState.quote : currentReel.quote}
                       </QuoteBlock>
                     </div>
 
-                    {/* Instagram Caption Block */}
                     <div className="p-3.5 rounded-sm bg-subtle border border-border space-y-2">
                       <div className="flex items-center justify-between">
                         <span className="font-mono text-xs uppercase tracking-wider text-ink-muted">
@@ -647,29 +931,22 @@ function TodayScreenContent() {
                       </p>
                     </div>
 
-                    {/* Meta Specifications */}
                     <div className="divide-y divide-border border-y border-border py-1 text-xs font-mono">
                       <div className="flex items-center justify-between py-1.5">
-                        <span className="text-ink-muted">Clip Name</span>
-                        <span className="text-ink-primary truncate max-w-[190px] text-right" title={currentReel.clipName}>
-                          {currentReel.clipName}
+                        <span className="text-ink-muted">Active Font</span>
+                        <span className="text-ink-primary truncate max-w-[200px]">
+                          {editorState.fontFile.replace(".ttf", "")} · {editorState.fontSize}pt
                         </span>
                       </div>
                       <div className="flex items-center justify-between py-1.5">
-                        <span className="text-ink-muted">Style</span>
-                        <span className="text-ink-primary font-medium">{currentReel.style}</span>
-                      </div>
-                      <div className="flex items-center justify-between py-1.5">
-                        <span className="text-ink-muted">Scheduled Time</span>
-                        <span className="text-ink-primary tabular-nums">18:00 UTC (Slot A)</span>
+                        <span className="text-ink-muted">Audio Track</span>
+                        <span className="text-ink-primary truncate max-w-[200px]">
+                          {editorState.songFile || currentReel.song} (from {Math.round(editorState.songStart)}s)
+                        </span>
                       </div>
                       <div className="flex items-center justify-between py-1.5">
                         <span className="text-ink-muted">Format</span>
                         <span className="text-ink-primary tabular-nums">{currentReel.resolution}</span>
-                      </div>
-                      <div className="flex items-center justify-between py-1.5">
-                        <span className="text-ink-muted">Placement</span>
-                        <span className="text-moss font-medium">{currentReel.placementBand}</span>
                       </div>
                       <div className="flex items-center justify-between py-1.5">
                         <span className="text-ink-muted">Saved File</span>
@@ -679,7 +956,7 @@ function TodayScreenContent() {
                       </div>
                     </div>
 
-                    {/* Approve / Regenerate Actions */}
+                    {/* Approve / Regenerate / Download / Publish Actions */}
                     <div className="flex flex-wrap items-center gap-2 pt-1">
                       <Button
                         size="sm"
@@ -716,166 +993,88 @@ function TodayScreenContent() {
                       >
                         Publish Now
                       </Button>
-
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        icon={<Trash2 className="w-3.5 h-3.5" />}
-                        onClick={() => {
-                          setReelStatus("discarded");
-                          addToast({
-                            type: "info",
-                            title: "Reel Discarded",
-                            description: "Moved to output/_rejected.",
-                          });
-                        }}
-                      >
-                        Discard
-                      </Button>
                     </div>
                   </div>
                 </div>
               </Card>
-            </section>
 
-            {/* -----------------------------------------------------------------
-                RIGHT 5 COLS: "PIPELINE" TIMELINE & "THIS WEEK" STATS
-                ----------------------------------------------------------------- */}
-            <aside className="lg:col-span-5 space-y-6">
-              {/* 1. Pipeline Vertical Timeline */}
-              <Card className="p-5 bg-surface space-y-4">
-                <div className="flex items-center justify-between border-b border-border pb-3">
-                  <div className="space-y-0.5">
-                    <h3 className="font-sans text-xs font-semibold uppercase tracking-wider text-ink-primary">
-                      Pipeline
-                    </h3>
-                    <p className="font-mono text-[10px] text-ink-muted">
-                      Today&apos;s automated production timeline
-                    </p>
+              {/* Pipeline & Stats Strip Below */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card className="p-5 bg-surface space-y-4">
+                  <div className="flex items-center justify-between border-b border-border pb-3">
+                    <div className="space-y-0.5">
+                      <h3 className="font-sans text-xs font-semibold uppercase tracking-wider text-ink-primary">
+                        Pipeline
+                      </h3>
+                      <p className="font-mono text-[10px] text-ink-muted">
+                        Automated production steps
+                      </p>
+                    </div>
+                    <Badge variant="default">Auto 60fps</Badge>
                   </div>
-                  <Badge variant="default">Auto 60fps</Badge>
-                </div>
 
-                {/* Vertical Timeline with Thin 1px Rule and Status Dots */}
-                <div className="relative pl-6 space-y-4">
-                  {/* Vertical Thin Rule */}
-                  <div
-                    className="absolute left-[7px] top-1.5 bottom-2 w-px bg-border"
-                    aria-hidden="true"
-                  />
-
-                  {PIPELINE_STEPS.map((step, idx) => {
-                    const isCompleted = step.status === "completed";
-                    const isActive = step.status === "active";
-
-                    return (
-                      <div key={step.name} className="relative flex items-start gap-3">
-                        {/* 6px Status Dot centered on timeline */}
-                        <div
-                          className="absolute -left-6 top-1 flex items-center justify-center w-3.5 h-3.5 bg-surface rounded-full"
-                          aria-hidden="true"
-                        >
-                          <StatusDot
-                            status={
-                              isCompleted
-                                ? "success"
-                                : isActive
-                                ? "warning"
-                                : "neutral"
-                            }
-                            pulse={isActive}
-                          />
-                        </div>
-
-                        {/* Step Details */}
-                        <div className="flex-1 min-w-0 space-y-0.5">
-                          <div className="flex items-center justify-between text-xs">
-                            <span
-                              className={`font-sans font-medium ${
-                                isCompleted
-                                  ? "text-ink-primary"
-                                  : isActive
-                                  ? "text-moss font-semibold"
-                                  : "text-ink-muted"
-                              }`}
-                            >
-                              {step.name}
-                            </span>
-                            <span className="font-mono tabular-nums text-[10px] text-ink-muted">
-                              {step.timestamp}
-                            </span>
+                  <div className="relative pl-6 space-y-3.5">
+                    <div className="absolute left-[7px] top-1.5 bottom-2 w-px bg-border" aria-hidden="true" />
+                    {PIPELINE_STEPS.map((step) => {
+                      const isCompleted = step.status === "completed";
+                      const isActive = step.status === "active";
+                      return (
+                        <div key={step.name} className="relative flex items-start gap-3">
+                          <div className="absolute -left-6 top-1 flex items-center justify-center w-3.5 h-3.5 bg-surface rounded-full">
+                            <StatusDot status={isCompleted ? "success" : isActive ? "warning" : "neutral"} pulse={isActive} />
                           </div>
-                          <p className="font-mono text-[11px] text-ink-secondary leading-tight truncate">
-                            {step.detail}
-                          </p>
+                          <div className="flex-1 min-w-0 space-y-0.5">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className={`font-sans font-medium ${isCompleted ? "text-ink-primary" : isActive ? "text-moss font-semibold" : "text-ink-muted"}`}>
+                                {step.name}
+                              </span>
+                            </div>
+                            <p className="font-mono text-[11px] text-ink-secondary leading-tight truncate">
+                              {step.detail}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </Card>
-
-              {/* 2. Compact "This week" List with Tabular Numerals */}
-              <Card className="p-5 bg-surface space-y-3.5">
-                <div className="flex items-center justify-between border-b border-border pb-3">
-                  <div className="space-y-0.5">
-                    <h3 className="font-sans text-xs font-semibold uppercase tracking-wider text-ink-primary">
-                      This week
-                    </h3>
-                    <p className="font-mono text-xs text-ink-muted">
-                      Cadence: 2 reels/day (@enoent.7)
-                    </p>
+                      );
+                    })}
                   </div>
-                </div>
+                </Card>
 
-                <div className="divide-y divide-border text-xs font-mono space-y-0">
-                  {/* Posts Scheduled */}
-                  <div className="flex items-center justify-between py-2">
-                    <span className="text-ink-secondary font-sans">Posts</span>
-                    <div className="flex items-center gap-2">
-                      <span className="tabular-nums font-medium text-ink-primary">
-                        0 / 14
-                      </span>
-                      <span className="text-xs font-mono text-ink-muted bg-subtle px-1.5 py-0.5 rounded-xs border border-border font-medium">
-                        0%
-                      </span>
+                <Card className="p-5 bg-surface space-y-3.5">
+                  <div className="flex items-center justify-between border-b border-border pb-3">
+                    <div className="space-y-0.5">
+                      <h3 className="font-sans text-xs font-semibold uppercase tracking-wider text-ink-primary">
+                        This week
+                      </h3>
+                      <p className="font-mono text-xs text-ink-muted">
+                        Cadence: 2 reels/day (@enoent.7)
+                      </p>
                     </div>
                   </div>
 
-                  {/* Success Rate */}
-                  <div className="flex items-center justify-between py-2">
-                    <span className="text-ink-secondary font-sans">Success rate</span>
-                    <span className="tabular-nums font-medium text-ink-muted">
-                      —
-                    </span>
+                  <div className="divide-y divide-border text-xs font-mono space-y-0">
+                    <div className="flex items-center justify-between py-2">
+                      <span className="text-ink-secondary font-sans">Posts</span>
+                      <div className="flex items-center gap-2">
+                        <span className="tabular-nums font-medium text-ink-primary">0 / 14</span>
+                        <span className="text-xs font-mono text-ink-muted bg-subtle px-1.5 py-0.5 rounded-xs border border-border font-medium">0%</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between py-2">
+                      <span className="text-ink-secondary font-sans">Success rate</span>
+                      <span className="tabular-nums font-medium text-ink-muted">—</span>
+                    </div>
+                    <div className="flex items-center justify-between py-2">
+                      <span className="text-ink-secondary font-sans">Token expires in</span>
+                      <span className="tabular-nums font-medium text-ink-primary">58 days</span>
+                    </div>
+                    <div className="flex items-center justify-between py-2">
+                      <span className="text-ink-secondary font-sans">Audio gate</span>
+                      <span className="tabular-nums text-ink-muted text-xs">&lt; 90 BPM (Ready)</span>
+                    </div>
                   </div>
-
-                  {/* Token Health */}
-                  <div className="flex items-center justify-between py-2">
-                    <span className="text-ink-secondary font-sans">Token expires in</span>
-                    <span className="tabular-nums font-medium text-ink-primary">
-                      58 days
-                    </span>
-                  </div>
-
-                  {/* Contrast Score */}
-                  <div className="flex items-center justify-between py-2">
-                    <span className="text-ink-secondary font-sans">Avg contrast</span>
-                    <span className="tabular-nums font-medium text-ink-muted">
-                      —
-                    </span>
-                  </div>
-
-                  {/* Audio Gate Compliance */}
-                  <div className="flex items-center justify-between py-2">
-                    <span className="text-ink-secondary font-sans">Audio gate</span>
-                    <span className="tabular-nums text-ink-muted text-xs">
-                      &lt; 90 BPM (Ready)
-                    </span>
-                  </div>
-                </div>
-              </Card>
-            </aside>
+                </Card>
+              </div>
+            </section>
           </div>
         )}
       </div>

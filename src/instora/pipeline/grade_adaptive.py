@@ -43,8 +43,12 @@ def build_adaptive_grade_filters(
     target_w: int = 1080,
     target_h: int = 1920,
     apply_unsharp: bool = True,
+    color_preset: str = "auto",
+    brightness: float = 0.0,
+    contrast: float = 1.05,
+    saturation: float = 1.12,
 ) -> list[str]:
-    """Construct FFmpeg filter chain for adaptive grading and lanczos scaling."""
+    """Construct FFmpeg filter chain for adaptive/custom color grading and lanczos scaling."""
     filters: list[str] = [
         f"scale={target_w}:{target_h}:flags=lanczos:force_original_aspect_ratio=increase",
         f"crop={target_w}:{target_h}",
@@ -54,13 +58,35 @@ def build_adaptive_grade_filters(
     if apply_unsharp:
         filters.append("unsharp=5:5:0.5:5:5:0.0")
 
-    if scene_tone == "warm":
-        # Golden/sunset/warm: eq=contrast=1.08:saturation=1.22,colorbalance=rs=0.06:gs=0.015:bs=-0.06
-        filters.append("eq=contrast=1.08:saturation=1.22")
-        filters.append("colorbalance=rs=0.06:gs=0.015:bs=-0.06")
+    # Clamp user values cleanly
+    b_val = max(-0.5, min(0.5, float(brightness)))
+    c_val = max(0.5, min(2.0, float(contrast)))
+    s_val = max(0.0, min(2.5, float(saturation)))
+
+    preset = (color_preset or "auto").lower().strip()
+
+    if preset == "warm_amber":
+        filters.append(f"eq=brightness={b_val:.2f}:contrast={c_val:.2f}:saturation={s_val:.2f}")
+        filters.append("colorbalance=rs=0.08:gs=0.02:bs=-0.08")
+    elif preset == "moody_cold":
+        filters.append(f"eq=brightness={b_val:.2f}:contrast={c_val:.2f}:saturation={s_val:.2f}")
+        filters.append("colorbalance=rs=-0.06:gs=0.0:bs=0.08")
+    elif preset == "forest":
+        filters.append(f"eq=brightness={b_val:.2f}:contrast={c_val:.2f}:saturation={s_val:.2f}")
+        filters.append("colorbalance=rs=-0.03:gs=0.05:bs=-0.02")
+    elif preset == "noir":
+        filters.append(f"eq=brightness={b_val:.2f}:contrast={c_val:.2f}:saturation=0.05")
+    elif preset == "custom":
+        filters.append(f"eq=brightness={b_val:.2f}:contrast={c_val:.2f}:saturation={s_val:.2f}")
     else:
-        # Green forest/daylight/cool: eq=contrast=1.05:saturation=1.12, NEUTRAL balance
-        filters.append("eq=contrast=1.05:saturation=1.12")
+        # Auto adaptive grade (respecting any fine-tuned slider tweaks if provided)
+        if scene_tone == "warm":
+            eff_c = c_val if c_val != 1.05 else 1.08
+            eff_s = s_val if s_val != 1.12 else 1.22
+            filters.append(f"eq=brightness={b_val:.2f}:contrast={eff_c:.2f}:saturation={eff_s:.2f}")
+            filters.append("colorbalance=rs=0.06:gs=0.015:bs=-0.06")
+        else:
+            filters.append(f"eq=brightness={b_val:.2f}:contrast={c_val:.2f}:saturation={s_val:.2f}")
 
     return filters
 

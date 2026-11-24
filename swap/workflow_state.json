@@ -4,19 +4,25 @@
     "1108096683356610558",
     "1108307789614585496",
     "956803883317024140",
-    "974255331910432711"
+    "974255331910432711",
+    "986710599612369538"
   ],
   "used_lines": [
     "sab kuch wahi hai bas / woh jo har waqt sath tha / woh nahi hai ab",
     "sab kehte hain waqt sab theek kar deta hai, / mera waqt to bas yaadein de gaya.",
     "kuch cheezein bikhar jayein to wapas nahi judti, / jaise teri kami ab kabhi poori nahi hoti.",
     "sab kehte hain akela rehna buri baat hai, / par bheed mein bhi to main akela hi tha.",
-    "kuch log zindagi mein aate hain / aur hamesha ke liye yaadein chhor jaate hain"
+    "kuch log zindagi mein aate hain / aur hamesha ke liye yaadein chhor jaate hain",
+    "kuch baatein dil mein hi achi lagti hain, / zuban par aate hi rishtey tod deti hain."
   ],
   "used_songs": [
     {
       "song": "GmJA1daZpfM",
       "date": "2026-11-23"
+    },
+    {
+      "song": "GmJA1daZpfM",
+      "date": "2026-11-24"
     },
     {
       "song": "GmJA1daZpfM",
@@ -40,10 +46,11 @@
     "PIN:1108096683356610558",
     "PIN:1108307789614585496",
     "PIN:956803883317024140",
-    "PIN:974255331910432711"
+    "PIN:974255331910432711",
+    "PIN:986710599612369538"
   ],
-  "last_category": "dramatic stormy ocean clouds",
+  "last_category": "norway misty fjords drone",
   "last_song": "GmJA1daZpfM",
-  "last_quote": "kuch log zindagi mein aate hain / aur hamesha ke liye yaadein chhor jaate hain",
+  "last_quote": "kuch baatein dil mein hi achi lagti hain, / zuban par aate hi rishtey tod deti hain.",
   "last_run": "2026-11-24-d3"
 }

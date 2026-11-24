@@ -24,4 +24,5 @@ export * from "./ui/hero-player";
 export * from "./ui/pipeline-timeline";
 export * from "./ui/side-stats";
 export * from "./ui/modal";
+export * from "./studio/capcut-editor";
 export * from "./layout/app-shell";

@@ -113,7 +113,7 @@ function DesignSystemView() {
               href="/"
               className="inline-flex items-center gap-1.5 text-xs font-mono text-ink-secondary hover:text-ink-primary transition-fast"
             >
-              <span>Back to Today Screen</span>
+              <span>Back to Workspace</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>

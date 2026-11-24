@@ -1,0 +1,242 @@
+[
+  {
+    "name": "Poppins-SemiBold",
+    "file": "Poppins-SemiBold.ttf",
+    "script": "latin",
+    "style": "sans",
+    "weight": 600,
+    "drawtext_ok": true
+  },
+  {
+    "name": "Poppins-Bold",
+    "file": "Poppins-Bold.ttf",
+    "script": "latin",
+    "style": "sans",
+    "weight": 700,
+    "drawtext_ok": true
+  },
+  {
+    "name": "Montserrat-Bold",
+    "file": "Montserrat-Bold.ttf",
+    "script": "latin",
+    "style": "sans",
+    "weight": 700,
+    "drawtext_ok": true
+  },
+  {
+    "name": "Bebas Neue",
+    "file": "BebasNeue-Regular.ttf",
+    "script": "latin",
+    "style": "display",
+    "weight": 400,
+    "drawtext_ok": true
+  },
+  {
+    "name": "Anton",
+    "file": "Anton-Regular.ttf",
+    "script": "latin",
+    "style": "display",
+    "weight": 400,
+    "drawtext_ok": true
+  },
+  {
+    "name": "Oswald-SemiBold",
+    "file": "Oswald-SemiBold.ttf",
+    "script": "latin",
+    "style": "sans",
+    "weight": 600,
+    "drawtext_ok": true
+  },
+  {
+    "name": "Playfair Display-Bold",
+    "file": "PlayfairDisplay-Bold.ttf",
+    "script": "latin",
+    "style": "serif",
+    "weight": 700,
+    "drawtext_ok": true
+  },
+  {
+    "name": "Lato-Bold",
+    "file": "Lato-Bold.ttf",
+    "script": "latin",
+    "style": "sans",
+    "weight": 700,
+    "drawtext_ok": true
+  },
+  {
+    "name": "Archivo Black",
+    "file": "ArchivoBlack-Regular.ttf",
+    "script": "latin",
+    "style": "display",
+    "weight": 400,
+    "drawtext_ok": true
+  },
+  {
+    "name": "Alfa Slab One",
+    "file": "AlfaSlabOne-Regular.ttf",
+    "script": "latin",
+    "style": "display",
+    "weight": 400,
+    "drawtext_ok": true
+  },
+  {
+    "name": "DM Serif Display",
+    "file": "DMSerifDisplay-Regular.ttf",
+    "script": "latin",
+    "style": "serif",
+    "weight": 400,
+    "drawtext_ok": true
+  },
+  {
+    "name": "Abril Fatface",
+    "file": "AbrilFatface-Regular.ttf",
+    "script": "latin",
+    "style": "display",
+    "weight": 400,
+    "drawtext_ok": true
+  },
+  {
+    "name": "Pacifico",
+    "file": "Pacifico-Regular.ttf",
+    "script": "latin",
+    "style": "handwritten",
+    "weight": 400,
+    "drawtext_ok": true
+  },
+  {
+    "name": "Lobster",
+    "file": "Lobster-Regular.ttf",
+    "script": "latin",
+    "style": "handwritten",
+    "weight": 400,
+    "drawtext_ok": true
+  },
+  {
+    "name": "Great Vibes",
+    "file": "GreatVibes-Regular.ttf",
+    "script": "latin",
+    "style": "script",
+    "weight": 400,
+    "drawtext_ok": true
+  },
+  {
+    "name": "Caveat-Bold",
+    "file": "Caveat-Bold.ttf",
+    "script": "latin",
+    "style": "handwritten",
+    "weight": 700,
+    "drawtext_ok": true
+  },
+  {
+    "name": "Dancing Script-Bold",
+    "file": "DancingScript-Bold.ttf",
+    "script": "latin",
+    "style": "script",
+    "weight": 700,
+    "drawtext_ok": true
+  },
+  {
+    "name": "Inter-Bold",
+    "file": "Inter-Bold.ttf",
+    "script": "latin",
+    "style": "sans",
+    "weight": 700,
+    "drawtext_ok": true
+  },
+  {
+    "name": "Noto Nastaliq Urdu",
+    "file": "NotoNastaliqUrdu-Regular.ttf",
+    "script": "urdu",
+    "style": "nastaliq",
+    "weight": 400,
+    "drawtext_ok": false
+  },
+  {
+    "name": "Noto Nastaliq Urdu-Bold",
+    "file": "NotoNastaliqUrdu-Bold.ttf",
+    "script": "urdu",
+    "style": "nastaliq",
+    "weight": 700,
+    "drawtext_ok": false
+  },
+  {
+    "name": "Gulzar",
+    "file": "Gulzar-Regular.ttf",
+    "script": "urdu",
+    "style": "nastaliq",
+    "weight": 400,
+    "drawtext_ok": false
+  },
+  {
+    "name": "Amiri-Bold",
+    "file": "Amiri-Bold.ttf",
+    "script": "urdu",
+    "style": "naskh",
+    "weight": 700,
+    "drawtext_ok": true
+  },
+  {
+    "name": "Noto Naskh Arabic-Bold",
+    "file": "NotoNaskhArabic-Bold.ttf",
+    "script": "urdu",
+    "style": "naskh",
+    "weight": 700,
+    "drawtext_ok": true
+  },
+  {
+    "name": "Scheherazade New-Bold",
+    "file": "ScheherazadeNew-Bold.ttf",
+    "script": "urdu",
+    "style": "naskh",
+    "weight": 700,
+    "drawtext_ok": true
+  },
+  {
+    "name": "Harmattan-Bold",
+    "file": "Harmattan-Bold.ttf",
+    "script": "urdu",
+    "style": "naskh",
+    "weight": 700,
+    "drawtext_ok": true
+  },
+  {
+    "name": "Markazi Text-Bold",
+    "file": "MarkaziText-Bold.ttf",
+    "script": "urdu",
+    "style": "naskh",
+    "weight": 700,
+    "drawtext_ok": true
+  },
+  {
+    "name": "Reem Kufi-Bold",
+    "file": "ReemKufi-Bold.ttf",
+    "script": "urdu",
+    "style": "kufi",
+    "weight": 700,
+    "drawtext_ok": true
+  },
+  {
+    "name": "Cairo-Bold",
+    "file": "Cairo-Bold.ttf",
+    "script": "urdu",
+    "style": "sans",
+    "weight": 700,
+    "drawtext_ok": true
+  },
+  {
+    "name": "Tajawal-Bold",
+    "file": "Tajawal-Bold.ttf",
+    "script": "urdu",
+    "style": "sans",
+    "weight": 700,
+    "drawtext_ok": true
+  },
+  {
+    "name": "Aref Ruqaa-Bold",
+    "file": "ArefRuqaa-Bold.ttf",
+    "script": "urdu",
+    "style": "display",
+    "weight": 700,
+    "drawtext_ok": true
+  }
+]

@@ -76,6 +76,10 @@ ready_to_post_path = Path("swap/ready_to_post")
 ready_to_post_path.mkdir(parents=True, exist_ok=True)
 app.mount("/static/ready_to_post", StaticFiles(directory=str(ready_to_post_path)), name="ready_to_post_static")
 
+fonts_path = Path("fonts/fonts")
+if fonts_path.exists():
+    app.mount("/static/fonts", StaticFiles(directory=str(fonts_path)), name="fonts_static")
+
 # 3. Register Routers
 app.include_router(health.router)
 app.include_router(reels.router)

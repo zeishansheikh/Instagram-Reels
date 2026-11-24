@@ -54,7 +54,6 @@ db/*.sqlite
 *.sqlite3
 
 # Video / Large Assets (Allow directories with .gitkeep)
-fonts/
 assets/backgrounds/*
 !assets/backgrounds/.gitkeep
 assets/music/*

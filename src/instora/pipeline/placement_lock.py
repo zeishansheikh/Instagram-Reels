@@ -19,17 +19,30 @@ from loguru import logger
 from PIL import Image, ImageFont, ImageStat
 
 
-def resolve_d3_font() -> str:
-    """Resolve Noto Serif SemiBold font path with fallbacks."""
+def resolve_d3_font(font_file: Optional[str] = None) -> str:
+    """Resolve font path from fonts/fonts/, assets/fonts/, or Noto Serif fallback."""
+    if font_file and font_file.strip():
+        clean_f = font_file.strip()
+        custom_candidates = [
+            Path("fonts/fonts") / clean_f,
+            Path("assets/fonts") / clean_f,
+            Path(clean_f),
+        ]
+        for cand in custom_candidates:
+            if cand.exists() and cand.is_file():
+                return str(cand.resolve())
+
     candidates = [
+        "fonts/fonts/PlayfairDisplay-Bold.ttf",
         "/usr/share/fonts/truetype/noto/NotoSerif-SemiBold.ttf",
         "/usr/share/fonts/truetype/noto/NotoSerif-Bold.ttf",
         "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf",
+        "assets/fonts/serif.ttf",
         "assets/fonts/default.ttf",
     ]
     for c in candidates:
         if Path(c).exists():
-            return c
+            return str(Path(c).resolve()) if Path(c).exists() else c
     return "sans-serif"
 
 
@@ -109,25 +122,43 @@ def build_d3_drawtext_filter(
     lines: List[str],
     video_path: Optional[Path | str] = None,
     font_size: int = 30,
+    font_file: Optional[str] = None,
+    text_color: str = "white",
+    shadow_opacity: float = 0.9,
+    y_percent: Optional[int] = None,
+    target_h: int = 1920,
 ) -> str:
-    """Build FFmpeg drawtext filter string for D3 formula.
+    """Build FFmpeg drawtext filter string for D3 formula with custom editor overrides.
 
-    - Noto Serif SemiBold 30
-    - White text (#FFFFFF)
-    - Strong black shadow (shadowcolor=black@0.9:shadowx=0:shadowy=2)
-    - ALL AT ONCE reveal from t=0 to end
-    - Middle-centre placement lock
+    Supports custom fonts from fonts/fonts/, custom colors, shadow opacity, and vertical position.
     """
-    font_path = resolve_d3_font()
-    line_spacing = int(font_size * 1.5)  # 45px
+    font_path = resolve_d3_font(font_file=font_file)
+    line_spacing = int(font_size * 1.5)
     total_text_h = len(lines) * line_spacing
 
-    optimal_center_y = 960
-    if video_path:
-        optimal_center_y = find_optimal_center_y(video_path, text_height=total_text_h)
+    if y_percent is not None:
+        clamped_pct = max(15, min(85, int(y_percent)))
+        optimal_center_y = int(target_h * (clamped_pct / 100.0))
+    else:
+        optimal_center_y = target_h // 2
+        if video_path:
+            optimal_center_y = find_optimal_center_y(
+                video_path,
+                text_height=total_text_h,
+                target_center_y=target_h // 2,
+                min_y=int(target_h * 0.30),
+                max_y=int(target_h * 0.70),
+            )
 
     # Calculate starting y for first line so that the block is centered on optimal_center_y
-    start_y = optimal_center_y - (total_text_h // 2)
+    start_y = max(40, optimal_center_y - (total_text_h // 2))
+
+    # Format color cleanly for FFmpeg (#RRGGBB -> 0xRRGGBB)
+    clean_color = text_color.strip() if text_color else "white"
+    if clean_color.startswith("#"):
+        clean_color = "0x" + clean_color[1:]
+
+    s_alpha = max(0.0, min(1.0, float(shadow_opacity)))
 
     filter_parts: List[str] = []
 
@@ -142,8 +173,8 @@ def build_d3_drawtext_filter(
             f"drawtext=fontfile='{font_path}':"
             f"text='{escaped}':"
             f"fontsize={font_size}:"
-            f"fontcolor=white:"
-            f"shadowcolor=black@0.9:shadowx=0:shadowy=2:"
+            f"fontcolor={clean_color}:"
+            f"shadowcolor=black@{s_alpha:.2f}:shadowx=0:shadowy=2:"
             f"x=(w-text_w)/2:"
             f"y={line_y}"
         )

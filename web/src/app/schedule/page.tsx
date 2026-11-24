@@ -59,35 +59,64 @@ interface DayColumn {
   cap: number; // 2
 }
 
-function getCurrentWeekDays(): DayColumn[] {
+function formatLocalDateStr(d: Date): string {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function getWeekDays(weekOffset: number = 0): { days: DayColumn[]; rangeLabel: string } {
   const days: DayColumn[] = [];
   const now = new Date();
+  const todayStr = formatLocalDateStr(now);
   const dayOfWeek = now.getDay();
-  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-  const monday = new Date(now);
-  monday.setDate(now.getDate() + mondayOffset);
+  const mondayOffset = (dayOfWeek === 0 ? -6 : 1 - dayOfWeek) + weekOffset * 7;
+  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + mondayOffset);
 
   const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
   for (let i = 0; i < 7; i++) {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    const dateStr = d.toISOString().split("T")[0];
-    const isToday = dateStr === now.toISOString().split("T")[0];
+    const d = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i);
+    const dateStr = formatLocalDateStr(d);
     days.push({
       id: dateStr,
       dayName: dayNames[i],
       dayNumber: d.getDate(),
       dateString: `${d.getDate()} ${monthNames[d.getMonth()]}`,
-      isToday,
+      isToday: dateStr === todayStr,
       cap: 2,
     });
   }
-  return days;
+  const first = days[0];
+  const last = days[6];
+  const endDate = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 6);
+  const rangeLabel = `${first.dateString} – ${last.dateString} ${endDate.getFullYear()}`;
+  return { days, rangeLabel };
 }
 
-const WEEK_DAYS: DayColumn[] = getCurrentWeekDays();
+function getNextRunCountdown(now: Date): { label: string; remaining: string } {
+  const slotA = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 8, 30, 0);
+  const slotB = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 16, 0, 0);
+  let target = slotA;
+  let label = "Today at 08:30 AM (Slot A)";
+
+  if (now >= slotA && now < slotB) {
+    target = slotB;
+    label = "Today at 04:00 PM (Slot B)";
+  } else if (now >= slotB) {
+    target = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 8, 30, 0);
+    label = "Tomorrow at 08:30 AM (Slot A)";
+  }
+
+  const diffMs = Math.max(0, target.getTime() - now.getTime());
+  const totalMins = Math.floor(diffMs / 60000);
+  const hrs = Math.floor(totalMins / 60);
+  const mins = totalMins % 60;
+  return { label, remaining: `in ${hrs}h ${mins}m` };
+}
+
 const INITIAL_SCHEDULED_REELS: ScheduledReel[] = [];
 
 export default function SchedulePage() {
@@ -105,6 +134,25 @@ function ScheduleContent() {
 
   const [reels, setReels] = React.useState<ScheduledReel[]>(INITIAL_SCHEDULED_REELS);
   const [viewMode, setViewMode] = React.useState<"week" | "month">("week");
+  const [weekOffset, setWeekOffset] = React.useState<number>(0);
+  const [monthOffset, setMonthOffset] = React.useState<number>(0);
+  const [nowTick, setNowTick] = React.useState<Date | null>(null);
+
+  React.useEffect(() => {
+    setNowTick(new Date());
+    const timer = setInterval(() => setNowTick(new Date()), 30000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const { days: weekDays, rangeLabel: weekRangeLabel } = React.useMemo(
+    () => getWeekDays(weekOffset),
+    [weekOffset]
+  );
+
+  const nextRun = React.useMemo(
+    () => (nowTick ? getNextRunCountdown(nowTick) : { label: "Loading...", remaining: "--" }),
+    [nowTick]
+  );
 
   // Publishing Pause Switch & Confirmation State
   const [isPublishingPaused, setIsPublishingPaused] = React.useState<boolean>(false);
@@ -165,7 +213,7 @@ function ScheduleContent() {
       )
     );
 
-    const targetDay = WEEK_DAYS.find((d) => d.id === targetDayId);
+    const targetDay = weekDays.find((d) => d.id === targetDayId);
     addToast({
       type: "success",
       title: "Reel Rescheduled",
@@ -213,20 +261,38 @@ function ScheduleContent() {
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
             <div className="flex items-center gap-2">
               <button
+                onClick={() => viewMode === "week" ? setWeekOffset((w) => w - 1) : setMonthOffset((m) => m - 1)}
                 className="p-1 rounded-sm border border-border bg-subtle hover:bg-surface text-ink-muted hover:text-ink-primary transition-fast"
-                aria-label="Previous week"
+                aria-label="Previous"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <span className="font-sans text-xs font-semibold text-ink-primary select-none px-1">
-                17 Nov – 23 Nov 2026
+                {viewMode === "week"
+                  ? weekRangeLabel
+                  : new Date(new Date().getFullYear(), new Date().getMonth() + monthOffset, 1).toLocaleDateString("en-US", {
+                      month: "long",
+                      year: "numeric",
+                    })}
               </span>
               <button
+                onClick={() => viewMode === "week" ? setWeekOffset((w) => w + 1) : setMonthOffset((m) => m + 1)}
                 className="p-1 rounded-sm border border-border bg-subtle hover:bg-surface text-ink-muted hover:text-ink-primary transition-fast"
-                aria-label="Next week"
+                aria-label="Next"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
+              {(weekOffset !== 0 || monthOffset !== 0) && (
+                <button
+                  onClick={() => {
+                    setWeekOffset(0);
+                    setMonthOffset(0);
+                  }}
+                  className="px-2 py-0.5 rounded-xs border border-border bg-subtle hover:bg-surface text-[10px] font-mono text-moss font-medium"
+                >
+                  Today
+                </button>
+              )}
             </div>
 
             <div className="h-4 w-px bg-border hidden sm:block" />
@@ -237,11 +303,11 @@ function ScheduleContent() {
               <span className="text-ink-secondary">
                 Next run:{" "}
                 <strong className="text-ink-primary font-medium">
-                  Today at 18:00 UTC (Slot A)
+                  {nextRun.label}
                 </strong>
               </span>
               <span className="text-moss font-medium tabular-nums bg-moss-subtle px-1.5 py-0.5 rounded border border-moss/20">
-                in 2h 42m
+                {nextRun.remaining}
               </span>
             </div>
           </div>
@@ -335,7 +401,7 @@ function ScheduleContent() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 items-start">
-              {WEEK_DAYS.map((day) => {
+              {weekDays.map((day) => {
                 const dayReels = reels.filter((r) => r.dayId === day.id);
                 const isDragOver = dragOverDayId === day.id;
                 const isFull = dayReels.length >= day.cap;
@@ -496,66 +562,99 @@ function ScheduleContent() {
           </div>
         ) : (
           /* =====================================================================
-              4. MONTH CALENDAR VIEW TOGGLE
+              4. DYNAMIC MONTH CALENDAR VIEW TOGGLE
               ===================================================================== */
-          <Card className="p-6 bg-surface space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-border">
-              <h3 className="font-sans text-xs font-semibold uppercase tracking-wider text-ink-primary">
-                November 2026 Monthly Distribution
-              </h3>
-              <span className="font-mono text-xs text-ink-muted">
-                14 / 14 Slots Filled This Fortnight
-              </span>
-            </div>
+          (() => {
+            const now = new Date();
+            const targetMonthDate = new Date(now.getFullYear(), now.getMonth() + monthOffset, 1);
+            const year = targetMonthDate.getFullYear();
+            const month = targetMonthDate.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            // Monday = 0, ..., Sunday = 6
+            const startOffset = (targetMonthDate.getDay() + 6) % 7;
+            const monthLabel = targetMonthDate.toLocaleDateString("en-US", {
+              month: "long",
+              year: "numeric",
+            });
+            const todayStr = formatLocalDateStr(now);
 
-            <div className="grid grid-cols-7 gap-2 text-xs font-mono">
-              {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
-                <div key={d} className="p-2 text-center text-ink-muted uppercase font-medium">
-                  {d}
+            return (
+              <Card className="p-6 bg-surface space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-border">
+                  <h3 className="font-sans text-xs font-semibold uppercase tracking-wider text-ink-primary">
+                    {monthLabel} Monthly Distribution
+                  </h3>
+                  <span className="font-mono text-xs text-ink-muted">
+                    {reels.length} Slotted Reels
+                  </span>
                 </div>
-              ))}
 
-              {Array.from({ length: 30 }).map((_, i) => {
-                const dayNum = i + 1;
-                const isCurrent = dayNum === 21;
-                const hasReels = dayNum <= 22;
+                <div className="grid grid-cols-7 gap-2 text-xs font-mono">
+                  {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
+                    <div key={d} className="p-2 text-center text-ink-muted uppercase font-medium">
+                      {d}
+                    </div>
+                  ))}
 
-                return (
-                  <div
-                    key={dayNum}
-                    onClick={() => {
-                      setViewMode("week");
-                      addToast({
-                        type: "info",
-                        title: "Switched to Week View",
-                        description: `Focused on week containing Nov ${dayNum}.`,
-                      });
-                    }}
-                    className={cn(
-                      "aspect-square p-2 rounded-sm border transition-fast flex flex-col justify-between cursor-pointer",
-                      isCurrent
-                        ? "bg-moss-subtle border-moss text-moss font-bold"
-                        : "bg-subtle/40 border-border hover:bg-subtle hover:border-border-strong text-ink-secondary"
-                    )}
-                  >
-                    <span className="tabular-nums">{dayNum}</span>
+                  {Array.from({ length: startOffset }).map((_, idx) => (
+                    <div key={`empty-${idx}`} className="aspect-square p-2 rounded-sm bg-subtle/15 border border-transparent" />
+                  ))}
 
-                    {hasReels ? (
-                      <div className="flex items-center justify-between">
-                        <span className="text-[9px] text-moss">2/2</span>
-                        <div className="flex gap-0.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-status-success" />
-                          <span className="w-1.5 h-1.5 rounded-full bg-status-success" />
+                  {Array.from({ length: daysInMonth }).map((_, i) => {
+                    const dayNum = i + 1;
+                    const cellDate = new Date(year, month, dayNum);
+                    const cellDateStr = formatLocalDateStr(cellDate);
+                    const isCurrent = cellDateStr === todayStr;
+                    const dayReels = reels.filter((r) => r.dayId === cellDateStr);
+
+                    return (
+                      <div
+                        key={cellDateStr}
+                        onClick={() => {
+                          const diffDays = Math.floor((cellDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+                          setWeekOffset(Math.round(diffDays / 7));
+                          setViewMode("week");
+                          addToast({
+                            type: "info",
+                            title: "Switched to Week View",
+                            description: `Focused on week containing ${cellDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}.`,
+                          });
+                        }}
+                        className={cn(
+                          "aspect-square p-2 rounded-sm border transition-fast flex flex-col justify-between cursor-pointer",
+                          isCurrent
+                            ? "bg-moss-subtle border-moss text-moss font-bold"
+                            : "bg-subtle/40 border-border hover:bg-subtle hover:border-border-strong text-ink-secondary"
+                        )}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="tabular-nums">{dayNum}</span>
+                          {isCurrent && (
+                            <span className="text-[8px] uppercase tracking-wider bg-moss text-white px-1 rounded">
+                              Today
+                            </span>
+                          )}
                         </div>
+
+                        {dayReels.length > 0 ? (
+                          <div className="flex items-center justify-between">
+                            <span className="text-[9px] text-moss">{dayReels.length}/2</span>
+                            <div className="flex gap-0.5">
+                              {dayReels.map((_, idx) => (
+                                <span key={idx} className="w-1.5 h-1.5 rounded-full bg-status-success" />
+                              ))}
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-[9px] text-ink-muted">0/2</span>
+                        )}
                       </div>
-                    ) : (
-                      <span className="text-[9px] text-ink-muted">0/2</span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </Card>
+                    );
+                  })}
+                </div>
+              </Card>
+            );
+          })()
         )}
 
         {/* =====================================================================
