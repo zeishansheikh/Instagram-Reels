@@ -45,6 +45,8 @@ config/*.txt
 # Media Assets & Generated Content
 cache/
 output/
+swap/ready_to_post/*
+!swap/ready_to_post/.gitkeep
 db/*.db
 db/*.sqlite
 *.db
@@ -52,6 +54,7 @@ db/*.sqlite
 *.sqlite3
 
 # Video / Large Assets (Allow directories with .gitkeep)
+fonts/
 assets/backgrounds/*
 !assets/backgrounds/.gitkeep
 assets/music/*

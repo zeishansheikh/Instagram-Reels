@@ -56,7 +56,7 @@ const PIPELINE_STEPS: PipelineStep[] = [
   {
     name: "Clip picked",
     status: "completed",
-    detail: "WhatsApp Video #1 · 1024×576 @ 30fps · Luma 0.19",
+    detail: "Pinterest Nature Clip · 1080×1920 @ 60fps · Luma 0.28",
     timestamp: "08:15:10",
   },
   {
@@ -495,7 +495,7 @@ function TodayScreenContent() {
             </div>
 
             <div className="p-3 rounded-sm bg-subtle border border-border text-xs font-mono space-y-1 text-ink-secondary">
-              <p><span className="text-ink-muted">Clip:</span> assets/backgrounds/WhatsApp Video 2026-11-20 at 6.36.16 AM.mp4</p>
+              <p><span className="text-ink-muted">Clip:</span> assets/backgrounds/pinterest_nature_fresh.mp4</p>
               <p><span className="text-ink-muted">Band:</span> Center column x: 340–740, y: 960 (Measured Luma: 84.2 &gt; 80.0 limit)</p>
               <p><span className="text-ink-muted">Action:</span> Shift placement lock to darker band at y=800 or apply adaptive grade.</p>
             </div>

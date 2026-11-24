@@ -29,14 +29,26 @@ from instora.pipeline.gates import (
 from instora.pipeline.workflow_state import WorkflowState
 
 NATURE_CATEGORIES = [
-    "mountain river",
-    "alpine meadow",
+    "dark misty waterfall",
+    "alpine mountain river",
+    "deep mossy forest rain",
     "waterfall dark rocks",
-    "autumn forest path",
-    "green cliff ocean",
-    "pine valley",
-    "river gorge",
-    "lake reflections sunset",
+    "autumn forest path foliage",
+    "green cliff ocean waves",
+    "pine valley morning fog",
+    "river gorge canyon stream",
+    "lake reflections twilight sunset",
+    "norway misty fjords drone",
+    "iceland black sand waterfall",
+    "bamboo forest gentle rain",
+    "serene mountain stream pebbles",
+    "dramatic stormy ocean clouds",
+    "foggy forest path trees",
+    "atmospheric dark woods rain",
+    "scenic mountain peak sunrise",
+    "crystal emerald river forest",
+    "misty lake morning reflection",
+    "mountain valley wild flowers",
 ]
 
 
@@ -55,61 +67,53 @@ def fetch_pinterest_clip(
 ) -> Tuple[Path, str]:
     """Discover and download a Pinterest vertical nature clip that passes all quality gates.
 
+    Always searches Pinterest for fresh footage first. Re-use of previously selected
+    clips is blocked via workflow_state.json.
+
     Returns:
         Tuple of (clip_path: Path, pin_id: str).
     """
     workflow_state = state or WorkflowState.load()
     dest_dir = Path(output_dir)
     dest_dir.mkdir(parents=True, exist_ok=True)
-
-    # 1. Check if we already have an unused Pinterest HD clip in assets/backgrounds
     bg_dir = Path("assets/backgrounds")
-    if bg_dir.exists():
-        pinterest_clips = sorted(list(bg_dir.glob("pinterest_*.mp4")))
-        for cand in pinterest_clips:
-            pin_id = cand.stem.replace("pinterest_", "")
-            if not workflow_state.is_pin_used(pin_id):
-                gate_ok, _, _ = ffprobe_source_gate(cand)
-                if gate_ok:
-                    luma_ok, _, _ = brightness_and_saturation_gate(cand)
-                    if luma_ok:
-                        wm_ok, _ = watermark_and_quality_check(cand)
-                        if wm_ok:
-                            logger.info(f"Selected verified Pinterest clip '{cand.name}' for pin '{pin_id}'")
-                            return cand, pin_id
+    bg_dir.mkdir(parents=True, exist_ok=True)
 
-    # 2. Directly fetch a fresh nature clip from Pinterest using authenticated cookies
+    # 1. PRIMARY: Directly fetch a fresh nature clip from Pinterest
+    logger.info(f"Step 2 [Video]: Querying Pinterest for fresh clips (category: '{category}')...")
     try:
         from instora.pipeline.pinterest_client import fetch_fresh_pinterest_video
         fresh = fetch_fresh_pinterest_video(category=category, output_dir=bg_dir, state=workflow_state)
         if fresh:
             cand, pin_id = fresh
-            logger.info(f"Successfully fetched fresh Pinterest video '{cand.name}' for category '{category}'")
+            logger.info(f"Successfully fetched fresh Pinterest video '{cand.name}' for pin '{pin_id}'")
             return cand, pin_id
     except Exception as exc:
         logger.warning(f"Direct Pinterest fetcher error: {exc}")
 
-    # 3. Inspect other local background assets in assets/backgrounds as fallback
+    # 2. SECONDARY: If live Pinterest search returned no fresh pin, check local unused clips
     if bg_dir.exists():
-        candidates = sorted(list(bg_dir.glob("*.mp4")) + list(bg_dir.glob("*.mov")))
-        for cand in candidates:
-            pin_id = cand.stem.replace(" ", "_")
+        pinterest_clips = sorted(list(bg_dir.glob("pinterest_*.mp4")))
+        random.shuffle(pinterest_clips)
+        for cand in pinterest_clips:
+            pin_id = cand.stem.replace("pinterest_", "")
             if not workflow_state.is_pin_used(pin_id):
-                # Verify source gates
-                gate_ok, _, _ = ffprobe_source_gate(cand)
+                gate_ok, gate_msg, meta = ffprobe_source_gate(cand)
                 if gate_ok:
                     luma_ok, _, _ = brightness_and_saturation_gate(cand)
                     if luma_ok:
                         wm_ok, _ = watermark_and_quality_check(cand)
                         if wm_ok:
-                            logger.info(f"Selected verified local clip '{cand.name}' for pin '{pin_id}'")
+                            logger.info(f"Selected verified local Pinterest clip '{cand.name}' for pin '{pin_id}'")
                             return cand, pin_id
 
-    # 3. Check if PodFetch downloaded nature pins are available
-    podfetch_dir = Path.home() / "Downloads" / "PodFetch" / "downloads"
+    # 3. TERTIARY: Check if PodFetch downloaded nature pins are available
+    podfetch_dir = Path.home() / "Downloads" / "PodFetch" / "downloads" / "nature" / "originals"
     if podfetch_dir.exists():
-        for cand in sorted(podfetch_dir.glob("*.mp4")):
-            pin_id = cand.stem
+        pod_clips = list(podfetch_dir.rglob("*.mp4"))
+        random.shuffle(pod_clips)
+        for cand in pod_clips:
+            pin_id = f"pod_{cand.stem}"
             if not workflow_state.is_pin_used(pin_id):
                 gate_ok, _, _ = ffprobe_source_gate(cand)
                 if gate_ok:
@@ -117,14 +121,6 @@ def fetch_pinterest_clip(
                     if luma_ok:
                         logger.info(f"Selected PodFetch pin '{pin_id}' ({cand.name})")
                         return cand, pin_id
-
-    # 4. Fallback: use first available video in assets/backgrounds
-    if bg_dir.exists():
-        fallback_files = list(bg_dir.glob("*.mp4"))
-        if fallback_files:
-            chosen = fallback_files[0]
-            pin_id = f"local_{chosen.stem}"
-            return chosen, pin_id
 
     raise FileNotFoundError("No qualified Pinterest nature footage found passing quality gates.")
 

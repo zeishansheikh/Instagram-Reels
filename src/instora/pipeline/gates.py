@@ -92,7 +92,11 @@ def ffprobe_source_gate(video_path: Path | str) -> Tuple[bool, str, Dict[str, An
     if fps < 23.5:
         return False, f"FPS {fps:.1f} < 24 (minimum threshold). REJECTED.", meta
 
-    return True, f"Source gate PASSED: {width}x{height} @ {fps:.1f}fps, {bitrate/1000:.0f} kbps", meta
+    if duration > 0 and duration < 3.0:
+        return False, f"Duration {duration:.1f}s < 3.0s (too short for reel). REJECTED.", meta
+
+    duration_note = f", duration {duration:.1f}s (auto-trimming enabled for >10s clips)" if duration > 10.0 else f", duration {duration:.1f}s"
+    return True, f"Source gate PASSED: {width}x{height} @ {fps:.1f}fps, {bitrate/1000:.0f} kbps{duration_note}", meta
 
 
 def brightness_and_saturation_gate(

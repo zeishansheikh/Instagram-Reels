@@ -56,7 +56,7 @@ const INITIAL_QUOTES: StudioQuote[] = [];
 const PREVIEW_CLIPS = [
   {
     id: "clip-1",
-    name: "WhatsApp Video #1 (1024×576 Lanczos 60fps)",
+    name: "Pinterest Nature Clip (1080×1920 Lanczos 60fps)",
     src: "/static/swap/ready_to_post/reel_2026-11-21_a.mp4",
     poster: "/static/swap/ready_to_post/thumbnail_a.jpg",
     contrast: 0.22,

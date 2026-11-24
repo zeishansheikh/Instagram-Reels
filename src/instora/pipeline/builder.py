@@ -134,11 +134,26 @@ def build_d3_reel(
     # Step 8: Real-footage check
     logger.info("Step 8 [Real-Footage]: Verified natural scenery without synthetic AI artifacts.")
 
-    # Step 9: Quality Prep (Adaptive grade, lanczos upscale, 60fps base)
-    target_duration = min(10.0, max(5.0, float(meta.get("duration") or 8.0)))
+    # Step 9: Quality Prep (Adaptive grade, lanczos upscale, 60fps base, auto-trim)
+    raw_duration = float(meta.get("duration") or 8.0)
+    target_duration = 8.0  # Standard reel duration for Roman Urdu 2-3 line quotes
+
+    # Auto-trimming logic: if video is longer than target (e.g. 10s, 20s, 30s+)
+    if raw_duration > target_duration + 3.0:
+        # For clips >= 11s, skip the initial 1.5 - 2.0s to avoid static/fade intro
+        start_trim = min(2.0, max(0.0, (raw_duration - target_duration) / 4.0))
+        logger.info(f"Video duration is {raw_duration:.1f}s (> 10s). Auto-trimming to {target_duration:.1f}s (start offset: {start_trim:.1f}s).")
+    elif raw_duration > target_duration:
+        start_trim = 0.0
+        logger.info(f"Video duration is {raw_duration:.1f}s. Auto-trimming to {target_duration:.1f}s.")
+    else:
+        start_trim = 0.0
+        target_duration = max(5.0, raw_duration)
+        logger.info(f"Video duration is {raw_duration:.1f}s. Using full duration.")
+
     scene_tone = detect_scene_tone(raw_clip)
-    logger.info(f"Step 9 [Quality Prep]: scene_tone='{scene_tone}', target_duration={target_duration:.2f}s")
-    report(0.60, f"Step 9/15: Converting footage to 60fps base video ({target_duration:.1f}s)...")
+    logger.info(f"Step 9 [Quality Prep]: scene_tone='{scene_tone}', target_duration={target_duration:.2f}s, start_trim={start_trim:.2f}s")
+    report(0.60, f"Step 9/15: Converting footage to 1080x1920 60fps base video (trimmed to {target_duration:.1f}s)...")
 
     base_60fps_path = swap_p / f"base_60fps_{slot_clean}.mp4"
     try:
@@ -146,6 +161,7 @@ def build_d3_reel(
             input_video=raw_clip,
             output_video=base_60fps_path,
             native_fps=float(meta.get("fps") or 30.0),
+            start_time=start_trim,
             duration=target_duration,
         )
     except Exception as exc:

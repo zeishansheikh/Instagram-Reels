@@ -72,7 +72,7 @@ def convert_to_60fps(
     start_time: float = 0.0,
     duration: Optional[float] = None,
 ) -> Path:
-    """Ensure video is converted to 60fps smoothly and rapidly."""
+    """Ensure video is converted to 60fps, scaled to 1080x1920 Lanczos, and auto-trimmed."""
     output_video.parent.mkdir(parents=True, exist_ok=True)
 
     cmd = ["ffmpeg", "-y"]
@@ -82,19 +82,26 @@ def convert_to_60fps(
     if duration:
         cmd.extend(["-t", f"{duration:.2f}"])
 
-    if native_fps >= 59.9:
-        logger.info(f"Source clip is native {native_fps:.1f}fps. Passing through at 60fps.")
-        cmd.extend(["-c:v", "libx264", "-preset", "veryfast", "-crf", "18", "-an", str(output_video)])
-    else:
-        logger.info(f"Fast converting from {native_fps:.1f}fps to 60fps...")
-        cmd.extend([
-            "-vf", "fps=60",
-            "-c:v", "libx264",
-            "-preset", "veryfast",
-            "-crf", "18",
-            "-an",
-            str(output_video),
-        ])
+    # High quality 1080x1920 vertical format filter with 60fps lanczos upscale
+    vf_filters = [
+        "scale=1080:1920:flags=lanczos:force_original_aspect_ratio=increase",
+        "crop=1080:1920",
+        "fps=60",
+    ]
+    vf_str = ",".join(vf_filters)
+
+    logger.info(
+        f"Converting clip to 1080x1920 60fps (start={start_time:.2f}s, "
+        f"duration={duration or 'full'}s, native_fps={native_fps:.1f})..."
+    )
+    cmd.extend([
+        "-vf", vf_str,
+        "-c:v", "libx264",
+        "-preset", "veryfast",
+        "-crf", "18",
+        "-an",
+        str(output_video),
+    ])
 
     subprocess.run(cmd, capture_output=True, check=True)
     return output_video

@@ -7,6 +7,7 @@ bypassing external storage providers (e.g. Google Drive).
 from __future__ import annotations
 
 import json
+import random
 import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -127,27 +128,34 @@ def extract_video_url_from_pin(pin_id_or_url: str) -> Optional[Tuple[str, str]]:
     return None
 
 
-def search_pinterest_video_pins(query: str, max_results: int = 15) -> List[str]:
-    """Search Pinterest for vertical nature video pins matching a query."""
+def search_pinterest_video_pins(query: str, max_results: int = 30) -> List[str]:
+    """Search Pinterest for vertical nature video pins matching diverse queries."""
     cookies = get_pinterest_cookies()
     headers = get_default_headers(cookies)
 
-    search_query = f"{query} vertical nature video"
-    search_url = f"https://www.pinterest.com/search/pins/?q={httpx.URL('', params={'q': search_query}).params['q']}"
+    clean = query.strip()
+    sub_queries = [
+        f"{clean} vertical nature video",
+        f"{clean} cinematic 4k vertical reel",
+        f"{clean} dark moody vertical 9:16",
+        f"{clean} aesthetic landscape 60fps vertical",
+    ]
 
     pin_ids: List[str] = []
-    try:
-        with httpx.Client(cookies=cookies, headers=headers, follow_redirects=True, timeout=15.0) as client:
-            resp = client.get(search_url)
-            if resp.status_code == 200:
-                matches = re.findall(r"/pin/([0-9]+)/", resp.text)
-                for pid in matches:
-                    if pid not in pin_ids:
-                        pin_ids.append(pid)
-                    if len(pin_ids) >= max_results:
-                        break
-    except Exception as exc:
-        logger.warning(f"Error searching Pinterest for '{query}': {exc}")
+    with httpx.Client(cookies=cookies, headers=headers, follow_redirects=True, timeout=15.0) as client:
+        for sq in sub_queries:
+            if len(pin_ids) >= max_results:
+                break
+            try:
+                search_url = f"https://www.pinterest.com/search/pins/?q={httpx.URL('', params={'q': sq}).params['q']}"
+                resp = client.get(search_url)
+                if resp.status_code == 200:
+                    matches = re.findall(r"/pin/([0-9]+)/", resp.text)
+                    for pid in matches:
+                        if pid not in pin_ids:
+                            pin_ids.append(pid)
+            except Exception as exc:
+                logger.warning(f"Error searching Pinterest for '{sq}': {exc}")
 
     return pin_ids
 
@@ -162,11 +170,12 @@ def download_video(video_url: str, output_path: Path | str) -> Path:
         "Referer": "https://www.pinterest.com/",
     }
 
+    clean_url = video_url.replace("&amp;", "&")
     temp_dest = dest.with_suffix(".tmp.mp4")
-    logger.info(f"Downloading Pinterest video from {video_url} to {dest}...")
+    logger.info(f"Downloading Pinterest video from {clean_url} to {dest}...")
 
-    with httpx.Client(headers=headers, follow_redirects=True, timeout=60.0) as client:
-        with client.stream("GET", video_url) as response:
+    with httpx.Client(headers=headers, follow_redirects=True, timeout=90.0) as client:
+        with client.stream("GET", clean_url) as response:
             response.raise_for_status()
             with open(temp_dest, "wb") as f:
                 for chunk in response.iter_bytes(chunk_size=65536):
@@ -182,17 +191,20 @@ def fetch_fresh_pinterest_video(
     output_dir: Path | str = "assets/backgrounds",
     state: Optional[WorkflowState] = None,
 ) -> Optional[Tuple[Path, str]]:
-    """Search Pinterest for category, download first qualifying clip that passes all gates."""
+    """Search Pinterest for category, download first fresh qualifying clip that passes all gates."""
     wf_state = state or WorkflowState.load()
     dest_dir = Path(output_dir)
     dest_dir.mkdir(parents=True, exist_ok=True)
 
     logger.info(f"Direct Pinterest Fetcher: Searching fresh clips for category '{category}'...")
-    candidate_pins = search_pinterest_video_pins(category, max_results=12)
+    candidate_pins = search_pinterest_video_pins(category, max_results=30)
 
     if not candidate_pins:
         logger.warning(f"No candidate pins found for category '{category}' on Pinterest.")
         return None
+
+    # Shuffle candidates to avoid picking the same video in identical queries
+    random.shuffle(candidate_pins)
 
     for pin_id in candidate_pins:
         if wf_state.is_pin_used(pin_id):
@@ -201,9 +213,10 @@ def fetch_fresh_pinterest_video(
 
         target_file = dest_dir / f"pinterest_{pin_id}.mp4"
         if target_file.exists() and target_file.stat().st_size > 1_000_000:
+            # If locally exists but was never used, we can verify it
             clip_path = target_file
         else:
-            # Extract video URL
+            # Extract fresh video URL from Pinterest pin
             video_info = extract_video_url_from_pin(pin_id)
             if not video_info:
                 continue
@@ -216,22 +229,32 @@ def fetch_fresh_pinterest_video(
                 continue
 
         # Run quality gates
-        gate_ok, _, _ = ffprobe_source_gate(clip_path)
+        gate_ok, gate_msg, meta = ffprobe_source_gate(clip_path)
         if not gate_ok:
-            logger.debug(f"Pin {pin_id} failed ffprobe source gate.")
+            logger.debug(f"Pin {pin_id} failed ffprobe source gate: {gate_msg}")
             continue
 
-        luma_ok, _, _ = brightness_and_saturation_gate(clip_path)
+        clip_duration = float(meta.get("duration", 0.0))
+        if clip_duration >= 10.0:
+            logger.info(
+                f"Pin {pin_id} duration is {clip_duration:.1f}s (>10s). "
+                f"Accepted! Video will be auto-trimmed to ~8s during generation."
+            )
+
+        luma_ok, luma_msg, _ = brightness_and_saturation_gate(clip_path)
         if not luma_ok:
-            logger.debug(f"Pin {pin_id} failed brightness/saturation gate.")
+            logger.debug(f"Pin {pin_id} failed brightness/saturation gate: {luma_msg}")
             continue
 
-        wm_ok, _ = watermark_and_quality_check(clip_path)
+        wm_ok, wm_msg = watermark_and_quality_check(clip_path)
         if not wm_ok:
-            logger.debug(f"Pin {pin_id} failed watermark check.")
+            logger.debug(f"Pin {pin_id} failed watermark check: {wm_msg}")
             continue
 
-        logger.info(f"Verified Pinterest video clip {clip_path.name} (Pin {pin_id}) passed all quality gates!")
+        logger.info(
+            f"Verified fresh Pinterest clip {clip_path.name} (Pin {pin_id}, "
+            f"duration {clip_duration:.1f}s) passed all quality gates!"
+        )
         return clip_path, pin_id
 
     return None

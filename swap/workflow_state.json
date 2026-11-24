@@ -1,9 +1,42 @@
 {
-  "used_pins": [],
-  "used_lines": [],
-  "used_songs": [],
-  "used_reels": [],
-  "last_category": null,
-  "last_song": null,
-  "last_run": null
+  "used_pins": [
+    "1057642293749829408",
+    "1108096683356610558",
+    "1108307789614585496",
+    "956803883317024140"
+  ],
+  "used_lines": [
+    "sab kuch wahi hai bas / woh jo har waqt sath tha / woh nahi hai ab",
+    "sab kehte hain waqt sab theek kar deta hai, / mera waqt to bas yaadein de gaya.",
+    "kuch cheezein bikhar jayein to wapas nahi judti, / jaise teri kami ab kabhi poori nahi hoti.",
+    "sab kehte hain akela rehna buri baat hai, / par bheed mein bhi to main akela hi tha."
+  ],
+  "used_songs": [
+    {
+      "song": "GmJA1daZpfM",
+      "date": "2026-11-23"
+    },
+    {
+      "song": "GmJA1daZpfM",
+      "date": "2026-11-24"
+    },
+    {
+      "song": "GmJA1daZpfM",
+      "date": "2026-11-24"
+    },
+    {
+      "song": "GmJA1daZpfM",
+      "date": "2026-11-24"
+    }
+  ],
+  "used_reels": [
+    "PIN:1057642293749829408",
+    "PIN:1108096683356610558",
+    "PIN:1108307789614585496",
+    "PIN:956803883317024140"
+  ],
+  "last_category": "dark misty waterfall",
+  "last_song": "GmJA1daZpfM",
+  "last_quote": "sab kehte hain akela rehna buri baat hai, / par bheed mein bhi to main akela hi tha.",
+  "last_run": "2026-11-24-d3"
 }
