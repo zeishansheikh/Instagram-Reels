@@ -67,15 +67,15 @@ def build_adaptive_grade_filters(
 
     if preset == "warm_amber":
         filters.append(f"eq=brightness={b_val:.2f}:contrast={c_val:.2f}:saturation={s_val:.2f}")
-        filters.append("colorbalance=rs=0.08:gs=0.02:bs=-0.08")
+        filters.append("colorbalance=rs=0.16:gs=0.04:bs=-0.16")
     elif preset == "moody_cold":
         filters.append(f"eq=brightness={b_val:.2f}:contrast={c_val:.2f}:saturation={s_val:.2f}")
-        filters.append("colorbalance=rs=-0.06:gs=0.0:bs=0.08")
+        filters.append("colorbalance=rs=-0.14:gs=0.01:bs=0.18")
     elif preset == "forest":
         filters.append(f"eq=brightness={b_val:.2f}:contrast={c_val:.2f}:saturation={s_val:.2f}")
-        filters.append("colorbalance=rs=-0.03:gs=0.05:bs=-0.02")
+        filters.append("colorbalance=rs=-0.10:gs=0.14:bs=-0.06")
     elif preset == "noir":
-        filters.append(f"eq=brightness={b_val:.2f}:contrast={c_val:.2f}:saturation=0.05")
+        filters.append(f"eq=brightness={b_val:.2f}:contrast={c_val:.2f}:saturation=0.02")
     elif preset == "custom":
         filters.append(f"eq=brightness={b_val:.2f}:contrast={c_val:.2f}:saturation={s_val:.2f}")
     else:

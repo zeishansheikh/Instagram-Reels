@@ -269,7 +269,7 @@ def build_d3_reel(
     drawtext_filter = build_d3_drawtext_filter(
         lines=lines,
         video_path=audio_base_path,
-        font_size=30,
+        font_size=48,
         font_file="PlayfairDisplay-Bold.ttf",
         target_h=target_h,
     )
@@ -341,7 +341,7 @@ def build_d3_reel(
         quote=quote_text,
         base_video_path=str(base_60fps_path.resolve()),
         font_file="PlayfairDisplay-Bold.ttf",
-        font_size=30,
+        font_size=48,
         text_color="#FFFFFF",
         y_percent=50,
         color_preset="auto",
@@ -549,25 +549,13 @@ def restyle_d3_reel(
     )
     full_vf = ",".join(grade_filters + [drawtext_filter])
 
-    master_path = swap_p / f"restyle_master_{slot_clean}.mp4"
-    cmd_master = [
-        "ffmpeg", "-y",
-        "-i", str(audio_base_path),
-        "-vf", full_vf,
-        "-c:v", "libx264",
-        "-preset", "veryfast",
-        "-crf", "18",
-        "-c:a", "copy",
-        str(master_path),
-    ]
-    subprocess.run(cmd_master, capture_output=True, text=True, check=True)
-
-    # 3. Final Instagram Encode +faststart
-    report(0.82, "Encoding final edited reel (+faststart)...")
+    # 2. Single-pass Fast Encode with Color Grading, Custom Font & Typography +faststart
+    report(0.60, "Rendering color grade, font, quote & trimmed audio...")
     final_staged_path = Path(manifest.video_path)
     cmd_ig = [
         "ffmpeg", "-y",
-        "-i", str(master_path),
+        "-i", str(audio_base_path),
+        "-vf", full_vf,
         "-c:v", "libx264",
         "-preset", "veryfast",
         "-b:v", "15M" if target_h >= 1920 else "10M",
@@ -575,8 +563,7 @@ def restyle_d3_reel(
         "-bufsize", "40M",
         "-pix_fmt", "yuv420p",
         "-r", str(target_fps),
-        "-c:a", "aac",
-        "-b:a", "128k",
+        "-c:a", "copy",
         "-movflags", "+faststart",
         str(final_staged_path),
     ]

@@ -66,6 +66,7 @@ class D3RestyleRequest(BaseModel):
 
 class D3MusicFetchRequest(BaseModel):
     query: str = Field(..., min_length=2, description="Song search query or YouTube URL")
+    run_in_background: bool = Field(default=True, description="Run YouTube download in background job to avoid proxy timeouts")
 
 
 @router.get("/status", summary="Get complete D3 pipeline status and manifests")
@@ -254,52 +255,49 @@ def get_editor_assets(_: bool = Depends(verify_api_key)) -> Dict[str, Any]:
 def fetch_custom_song(
     req: D3MusicFetchRequest,
     _: bool = Depends(verify_api_key),
-) -> Dict[str, Any]:
+) -> Any:
     """Download an MP3 track from YouTube Music search query or URL for the live editor."""
-    music_dir = Path("assets/music")
-    music_dir.mkdir(parents=True, exist_ok=True)
-    ytdlp = get_ytdlp_bin()
-    cookies = get_youtube_cookies_arg()
+    from instora.pipeline.music_youtube import download_youtube_audio
 
-    q = req.query.strip()
-    is_url = q.startswith("http://") or q.startswith("https://")
-    target_tpl = str(music_dir / "%(title).45s_%(id)s.%(ext)s")
+    def _worker(progress_callback=None):
+        if progress_callback:
+            progress_callback(0.2, "Connecting to YouTube & fetching audio stream...")
+        tr = download_youtube_audio(req.query.strip(), Path("assets/music"))
+        if progress_callback:
+            progress_callback(0.9, f"Probing duration for {tr.name}...")
+        song_data = {
+            "filename": tr.name,
+            "title": tr.stem.replace("_", " "),
+            "duration": _probe_audio_duration(tr),
+            "url": f"/static/assets/music/{tr.name}",
+        }
+        if progress_callback:
+            progress_callback(1.0, f"Added track: {song_data['title']}")
+        return song_data
 
-    cmd = [
-        ytdlp,
-        *([] if is_url else ["--default-search", "ytsearch1"]),
-        "-x",
-        "--audio-format", "mp3",
-        "--audio-quality", "0",
-        "--no-playlist",
-        "--max-filesize", "20M",
-        "--restrict-filenames",
-        "--output", target_tpl,
-    ] + cookies + [q]
+    if req.run_in_background:
+        job = job_manager.create_job(
+            job_type="d3_music_fetch",
+            params=req.model_dump(),
+            worker_fn=_worker,
+        )
+        return JobResponse(
+            job_id=job.id,
+            type=job.type,
+            status=job.status.value,
+            message="Downloading YouTube audio in background...",
+            progress=0.1,
+            created_at=job.created_at,
+            poll_url=f"/jobs/{job.id}",
+        )
 
     try:
-        subprocess.run(cmd, capture_output=True, text=True, check=True, timeout=45)
+        return _worker()
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Could not download song from YouTube: {exc}",
         )
-
-    newest = sorted(
-        list(music_dir.glob("*.mp3")) + list(music_dir.glob("*.m4a")),
-        key=lambda p: p.stat().st_mtime,
-        reverse=True,
-    )
-    if not newest:
-        raise HTTPException(status_code=500, detail="Audio download finished but file missing.")
-
-    tr = newest[0]
-    return {
-        "filename": tr.name,
-        "title": tr.stem.replace("_", " "),
-        "duration": _probe_audio_duration(tr),
-        "url": f"/static/assets/music/{tr.name}",
-    }
 
 
 @router.post("/restyle", summary="Fast-rerender staged reel with CapCut-style editor overrides", status_code=status.HTTP_202_ACCEPTED)

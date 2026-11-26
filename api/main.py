@@ -4,6 +4,12 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+
+# Ensure OS CA certificates are used by httpx / requests / google-genai
+if Path("/etc/ssl/certs/ca-certificates.crt").exists():
+    os.environ.setdefault("SSL_CERT_FILE", "/etc/ssl/certs/ca-certificates.crt")
+    os.environ.setdefault("REQUESTS_CA_BUNDLE", "/etc/ssl/certs/ca-certificates.crt")
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse

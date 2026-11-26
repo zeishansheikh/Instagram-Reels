@@ -7,6 +7,7 @@ bypassing external storage providers (e.g. Google Drive).
 from __future__ import annotations
 
 import json
+import os
 import random
 import re
 from pathlib import Path
@@ -20,6 +21,11 @@ from instora.pipeline.gates import (
     watermark_and_quality_check,
 )
 from instora.pipeline.workflow_state import WorkflowState
+
+
+def _ssl_verify():
+    ca = os.environ.get("SSL_CERT_FILE", "/etc/ssl/certs/ca-certificates.crt")
+    return ca if Path(ca).exists() else True
 
 
 def get_pinterest_cookies() -> Dict[str, str]:
@@ -86,7 +92,7 @@ def extract_video_url_from_pin(pin_id_or_url: str) -> Optional[Tuple[str, str]]:
     pin_url = f"https://www.pinterest.com/pin/{pin_id}/"
 
     try:
-        with httpx.Client(cookies=cookies, headers=headers, follow_redirects=True, timeout=15.0) as client:
+        with httpx.Client(cookies=cookies, headers=headers, follow_redirects=True, timeout=15.0, verify=_ssl_verify()) as client:
             resp = client.get(pin_url)
             if resp.status_code != 200:
                 logger.warning(f"Pinterest Pin {pin_id} returned HTTP {resp.status_code}")
@@ -142,7 +148,7 @@ def search_pinterest_video_pins(query: str, max_results: int = 30) -> List[str]:
     ]
 
     pin_ids: List[str] = []
-    with httpx.Client(cookies=cookies, headers=headers, follow_redirects=True, timeout=15.0) as client:
+    with httpx.Client(cookies=cookies, headers=headers, follow_redirects=True, timeout=15.0, verify=_ssl_verify()) as client:
         for sq in sub_queries:
             if len(pin_ids) >= max_results:
                 break
@@ -174,7 +180,7 @@ def download_video(video_url: str, output_path: Path | str) -> Path:
     temp_dest = dest.with_suffix(".tmp.mp4")
     logger.info(f"Downloading Pinterest video from {clean_url} to {dest}...")
 
-    with httpx.Client(headers=headers, follow_redirects=True, timeout=90.0) as client:
+    with httpx.Client(headers=headers, follow_redirects=True, timeout=90.0, verify=_ssl_verify()) as client:
         with client.stream("GET", clean_url) as response:
             response.raise_for_status()
             with open(temp_dest, "wb") as f:

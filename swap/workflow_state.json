@@ -5,7 +5,8 @@
     "1108307789614585496",
     "956803883317024140",
     "974255331910432711",
-    "986710599612369538"
+    "986710599612369538",
+    "851884085796138646"
   ],
   "used_lines": [
     "sab kuch wahi hai bas / woh jo har waqt sath tha / woh nahi hai ab",
@@ -13,7 +14,8 @@
     "kuch cheezein bikhar jayein to wapas nahi judti, / jaise teri kami ab kabhi poori nahi hoti.",
     "sab kehte hain akela rehna buri baat hai, / par bheed mein bhi to main akela hi tha.",
     "kuch log zindagi mein aate hain / aur hamesha ke liye yaadein chhor jaate hain",
-    "kuch baatein dil mein hi achi lagti hain, / zuban par aate hi rishtey tod deti hain."
+    "kuch baatein dil mein hi achi lagti hain, / zuban par aate hi rishtey tod deti hain.",
+    "woh jo kabhi jaan hua karte the, / aaj unka naam lene par bhi khamoshi cha jati hai."
   ],
   "used_songs": [
     {
@@ -39,6 +41,10 @@
     {
       "song": "GmJA1daZpfM",
       "date": "2026-11-24"
+    },
+    {
+      "song": "GmJA1daZpfM",
+      "date": "2026-11-26"
     }
   ],
   "used_reels": [
@@ -47,10 +53,11 @@
     "PIN:1108307789614585496",
     "PIN:956803883317024140",
     "PIN:974255331910432711",
-    "PIN:986710599612369538"
+    "PIN:986710599612369538",
+    "PIN:851884085796138646"
   ],
-  "last_category": "norway misty fjords drone",
+  "last_category": "mountain valley wild flowers",
   "last_song": "GmJA1daZpfM",
-  "last_quote": "kuch baatein dil mein hi achi lagti hain, / zuban par aate hi rishtey tod deti hain.",
-  "last_run": "2026-11-24-d3"
+  "last_quote": "woh jo kabhi jaan hua karte the, / aaj unka naam lene par bhi khamoshi cha jati hai.",
+  "last_run": "2026-11-26-d3"
 }

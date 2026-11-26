@@ -144,8 +144,18 @@ export function CapCutEditor({
       setIsPreviewPlaying(false);
       onPreviewAudioToggle?.(false);
     } else {
-      audio.currentTime = editorState.songStart;
-      audio.play().catch(() => {});
+      const seekAndPlay = () => {
+        try {
+          audio.currentTime = Math.max(0, editorState.songStart);
+        } catch {}
+        audio.play().catch(() => {});
+      };
+      if (audio.readyState >= 1) {
+        seekAndPlay();
+      } else {
+        audio.addEventListener("loadedmetadata", seekAndPlay, { once: true });
+        audio.load();
+      }
       setIsPreviewPlaying(true);
       onPreviewAudioToggle?.(true);
     }
@@ -168,18 +178,52 @@ export function CapCutEditor({
       const res = await fetch("/d3/music/fetch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: ytQuery.trim() }),
+        body: JSON.stringify({ query: ytQuery.trim(), run_in_background: true }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.detail || "Failed to fetch track");
+        throw new Error(err.detail || `Failed to fetch track (HTTP ${res.status})`);
       }
-      const newSong: EditorSong = await res.json();
-      onSongAdded(newSong);
-      onChange({ songFile: newSong.filename, songStart: 0 }, true);
-      setYtQuery("");
+      const data = await res.json();
+
+      // Poll background download job to avoid 30s Next.js proxy timeout
+      if (data.job_id) {
+        const jobId = data.job_id;
+        await new Promise<void>((resolve, reject) => {
+          let polls = 0;
+          const timer = setInterval(async () => {
+            polls++;
+            if (polls > 75) {
+              clearInterval(timer);
+              reject(new Error("Song download timed out."));
+              return;
+            }
+            try {
+              const jr = await fetch(`/jobs/${jobId}`);
+              if (!jr.ok) return;
+              const job = await jr.json();
+              if (job.status === "completed" && job.result) {
+                clearInterval(timer);
+                const newSong: EditorSong = job.result;
+                onSongAdded(newSong);
+                onChange({ songFile: newSong.filename, songStart: 0 }, true);
+                setYtQuery("");
+                resolve();
+              } else if (job.status === "failed") {
+                clearInterval(timer);
+                reject(new Error(job.error || "YouTube download failed."));
+              }
+            } catch {}
+          }, 1000);
+        });
+      } else if (data.filename) {
+        const newSong: EditorSong = data;
+        onSongAdded(newSong);
+        onChange({ songFile: newSong.filename, songStart: 0 }, true);
+        setYtQuery("");
+      }
     } catch (e: any) {
-      setFetchError(e.message || "Download failed");
+      setFetchError(e.message || "Download failed. Try another YouTube URL or song name.");
     } finally {
       setIsFetchingSong(false);
     }
@@ -187,6 +231,7 @@ export function CapCutEditor({
 
   const filteredFonts = React.useMemo(() => {
     return fonts.filter((f) => {
+      if (f.drawtext_ok === false) return false;
       if (fontFilter === "all") return true;
       return f.script === fontFilter;
     });
@@ -308,15 +353,21 @@ export function CapCutEditor({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-1.5 max-h-44 overflow-y-auto pr-1">
+              <div className="grid grid-cols-2 gap-1.5 max-h-48 overflow-y-auto pr-1">
                 {filteredFonts.map((font) => {
                   const isSelected = editorState.fontFile === font.file;
-                  const fontFamilyCss = `"InstoraFont_${font.file.replace(/[^a-zA-Z0-9]/g, "_")}"`;
+                  const familyName = `InstoraFont_${font.file.replace(/[^a-zA-Z0-9]/g, "_")}`;
+                  const fontFamilyCss = `"${familyName}", sans-serif`;
                   return (
                     <button
                       key={font.file}
                       type="button"
-                      onClick={() => onChange({ fontFile: font.file }, true)}
+                      onClick={() => {
+                        if (typeof document !== "undefined" && "fonts" in document) {
+                          document.fonts.load(`20px "${familyName}"`).catch(() => {});
+                        }
+                        onChange({ fontFile: font.file }, true);
+                      }}
                       className={cn(
                         "p-2 rounded-sm border text-left transition-fast flex items-center justify-between gap-1.5",
                         isSelected
@@ -331,8 +382,11 @@ export function CapCutEditor({
                         >
                           {font.name}
                         </p>
-                        <p className="text-[9px] font-mono text-ink-muted uppercase mt-0.5">
-                          {font.style} · {font.script}
+                        <p
+                          className="text-[11px] text-ink-secondary truncate mt-0.5"
+                          style={{ fontFamily: fontFamilyCss }}
+                        >
+                          {font.script === "urdu" ? "خاموشی · AaBb" : "Yaadein · AaBb"}
                         </p>
                       </div>
                       {isSelected && <Check className="w-3.5 h-3.5 text-moss shrink-0" />}
@@ -351,8 +405,8 @@ export function CapCutEditor({
                 </div>
                 <input
                   type="range"
-                  min={18}
-                  max={56}
+                  min={24}
+                  max={80}
                   step={1}
                   value={editorState.fontSize}
                   onChange={(e) => onChange({ fontSize: Number(e.target.value) }, true)}

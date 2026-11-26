@@ -130,7 +130,7 @@ function TodayScreenContent() {
   const defaultEditorState: ReelEditorState = {
     quote: "",
     fontFile: "PlayfairDisplay-Bold.ttf",
-    fontSize: 30,
+    fontSize: 48,
     textColor: "#FFFFFF",
     yPercent: 50,
     shadowOpacity: 0.9,
@@ -219,7 +219,7 @@ function TodayScreenContent() {
         const loadedEd: ReelEditorState = {
           quote: manifestA.quote || "",
           fontFile: manifestA.font_file || "PlayfairDisplay-Bold.ttf",
-          fontSize: manifestA.font_size || 30,
+          fontSize: manifestA.font_size || 48,
           textColor: manifestA.text_color || "#FFFFFF",
           yPercent: manifestA.y_percent ?? 50,
           shadowOpacity: 0.9,
@@ -854,29 +854,54 @@ function TodayScreenContent() {
                       {showLiveOverlay ? (
                         <div className="relative aspect-[9/16] w-full rounded-md overflow-hidden bg-black border border-border shadow-sm group">
                           <video
+                            key={baseVideoUrl || currentReel.videoSrc}
                             src={baseVideoUrl || currentReel.videoSrc}
-                            poster={currentReel.posterSrc}
                             autoPlay
                             loop
                             muted
                             playsInline
                             controls
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover relative z-0"
                             style={{
-                              filter: `brightness(${1 + editorState.brightness}) contrast(${editorState.contrast}) saturate(${editorState.saturation})${
-                                editorState.colorPreset === "noir" ? " grayscale(0.95)" : ""
-                              }`,
+                              filter: [
+                                `brightness(${(1 + editorState.brightness).toFixed(2)})`,
+                                `contrast(${editorState.contrast.toFixed(2)})`,
+                                `saturate(${editorState.saturation.toFixed(2)})`,
+                                editorState.colorPreset === "warm_amber" ? "sepia(0.28) hue-rotate(-8deg)" : "",
+                                editorState.colorPreset === "moody_cold" ? "sepia(0.18) hue-rotate(175deg)" : "",
+                                editorState.colorPreset === "forest" ? "hue-rotate(12deg)" : "",
+                                editorState.colorPreset === "noir" ? "grayscale(0.98)" : "",
+                              ]
+                                .filter(Boolean)
+                                .join(" "),
                             }}
                           />
+                          {/* Color Preset Tint Overlay */}
+                          {editorState.colorPreset !== "auto" &&
+                            editorState.colorPreset !== "custom" &&
+                            editorState.colorPreset !== "noir" && (
+                              <div
+                                className="absolute inset-0 pointer-events-none z-10"
+                                style={{
+                                  mixBlendMode: "soft-light",
+                                  backgroundColor:
+                                    editorState.colorPreset === "warm_amber"
+                                      ? "rgba(245, 158, 11, 0.25)"
+                                      : editorState.colorPreset === "moody_cold"
+                                      ? "rgba(56, 189, 248, 0.28)"
+                                      : "rgba(16, 185, 129, 0.24)",
+                                }}
+                              />
+                            )}
                           {/* Real-time Live Text Overlay */}
                           <div
-                            className="absolute left-4 right-4 pointer-events-none text-center flex flex-col items-center justify-center -translate-y-1/2 px-2"
+                            className="absolute left-4 right-4 z-20 pointer-events-none text-center flex flex-col items-center justify-center -translate-y-1/2 px-2"
                             style={{
                               top: `${editorState.yPercent}%`,
                               fontFamily: `"InstoraFont_${editorState.fontFile.replace(/[^a-zA-Z0-9]/g, "_")}", serif`,
-                              fontSize: `${Math.max(11, Math.round(editorState.fontSize * 0.42))}px`,
+                              fontSize: `${Math.max(13, Math.round(editorState.fontSize * 0.34))}px`,
                               color: editorState.textColor,
-                              textShadow: `0 2px 4px rgba(0, 0, 0, ${editorState.shadowOpacity})`,
+                              textShadow: `0 2px 6px rgba(0, 0, 0, ${editorState.shadowOpacity})`,
                               lineHeight: 1.45,
                             }}
                           >
@@ -886,7 +911,7 @@ function TodayScreenContent() {
                               </div>
                             ))}
                           </div>
-                          <span className="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-moss/90 text-white font-mono text-[9px] uppercase tracking-wider">
+                          <span className="absolute top-2 left-2 z-20 px-1.5 py-0.5 rounded bg-moss/90 text-white font-mono text-[9px] uppercase tracking-wider">
                             Live Preview
                           </span>
                         </div>
@@ -899,11 +924,23 @@ function TodayScreenContent() {
                         />
                       )}
                     </div>
-                    <span className="font-mono text-xs text-ink-muted mt-2 text-left block">
-                      {showLiveOverlay
-                        ? "Live previewing unsaved edits · Click Apply & Render"
-                        : "Hover to preview · Click for audio"}
-                    </span>
+                    <div className="mt-2.5 flex items-center justify-between gap-2 w-full max-w-[340px]">
+                      <span className="font-mono text-xs text-ink-muted block">
+                        {showLiveOverlay
+                          ? "Live previewing edits"
+                          : "Hover to preview · Click for audio"}
+                      </span>
+                      {isEditorDirty && (
+                        <button
+                          type="button"
+                          onClick={handleApplyRestyle}
+                          disabled={isRestyling}
+                          className="text-xs font-mono font-semibold text-moss hover:underline shrink-0"
+                        >
+                          {isRestyling ? "Rendering..." : "Apply & Render →"}
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   {/* Quote, Caption, Specs & Actions */}
