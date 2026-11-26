@@ -10,6 +10,19 @@ const nextConfig = {
     config.resolve.alias["@"] = path.resolve(__dirname, "src");
     return config;
   },
+  async headers() {
+    return [
+      {
+        source: "/((?!_next/static|_next/image|favicon.ico|static).*)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "no-cache, no-store, must-revalidate",
+          },
+        ],
+      },
+    ];
+  },
   async rewrites() {
     const backend = process.env.BACKEND_URL || "http://127.0.0.1:8001";
     return [

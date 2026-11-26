@@ -755,6 +755,7 @@ function TodayScreenContent() {
                 reelDuration={currentReel.duration || 8}
                 isDirty={isEditorDirty}
                 isRendering={isRestyling}
+                renderProgress={buildProgress}
                 onApplyRender={handleApplyRestyle}
                 onReset={() => {
                   setEditorState(savedEditorState);

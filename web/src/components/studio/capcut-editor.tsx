@@ -60,6 +60,7 @@ interface CapCutEditorProps {
   reelDuration: number;
   isDirty: boolean;
   isRendering: boolean;
+  renderProgress?: number;
   onApplyRender: () => void;
   onReset: () => void;
   onSongAdded: (newSong: EditorSong) => void;
@@ -98,6 +99,7 @@ export function CapCutEditor({
   reelDuration,
   isDirty,
   isRendering,
+  renderProgress = 0,
   onApplyRender,
   onReset,
   onSongAdded,
@@ -630,6 +632,12 @@ export function CapCutEditor({
                   {isFetchingSong ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Add"}
                 </Button>
               </div>
+              {isFetchingSong && (
+                <p className="text-[10px] font-mono text-moss flex items-center gap-1.5">
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  Downloading MP3 from YouTube (usually 5-10s)...
+                </p>
+              )}
               {fetchError && <p className="text-[10px] text-status-error">{fetchError}</p>}
             </div>
 
@@ -753,7 +761,7 @@ export function CapCutEditor({
           disabled={isRendering}
           onClick={onApplyRender}
         >
-          {isRendering ? "Rendering Edits..." : "Apply & Render Changes"}
+          {isRendering ? `Rendering Edits... ${renderProgress}%` : "Apply & Render Changes"}
         </Button>
         <p className="text-[10px] font-mono text-center text-ink-muted">
           Fast re-render uses clean video base (~4s)
