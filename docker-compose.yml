@@ -1,21 +1,37 @@
 version: '3.8'
 
 services:
-  instora:
-    build: .
-    container_name: instora-app
+  backend:
+    build: ./backend
+    container_name: instora-backend
     restart: unless-stopped
     ports:
       - "8001:8001"
-      - "3001:3001"
     environment:
       - PORT=8001
-      - NODE_ENV=production
+      - SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
     env_file:
-      - .env
+      - ./backend/.env
     volumes:
-      - ./config:/app/config
-      - ./db:/app/db
-      - ./assets:/app/assets
-      - ./swap:/app/swap
-      - ./output:/app/output
+      - ./backend/config:/app/config
+      - ./backend/db:/app/db
+      - ./backend/assets:/app/assets
+      - ./backend/fonts:/app/fonts
+      - ./backend/swap:/app/swap
+      - ./backend/output:/app/output
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        BACKEND_URL: http://backend:8001
+    container_name: instora-frontend
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - NODE_ENV=production
+      - BACKEND_URL=http://backend:8001
+    depends_on:
+      - backend

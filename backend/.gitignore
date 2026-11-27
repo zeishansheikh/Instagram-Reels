@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+
+# Virtual Environments
+venv/
+.venv/
+env/
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+credentials.json
+token.json
+client_secrets.json
+config/pinterest_cookies.*
+config/youtube_cookies.*
+config/*.json
+config/*.txt
+
+# Media Assets & Generated Content
+cache/
+output/
+swap/ready_to_post/*
+!swap/ready_to_post/.gitkeep
+db/*.db
+db/*.sqlite
+*.db
+*.sqlite
+*.sqlite3
+
+# Video / Large Assets
+assets/backgrounds/*
+!assets/backgrounds/.gitkeep
+assets/music/*
+!assets/music/.gitkeep
+assets/fonts/*
+!assets/fonts/.gitkeep
+!assets/fonts/*.ttf
+*.mp4
+*.mov
+*.mkv
+*.avi
+*.mp3
+*.wav

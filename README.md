@@ -42,27 +42,34 @@ flowchart TD
     Export --> DBRecord[("Update SQLite State")]
 ```
 
-### Directory Structure
+### Directory Structure (Split Monorepo)
 
 ```text
 Instagram-Reels/
-├── AGENT_CONTEXT.md          # Guidelines & constraints for AI coding agents
-├── ARCHITECTURE.md           # Technical design, DB schema, and render specs
-├── PRD.md                    # Product requirements document
-├── STYLE_GUIDE.md            # Aesthetics, typography, visual & audio guidelines
-├── degraaf.yaml              # Nature/aesthetic style configuration preset
-├── TASKS.md                  # Milestone-driven implementation phases
-├── .env.example              # Template for API keys
-├── .gitignore                # Production gitignore (excludes media, DB, venvs)
-└── src/                      # Source code (Instora package)
-    └── instora/
-        ├── cli.py            # Typer CLI entrypoint
-        ├── config.py         # Pydantic configuration loader
-        ├── db.py             # SQLite persistence & tracking
-        ├── quotes/           # Gemini API quote generator & deduplication
-        ├── backgrounds/      # Pluggable background providers (Pexels / Local)
-        ├── render/           # FFmpeg filtergraph, typography, and styling
-        └── packaging/        # Output directory & metadata writer
+├── backend/                    # Standalone FastAPI + FFmpeg + yt-dlp service
+│   ├── api/                    # FastAPI REST endpoints & static mounts
+│   ├── src/instora/            # Core pipeline, AI quotes, YouTube audio & renderer
+│   ├── assets/                 # Footage, music tracks & fallback fonts
+│   ├── fonts/                  # Typography library + fonts.json
+│   ├── styles/                 # Style YAML presets (degraaf.yaml, etc.)
+│   ├── config/                 # Runtime cookies & local credentials (gitignored)
+│   ├── db/                     # SQLite state DB (gitignored)
+│   ├── swap/                   # Staged deliverables & workflow_state.json
+│   ├── Dockerfile              # Standalone backend Docker image (Render/Railway/VPS)
+│   ├── render.yaml             # Standalone Render blueprint for backend
+│   ├── pyproject.toml          # Python package manifest
+│   └── requirements.txt        # Python dependencies
+├── frontend/                   # Standalone Next.js 14 dashboard & studio editor
+│   ├── src/                    # App Router pages, CapCut-style workspace & components
+│   ├── public/                 # Static frontend assets
+│   ├── next.config.mjs         # Rewrites API/static calls to BACKEND_URL
+│   ├── vercel.json             # Vercel project config
+│   ├── Dockerfile              # Standalone frontend Docker image
+│   └── package.json            # Node dependencies & scripts
+├── docker-compose.yml          # Two-service compose (backend + frontend)
+├── render.yaml                 # Monorepo Render Blueprint (backend + frontend)
+├── start.sh                    # Local runner starting both backend and frontend
+└── .gitignore                  # Monorepo ignore rules protecting secrets & media
 ```
 
 ---

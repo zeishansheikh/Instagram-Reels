@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: instora-backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: oregon
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: PORT
+        value: "8000"
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: BUFFER_ACCESS_TOKEN
+        sync: false
+      - key: BUFFER_CHANNEL_ID
+        sync: false
+      - key: BUFFER_ORGANIZATION_ID
+        sync: false
+      - key: GDRIVE_FOLDER_ID
+        sync: false

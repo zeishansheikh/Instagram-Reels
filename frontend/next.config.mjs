@@ -24,7 +24,11 @@ const nextConfig = {
     ];
   },
   async rewrites() {
-    const backend = process.env.BACKEND_URL || "http://127.0.0.1:8001";
+    const rawBackend =
+      process.env.BACKEND_URL ||
+      process.env.NEXT_PUBLIC_API_URL ||
+      "http://127.0.0.1:8001";
+    const backend = rawBackend.replace(/\/+$/, "");
     return [
       {
         source: "/settings-api/:path*",

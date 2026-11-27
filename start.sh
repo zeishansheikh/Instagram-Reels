@@ -1,22 +1,38 @@
 #!/usr/bin/env bash
 set -e
 
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BACKEND_DIR="$ROOT_DIR/backend"
+FRONTEND_DIR="$ROOT_DIR/frontend"
+
 echo "============================================="
-echo "  Starting Instora Production Services"
+echo "  Starting Instora Services (Split Layout)"
 echo "============================================="
 
-# Activate virtual environment if present
-if [ -d ".venv" ]; then
-    source .venv/bin/activate
+if [ -f "/etc/ssl/certs/ca-certificates.crt" ]; then
+    export SSL_CERT_FILE="/etc/ssl/certs/ca-certificates.crt"
+    export REQUESTS_CA_BUNDLE="/etc/ssl/certs/ca-certificates.crt"
 fi
 
-# Ensure required runtime directories exist
-mkdir -p db swap/ready_to_post output cache config assets/backgrounds assets/music
+# Ensure required runtime directories exist inside backend/
+mkdir -p \
+    "$BACKEND_DIR/db" \
+    "$BACKEND_DIR/swap/ready_to_post" \
+    "$BACKEND_DIR/output" \
+    "$BACKEND_DIR/cache" \
+    "$BACKEND_DIR/config" \
+    "$BACKEND_DIR/assets/backgrounds" \
+    "$BACKEND_DIR/assets/music"
+
+PYTHON_BIN="python3"
+if [ -x "$BACKEND_DIR/.venv/bin/python" ]; then
+    PYTHON_BIN="$BACKEND_DIR/.venv/bin/python"
+fi
 
 # Initialize SQLite database schema if missing
-if [ ! -f "db/instora.db" ]; then
+if [ ! -f "$BACKEND_DIR/db/instora.db" ]; then
     echo "Initializing database schema..."
-    python3 -c "import sqlite3; conn = sqlite3.connect('db/instora.db'); conn.execute('CREATE TABLE IF NOT EXISTS quotes (id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT NOT NULL, text_hash TEXT NOT NULL UNIQUE, theme TEXT NOT NULL, lang TEXT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, used INTEGER DEFAULT 0);'); conn.execute('CREATE TABLE IF NOT EXISTS clips (id INTEGER PRIMARY KEY AUTOINCREMENT, source TEXT NOT NULL, source_id TEXT NOT NULL, path TEXT NOT NULL, last_used_at TIMESTAMP, use_count INTEGER DEFAULT 0);'); conn.execute('CREATE TABLE IF NOT EXISTS clip_segments (id INTEGER PRIMARY KEY AUTOINCREMENT, clip_id INTEGER, start_time REAL, end_time REAL, mood TEXT);'); conn.execute('CREATE TABLE IF NOT EXISTS reels (id INTEGER PRIMARY KEY AUTOINCREMENT, quote_id INTEGER, clip_id INTEGER, video_path TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, posted INTEGER DEFAULT 0);'); conn.execute('CREATE TABLE IF NOT EXISTS publish_log (id INTEGER PRIMARY KEY AUTOINCREMENT, reel_id INTEGER, slot TEXT, timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP, status TEXT, permalink TEXT, media_id TEXT, error_message TEXT);'); conn.commit(); conn.close()" || true
+    (cd "$BACKEND_DIR" && "$PYTHON_BIN" -c "from instora.db import init_db; init_db('db/instora.db')") || true
 fi
 
 # Graceful cleanup on termination
@@ -27,12 +43,12 @@ cleanup() {
 }
 trap cleanup SIGINT SIGTERM EXIT
 
-echo "[1/2] Starting FastAPI Backend on http://0.0.0.0:8001..."
-python3 -m uvicorn api.main:app --host 0.0.0.0 --port 8001 &
+echo "[1/2] Starting FastAPI Backend from ./backend on http://0.0.0.0:8001..."
+(cd "$BACKEND_DIR" && "$PYTHON_BIN" -m uvicorn api.main:app --host 0.0.0.0 --port 8001) &
 BACKEND_PID=$!
 
-echo "[2/2] Starting Next.js Web Frontend on http://0.0.0.0:3001..."
-(cd web && npm run start -- -p 3001) &
+echo "[2/2] Starting Next.js Frontend from ./frontend on http://0.0.0.0:3001..."
+(cd "$FRONTEND_DIR" && BACKEND_URL="http://127.0.0.1:8001" NODE_OPTIONS="--max-old-space-size=1024" npm run start -- -p 3001) &
 FRONTEND_PID=$!
 
 echo "============================================="

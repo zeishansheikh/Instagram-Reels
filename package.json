@@ -1,11 +1,11 @@
 {
-  "name": "reelforge",
+  "name": "instora",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "npm --prefix web run dev",
-    "build": "npm --prefix web run build",
-    "start": "npm --prefix web run start"
+    "dev": "npm --prefix frontend run dev -- -p 3001",
+    "build": "npm --prefix frontend run build",
+    "start": "npm --prefix frontend run start -- -p 3001",
+    "lint": "npm --prefix frontend run lint"
   }
 }
-

@@ -21,10 +21,13 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+.pytest_cache/
 
 # Virtual Environments
 venv/
 .venv/
+backend/venv/
+backend/.venv/
 env/
 ENV/
 env.bak/
@@ -34,33 +37,48 @@ venv.bak/
 .env
 .env.*
 !.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
 credentials.json
 token.json
 client_secrets.json
+backend/credentials.json
+backend/token.json
+backend/client_secrets.json
 config/pinterest_cookies.*
 config/youtube_cookies.*
 config/*.json
 config/*.txt
+backend/config/pinterest_cookies.*
+backend/config/youtube_cookies.*
+backend/config/*.json
+backend/config/*.txt
 
 # Media Assets & Generated Content
 cache/
 output/
-swap/ready_to_post/*
-!swap/ready_to_post/.gitkeep
-db/*.db
-db/*.sqlite
+backend/cache/
+backend/output/
+backend/swap/ready_to_post/*
+!backend/swap/ready_to_post/.gitkeep
+backend/db/*.db
+backend/db/*.sqlite
 *.db
 *.sqlite
 *.sqlite3
 
 # Video / Large Assets (Allow directories with .gitkeep)
-assets/backgrounds/*
-!assets/backgrounds/.gitkeep
-assets/music/*
-!assets/music/.gitkeep
-assets/fonts/*
-!assets/fonts/.gitkeep
-!assets/fonts/*.ttf
+backend/assets/backgrounds/*
+!backend/assets/backgrounds/.gitkeep
+backend/assets/music/*
+!backend/assets/music/.gitkeep
+backend/assets/fonts/*
+!backend/assets/fonts/.gitkeep
+!backend/assets/fonts/*.ttf
 *.mp4
 *.mov
 *.mkv
@@ -79,9 +97,9 @@ Thumbs.db
 # Node.js & Next.js
 node_modules/
 .next/
-web/node_modules/
-web/.next/
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.vercel/
 *.tsbuildinfo
-!web/src/lib/
-
-
+!frontend/src/lib/
